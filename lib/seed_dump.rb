@@ -1,1 +1,3 @@
 # SeedDump
+module SeedDump 
+end
