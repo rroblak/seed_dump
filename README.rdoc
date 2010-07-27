@@ -5,6 +5,7 @@ Seed dump is a simple plugin that adds a rake task named db:seed:dump.
 It allows you to create a db/seeds.rb from your existing data in the database.
 When there is no data in the database it will generate empty create statements.
 
+
 === Example Usage
 
 Dump all data directly to db/seeds.rb:
@@ -53,7 +54,7 @@ It's up to you to edit these and change the values into something meaningful:
 
 Here is a full example using all of the options above:
 
-  rake db:seed:dump MODELS=User,Product LIMIT=10 APPEND=true FILE=db/categories.rb WITH_ID=1 NO_DATA=1
+  rake db:seed:dump MODELS=Category LIMIT=10 APPEND=true FILE=db/categories.rb WITH_ID=1 NO_DATA=1
 
 === All environment variables
 
@@ -61,7 +62,7 @@ APPEND:
  Append the data to db/seeds.rb instead of overwriting it.
 
 FILE:
- Use a different output file, default: +db/seeds.rb+
+ Use a different output file, default: db/seeds.rb
 
 LIMIT:
  Dump no more then this amount of data, default: no limit
