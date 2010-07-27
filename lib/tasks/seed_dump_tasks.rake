@@ -1,7 +1,7 @@
 namespace :db do
 
 # tests:
-# test emtpty opt.models
+# test empty opt.models
 # test populated opt.models
 # test no_id option
 # test limit option
@@ -21,8 +21,6 @@ HERE
 
       # config
       opts = {}
-      # TODO: make this come from command line options --noid --limit=3 --models=User,Product --no-data
-
       opts['with_id'] = !ENV["WITH_ID"].nil?
       opts['no-data'] = !ENV['NO_DATA'].nil?
       opts['models']  = ENV['MODELS'] || (ENV['MODEL'] ? ENV['MODEL'] : "")
@@ -49,8 +47,7 @@ HERE
 	  arr.each_with_index { |r,i| 
 
             attr_s = [];
-            r.attributes.delete('id') unless opts['with_id']
-            r.attributes.each { |k,v| attr_s.push("#{k.to_sym.inspect} => #{v.inspect}") }
+            r.attributes.each { |k,v| attr_s.push("#{k.to_sym.inspect} => #{v.inspect}") unless k == 'id' && !opts['with_id'] }
 
             create_hash << (i > 0 ? ",#{new_line}" : new_line) << indent << '{ ' << attr_s.join(', ') << ' }'
 
