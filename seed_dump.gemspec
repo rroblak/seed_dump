@@ -16,13 +16,14 @@ Gem::Specification.new do |s|
     "README.rdoc"
   ]
   s.files = [
-    "CHANGELOG.rdoc",
+    ".gitignore",
+     "CHANGELOG.rdoc",
      "MIT-LICENSE",
      "README.rdoc",
      "Rakefile",
      "VERSION",
+     "lib/railties/tasks.rake",
      "lib/seed_dump.rb",
-     "lib/tasks/seed_dump_tasks.rake",
      "lib/version.rb",
      "seed_dump.gemspec",
      "test/seed_dump_test.rb",
