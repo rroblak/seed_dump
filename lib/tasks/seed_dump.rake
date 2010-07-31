@@ -1,23 +1,5 @@
-namespace :db do
-
-# tests:
-# test empty opt.models
-# test populated opt.models
-# test no_id option
-# test limit option
-# test empty table but valid seed
-# test no-data
-# Write by default to db/seeds.rb
-# make filename optional with FILE env variable
-# should ignore append if file doesn't exist
-#
-# rake db:seed:dump WITH_ID=true MODELS=User,Product LIMIT=1 NO_DATA=true APPEND=true INDENT=8 FILE=/tmp/seeds.rb
-#
-  namespace :seed do
-    desc =<<HERE
-Dump records from the database into db/seeds
-HERE
     task :dump => :environment do
+    desc = "Dump records from the database into db/seeds"
 
       # config
       opts = {}
@@ -74,5 +56,3 @@ HERE
 }
     end
   end
-
-end
