@@ -1,6 +1,3 @@
-# SeedDump
-require 'seed_dump'
-require 'rails'
 module SeedDump 
   class Railtie < Rails::Railtie
 
