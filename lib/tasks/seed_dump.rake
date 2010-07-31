@@ -1,7 +1,7 @@
 namespace :db do
   namespace :seed  do
     desc "Dump records from the database into db/seeds"
-    task :dump do
+    task :dump => :environment do
 
       # config
       opts = {}
