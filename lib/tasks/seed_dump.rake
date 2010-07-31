@@ -40,6 +40,7 @@ namespace :db do
           seed_rb << "#{new_line}#{model_name.pluralize} = #{model_name.camelize}.create(#{create_hash}#{new_line})#{new_line}"
         end
       end
+
       File.open(opts['file'], (opts['append'] ? "a" : "w")) { |f|
 
 	unless opts['append']
