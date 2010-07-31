@@ -22,7 +22,7 @@ Gem::Specification.new do |s|
      "README.rdoc",
      "Rakefile",
      "VERSION",
-     "lib/seed_dump/railtie.rake",
+     "lib/seed_dump/railtie.rb",
      "lib/tasks/seed_dump.rake",
      "lib/seed_dump.rb",
      "lib/version.rb",
