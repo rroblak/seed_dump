@@ -20,7 +20,7 @@ namespace :db do
       puts "Appending seeds to #{opts['file']}." if opts['append']
 
       seed_rb = ""
-      Dir['app/models/*.rb'].each do |f|
+      Dir['app/models/*.rb'].sort.each do |f|
 	model_name  = File.basename(f, '.*')
         if models.include?(model_name) || models.empty? 
 
