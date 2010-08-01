@@ -15,7 +15,7 @@ namespace :db do
 
       models = opts['models'].split(',').collect {|x| x.underscore.singularize }
 
-      new_line = "\r\n"
+      new_line = "\n"
 
       seed_rb = ""
       Dir['app/models/*.rb'].each do |f|
@@ -31,13 +31,17 @@ namespace :db do
 	  arr.each_with_index { |r,i| 
 
             attr_s = [];
-            r.attributes.each { |k,v| attr_s.push("#{k.to_sym.inspect} => #{v.inspect}") unless k == 'id' && !opts['with_id'] }
+
+            r.attributes.each { |k,v|
+	      v = v.class == Time ? "\"#{v}\"" : v.inspect
+              attr_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !opts['with_id']
+            }
 
             create_hash << (i > 0 ? ",#{new_line}" : new_line) << indent << '{ ' << attr_s.join(', ') << ' }'
 
           } 
 
-          seed_rb << "#{new_line}#{model_name.pluralize} = #{model_name.camelize}.create(#{create_hash}#{new_line})#{new_line}"
+          seed_rb << "#{new_line}#{model_name.pluralize} = #{model_name.camelize}.create([#{create_hash}#{new_line}])#{new_line}"
         end
       end
 
