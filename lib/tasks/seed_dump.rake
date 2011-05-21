@@ -38,7 +38,7 @@ namespace :db do
 
             r.attributes.each { |k,v|
 	      v = v.class == Time ? "\"#{v}\"" : v.inspect
-              attr_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !opts['with_id']
+              attr_s.push("#{k.to_sym.inspect} => #{v}") unless k.upcase == 'ID' && !opts['with_id']
             }
 
             create_hash << (i > 0 ? ",#{new_line}" : new_line) << indent << '{ ' << attr_s.join(', ') << ' }'
