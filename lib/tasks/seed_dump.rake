@@ -16,35 +16,36 @@ namespace :db do
       models = opts['models'].split(',').collect {|x| x.underscore.singularize }
 
       new_line = "\n"
-
       puts "Appending seeds to #{opts['file']}." if opts['append']
 
       seed_rb = ""
       Dir['app/models/*.rb'].sort.each do |f|
-	model_name  = File.basename(f, '.*')
+	      model_name  = File.basename(f, '.*')
         if models.include?(model_name) || models.empty? 
 
           puts "Adding #{model_name.camelize} seeds."
 
-	  create_hash = ""
+      	  create_hash = ""
 
-	  model = model_name.camelize.constantize
-	  arr = []
-	  arr = model.find(:all, ar_options) unless opts['no-data']
-	  arr = arr.empty? ? [model.new] : arr
-	  arr.each_with_index { |r,i| 
+      	  model = model_name.camelize.constantize
+      	  arr = []
+      	  arr = model.find(:all, ar_options) unless opts['no-data']
+      	  arr = arr.empty? ? [model.new] : arr
+      	  arr.each_with_index { |r,i| 
 
             attr_s = [];
 
+            id_set_string = ''
             r.attributes.each { |k,v|
 	      v = v.class == Time ? "\"#{v}\"" : v.inspect
-              attr_s.push("#{k.to_sym.inspect} => #{v}") unless k.upcase == 'ID' && !opts['with_id']
+              attr_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !opts['with_id']
+              if k == 'id' && opts['with_id']
+                id_set_string = "{ |c| c.#{k} = #{v} }.save"
+              end 
             }
-
-            create_hash << (i > 0 ? ",#{new_line}" : new_line) << indent << '{ ' << attr_s.join(', ') << ' }'
+            create_hash << (i > 0 ? "#{new_line}" : new_line) << "#{model_name.camelize}.create" << '( ' << attr_s.join(', ') << ' )' << id_set_string
           } 
-
-          seed_rb << "#{new_line}#{model_name.pluralize} = #{model_name.camelize}.create([#{create_hash}#{new_line}])#{new_line}"
+          seed_rb << "#{create_hash}#{new_line}#{new_line}"
         end
       end
 
