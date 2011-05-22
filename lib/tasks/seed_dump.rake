@@ -38,9 +38,10 @@ namespace :db do
             id_set_string = ''
             r.attributes.each { |k,v|
 	      v = v.class == Time ? "\"#{v}\"" : v.inspect
-              attr_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !opts['with_id']
               if k == 'id' && opts['with_id']
                 id_set_string = "{ |c| c.#{k} = #{v} }.save"
+              else
+                attr_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !opts['with_id']
               end 
             }
             create_hash << (i > 0 ? "#{new_line}" : new_line) << "#{model_name.camelize}.create" << '( ' << attr_s.join(', ') << ' )' << id_set_string
