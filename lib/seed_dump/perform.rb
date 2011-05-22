@@ -38,21 +38,30 @@ module SeedDump
     end
 
     def self.dumpModel(model)
+      @id_set_string = ''
       create_hash = ""
+      rows = []
       arr = model.find(:all, @ar_options) unless @opts['no-data']
       arr = arr.empty? ? [model.new] : arr
       arr.each_with_index { |r,i| 
         attr_s = [];
         r.attributes.each { |k,v| dumpAttribute(attr_s,r,k,v) }
-        create_hash << "\n#{model}.create" << '( ' << attr_s.join(', ') << ' )' << @id_set_string
+        if @id_set_string.empty?
+          rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
+        else
+          create_hash << "\n#{model}.create" << '( ' << attr_s.join(', ') << ' )' << @id_set_string
+        end
       } 
-      create_hash
+      if @id_set_string.empty?
+        "\n#{model}.create([\n" << rows.join(",\n") << "\n])\n"
+      else
+        create_hash
+      end
     end
 
     def self.dumpModels
       @seed_rb = ""
       @models.sort.each do |model|
-          @id_set_string = ''
           puts "Adding #{model} seeds." if @verbose
           @seed_rb << dumpModel(model) << "\n\n"
       end
