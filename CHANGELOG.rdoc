@@ -1,5 +1,9 @@
 == Seed Dump
 
+== 0.3.1 / 2011-04-22
+
+ * use different syntax for multiple rows
+
 == 0.3.0 / 2011-04-22
 
  * refactor to make testing possible
