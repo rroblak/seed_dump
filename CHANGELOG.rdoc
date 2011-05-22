@@ -1,5 +1,9 @@
 == Seed Dump
 
+== 0.3.0 / 2011-04-22
+
+ * refactor to make testing possible
+
 == 0.2.4 / 2011-04-22
 
  * properly quote any value (also fixes Time value generation)
