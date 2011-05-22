@@ -41,8 +41,9 @@ module SeedDump
       @id_set_string = ''
       create_hash = ""
       rows = []
+      arr = []
       arr = model.find(:all, @ar_options) unless @opts['no-data']
-      arr = arr.empty? ? [model.new] : arr
+      arr = arr.empty? ? [model.new] : arr 
       arr.each_with_index { |r,i| 
         attr_s = [];
         r.attributes.each { |k,v| dumpAttribute(attr_s,r,k,v) }
