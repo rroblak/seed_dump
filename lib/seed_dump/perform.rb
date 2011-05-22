@@ -15,7 +15,7 @@ module SeedDump
       @opts['no-data'] = !env['NO_DATA'].nil?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
-      @opts['append']  = (!env['APPEND'].nil? && File.exists?(opts['file']) )
+      @opts['append']  = (!env['APPEND'].nil? && File.exists?(@opts['file']) )
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize.constantize }
