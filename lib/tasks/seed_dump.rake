@@ -35,8 +35,6 @@ namespace :db do
 
             attr_s = [];
 
-            puts r.inspect
-
             id_set_string = ''
             r.attributes.each { |k,v|
 	      v = r.attribute_for_inspect(k)
