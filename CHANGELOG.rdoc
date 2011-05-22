@@ -1,6 +1,6 @@
 == Seed Dump
 
-== 0.2.3 / 2011-04-22
+== 0.2.4 / 2011-04-22
 
  * properly quote any value (also fixes Time value generation)
  * solve issue when specifying WITH_ID [David Guthu]
