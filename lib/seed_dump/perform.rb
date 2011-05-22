@@ -39,7 +39,6 @@ module SeedDump
 
     def self.dumpModel(model)
       create_hash = ""
-      arr = []
       arr = model.find(:all, @ar_options) unless @opts['no-data']
       arr = arr.empty? ? [model.new] : arr
       arr.each_with_index { |r,i| 
