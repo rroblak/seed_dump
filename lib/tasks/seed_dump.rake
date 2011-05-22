@@ -3,16 +3,10 @@ namespace :db do
     desc "Dump records from the database into db/seeds.rb"
     task :dump => :environment do
 
-      # config
-      opts = {}
-      opts['with_id'] = !ENV["WITH_ID"].nil?
-      opts['no-data'] = !ENV['NO_DATA'].nil?
-      opts['models']  = ENV['MODELS'] || (ENV['MODEL'] ? ENV['MODEL'] : "")
-      opts['file']    = ENV['FILE'] || "#{Rails.root}/db/seeds.rb"
-      opts['append']  = (!ENV['APPEND'].nil? && File.exists?(opts['file']) )
-      ar_options      = ENV['LIMIT'].to_i > 0 ? { :limit => ENV['LIMIT'].to_i } : {}
-      indent          = " " * (ENV['INDENT'].nil? ? 2 : ENV['INDENT'].to_i)
+      SeedDump::Perform::run(ENV)
 
+<<<<<<< HEAD
+=======
       models = opts['models'].split(',').collect {|x| x.underscore.singularize }
 
       new_line = "\n"
@@ -70,6 +64,7 @@ HERE
       puts "Done."
 
 }
+>>>>>>> 0a16825553f5745b0511585ee8bf8cbcfaa4cc93
     end
   end
 end
