@@ -1,5 +1,9 @@
 == Seed Dump
 
+== 0.3.2 / 2011-04-22
+
+ * fix broken APPEND option
+
 == 0.3.1 / 2011-04-22
 
  * use different syntax for multiple rows
