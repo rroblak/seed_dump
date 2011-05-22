@@ -35,9 +35,11 @@ namespace :db do
 
             attr_s = [];
 
+            puts r.inspect
+
             id_set_string = ''
             r.attributes.each { |k,v|
-	      v = v.class == Time ? "\"#{v}\"" : v.inspect
+	      v = r.attribute_for_inspect(k)
               if k == 'id' && opts['with_id']
                 id_set_string = "{ |c| c.#{k} = #{v} }.save"
               else
