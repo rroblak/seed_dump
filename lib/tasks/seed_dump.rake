@@ -3,7 +3,7 @@ namespace :db do
     desc "Dump records from the database into db/seeds.rb"
     task :dump => :environment do
 
-      SeedDump::Perform::run(ENV)
+      SeedDump::Perform.new.run(ENV)
 
     end
   end

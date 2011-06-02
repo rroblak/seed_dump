@@ -1,0 +1,10 @@
+# lo & behold!  I am a YAML comment!
+david:
+ name: David Heinemeier Hansson
+  birthday: 1979-10-15
+   profession: Systems development
+    
+steve:
+ name: Steve Ross Kellock
+ birthday: 1974-09-27
+ profession: guy with keyboard
