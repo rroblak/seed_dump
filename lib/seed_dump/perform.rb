@@ -21,12 +21,12 @@ module SeedDump
       @opts['append']  = (!env['APPEND'].nil? && File.exists?(@opts['file']) )
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
-      @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize.constantize }
+      @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
     end
 
     def loadModels
       Dir[@model_dir].sort.each do |f|
-        model = File.basename(f, '.*').camelize.constantize
+        model = File.basename(f, '.*').camelize
         @models.push model if @opts['models'].include?(model) || @opts['models'].empty? 
       end
     end
@@ -67,7 +67,7 @@ module SeedDump
       @seed_rb = ""
       @models.sort.each do |model|
           puts "Adding #{model} seeds." if @verbose
-          @seed_rb << dumpModel(model) << "\n\n"
+          @seed_rb << dumpModel(model.constantize) << "\n\n"
       end
     end
 
