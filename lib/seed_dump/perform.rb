@@ -66,8 +66,13 @@ module SeedDump
     def dumpModels
       @seed_rb = ""
       @models.sort.each do |model|
-          puts "Adding #{model} seeds." if @verbose
-          @seed_rb << dumpModel(model.constantize) << "\n\n"
+          m = model.constantize
+          if m.ancestors.include?(ActiveRecord::Base)
+            puts "Adding #{model} seeds." if @verbose
+            @seed_rb << dumpModel(m) << "\n\n"
+          else
+            puts "Skipping non-ActiveRecord model #{model}..." if @verbose
+          end
       end
     end
 
