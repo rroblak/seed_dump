@@ -1,5 +1,9 @@
 == Seed Dump
 
+== 0.3.3 / 2011-07-14
+
+ * solve sorting issue
+
 == 0.3.2 / 2011-04-22
 
  * fix broken APPEND option
