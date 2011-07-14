@@ -2,7 +2,8 @@
 
 == 0.3.4 / 2011-07-14
 
- * override the AR version of attribute_for_inspect to NOT truncate strings (fixed by https://github.com/sc0ttman)
+ * Skip models that aren't Derived from ActiveRecord [iconoclast]
+ * override the AR version of attribute_for_inspect to NOT truncate strings [sc0ttman]
 
 == 0.3.3 / 2011-07-14
 
