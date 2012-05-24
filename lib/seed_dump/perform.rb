@@ -22,6 +22,7 @@ module SeedDump
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
+      @opts['schema']  = env['PG_SCHEMA']
     end
 
     def loadModels
@@ -96,9 +97,16 @@ module SeedDump
       end
     end
 
+    def setSearchPath(path, append_public=true)
+        path_parts = [path.to_s, ('public' if append_public)].compact
+        ActiveRecord::Base.connection.schema_search_path = path_parts.join(',')
+    end
+
     def run(env)
 
       setup env
+
+      setSearchPath @opts['schema'] if @opts['schema']
 
       loadModels
 
