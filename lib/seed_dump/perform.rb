@@ -27,9 +27,10 @@ module SeedDump
 
     def loadModels
       Dir[@model_dir].sort.each do |f|
+        # parse file name and path leading up to file name and assume the path is a module
         f =~ /app\/models\/(.*).rb/
+        # split path by /, camelize the constituents, and then reform as a formal class name
         model = $1.split("/").map {|x| x.camelize}.join("::")
-        puts model
         @models.push model if @opts['models'].include?(model) || @opts['models'].empty? 
       end
     end
