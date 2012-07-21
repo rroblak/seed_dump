@@ -16,6 +16,7 @@ module SeedDump
       # config
       @opts['with_id'] = !env["WITH_ID"].nil?
       @opts['no-data'] = !env['NO_DATA'].nil?
+      @opts['without_protection'] = !env['WITHOUT_PROTECTION'].nil?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (!env['APPEND'].nil? && File.exists?(@opts['file']) )
@@ -44,21 +45,28 @@ module SeedDump
     def dumpModel(model)
       @id_set_string = ''
       create_hash = ""
+      options = ''
       rows = []
       arr = []
       arr = model.find(:all, @ar_options) unless @opts['no-data']
       arr = arr.empty? ? [model.new] : arr 
+
+      if @opts['without_protection']
+        options = ', :without_protection => true'
+      end
+
       arr.each_with_index { |r,i| 
         attr_s = [];
         r.attributes.each { |k,v| dumpAttribute(attr_s,r,k,v) }
         if @id_set_string.empty?
           rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
         else
-          create_hash << "\n#{model}.create" << '( ' << attr_s.join(', ') << ' )' << @id_set_string
+          create_hash << "\n#{model}.create" << '( ' << attr_s.join(', ') << options << ' )' << @id_set_string
         end
       } 
+
       if @id_set_string.empty?
-        "\n#{model}.create([\n" << rows.join(",\n") << "\n])\n"
+        "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
       else
         create_hash
       end
