@@ -79,7 +79,12 @@ module SeedDump
           m = model.constantize
           if m.ancestors.include?(ActiveRecord::Base)
             puts "Adding #{model} seeds." if @verbose
-            @seed_rb << "#{model}.reset_callbacks\n" if @opts['skip_callbacks']
+
+            if @opts['skip_callbacks']
+              @seed_rb << "#{model}.reset_callbacks :save\n"
+              @seed_rb << "#{model}.reset_callbacks :create\n"
+            end
+
             @seed_rb << dumpModel(m) << "\n\n"
           else
             puts "Skipping non-ActiveRecord model #{model}..." if @verbose
