@@ -17,6 +17,7 @@ module SeedDump
       @opts['with_id'] = !env["WITH_ID"].nil?
       @opts['no-data'] = !env['NO_DATA'].nil?
       @opts['without_protection'] = !env['WITHOUT_PROTECTION'].nil?
+      @opts['skip_callbacks'] = !env['SKIP_CALLBACKS'].nil?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (!env['APPEND'].nil? && File.exists?(@opts['file']) )
@@ -78,6 +79,7 @@ module SeedDump
           m = model.constantize
           if m.ancestors.include?(ActiveRecord::Base)
             puts "Adding #{model} seeds." if @verbose
+            @seed_rb << "#{model}.reset_callbacks\n" if @opts['skip_callbacks']
             @seed_rb << dumpModel(m) << "\n\n"
           else
             puts "Skipping non-ActiveRecord model #{model}..." if @verbose
