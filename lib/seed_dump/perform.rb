@@ -9,7 +9,7 @@ module SeedDump
       @seed_rb = "" 
       @id_set_string = ""
       @verbose = true
-      @model_dir = 'app/models/*.rb'
+      @model_dir = 'app/models/**/*.rb'
     end
 
     def setup(env)
@@ -29,7 +29,10 @@ module SeedDump
 
     def loadModels
       Dir[@model_dir].sort.each do |f|
-        model = File.basename(f, '.*').camelize
+        # parse file name and path leading up to file name and assume the path is a module
+        f =~ /app\/models\/(.*).rb/
+        # split path by /, camelize the constituents, and then reform as a formal class name
+        model = $1.split("/").map {|x| x.camelize}.join("::")
         @models.push model if @opts['models'].include?(model) || @opts['models'].empty? 
       end
     end
