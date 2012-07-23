@@ -38,7 +38,11 @@ module SeedDump
     end
 
     def dumpAttribute(a_s,r,k,v)
-      v = attribute_for_inspect(r,k)
+      if v.is_a?(BigDecimal)
+        v = v.to_s
+      else
+        v = attribute_for_inspect(r,k)
+      end 
       if k == 'id' && @opts['with_id']
         @id_set_string = "{ |c| c.#{k} = #{v} }.save"
       else
