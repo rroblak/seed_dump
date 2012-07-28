@@ -4,14 +4,14 @@
 # -*- encoding: utf-8 -*-
 
 Gem::Specification.new do |s|
-  s.name = %q{seed_dump}
-  s.version = "0.3.4"
+  s.name = "seed_dump"
+  s.version = "0.4.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff"]
-  s.date = %q{2011-07-14}
-  s.description = %q{Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file}
-  s.email = %q{rob.halff@gmail.com}
+  s.date = "2012-07-28"
+  s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
+  s.email = "rob.halff@gmail.com"
   s.extra_rdoc_files = [
     "README.rdoc"
   ]
@@ -21,20 +21,22 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
-    "contents.yml",
     "lib/seed_dump.rb",
     "lib/seed_dump/perform.rb",
     "lib/seed_dump/railtie.rb",
     "lib/tasks/seed_dump.rake",
+    "lib/true.rb",
     "seed_dump.gemspec",
     "test/fixtures/samples.yml",
+    "test/models/nested/sample.rb",
+    "test/models/sample.rb",
     "test/seed_dump_test.rb",
     "test/test_helper.rb"
   ]
-  s.homepage = %q{http://github.com/rhalff/seed_dump}
+  s.homepage = "http://github.com/rhalff/seed_dump"
   s.require_paths = ["lib"]
-  s.rubygems_version = %q{1.6.2}
-  s.summary = %q{{Seed Dumper for Rails}}
+  s.rubygems_version = "1.8.24"
+  s.summary = "{Seed Dumper for Rails}"
 
   if s.respond_to? :specification_version then
     s.specification_version = 3
