@@ -7,21 +7,24 @@ class SeedDumpTest < ActiveSupport::TestCase
     @sd = SeedDump::Perform.new
     # universial options for every test
     @env = {
-     "MODEL_DIR" => Dir.pwd + '/test/models/*.rb',
+     "MODEL_DIR" => Dir.pwd + '/test/models/**.rb',
      "FILE" => Dir.pwd + '/test/db/seeds.rb',
      "DEBUG" => true
     }
   end
 
   test "load sample model" do
+    @env['MODEL_DIR'] = Dir.pwd + '/test/models/*.rb'
     @sd.setup @env 
     @sd.loadModels
     assert_equal ["Sample"], @sd.models
   end
 
-  test "skip callbacks" do
+  test "support nested models" do
+    @env['MODEL_DIR'] = Dir.pwd + '/test/models/**/*.rb'
     @sd.setup @env 
     @sd.loadModels
-    assert_equal ["Sample"], @sd.models
+    assert_equal ["Nested::Sample", "Sample"], @sd.models
   end
+
 end
