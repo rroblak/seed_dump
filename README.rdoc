@@ -78,5 +78,17 @@ NO_DATA:
 WITH_ID:
  Inlcude the +:id+ in the create options
 
+SKIP_CALLBACKS:
+ Deactivate callbacks while importing.
+
+PG_SCHEMA:
+ Postgres schema support
+
+WITHOUT_PROTECTION:
+ Skip protection for columns that are protected by default. (Automatically activated if such columns are present)
+
+MODEL_DIR:
+ Specify an alternative model dir
+
 
 Copyright (c) 2010 Rob Halff, released under the MIT license
