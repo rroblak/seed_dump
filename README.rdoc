@@ -78,5 +78,9 @@ NO_DATA:
 WITH_ID:
  Inlcude the +:id+ in the create options
 
+WITH_DATES:
+  Includes 'created_by' and 'updated_by' which are normally not accessible by default through rails model generation
+  
+
 
 Copyright (c) 2010 Rob Halff, released under the MIT license

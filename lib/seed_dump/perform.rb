@@ -15,6 +15,7 @@ module SeedDump
     def setup(env)
       # config
       @opts['with_id'] = !env["WITH_ID"].nil?
+      @opts['with_dates'] = !env["WITH_DATES"].nil?
       @opts['no-data'] = !env['NO_DATA'].nil?
       @opts['without_protection'] = !env['WITHOUT_PROTECTION'].nil?
       @opts['skip_callbacks'] = !env['SKIP_CALLBACKS'].nil?
@@ -43,10 +44,14 @@ module SeedDump
       else
         v = attribute_for_inspect(r,k)
       end 
+      #if !(k == ('created_at' || 'updated_at') && @opts['with_dates'])
+
       if k == 'id' && @opts['with_id']
         @id_set_string = "{ |c| c.#{k} = #{v} }.save"
       else
-        a_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !@opts['with_id']
+          if (!(k == 'created_at' || k == 'updated_at') || @opts['with_dates'])
+            a_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !@opts['with_id']
+          end
       end 
     end
 
@@ -138,7 +143,6 @@ module SeedDump
 
       puts "Writing #{@opts['file']}."
       writeFile
-
       puts "Done."
     end
   end
