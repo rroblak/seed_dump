@@ -1,5 +1,17 @@
 == Seed Dump
 
+== 0.4.0 / 2012-07-28
+
+ * fix rdoc issue.
+ * automatically use :without_protection if created_at, updated_at are present.
+ * Properly dump decimal columns
+ * support nested models [h6y3]
+ * add WITHOUT_PROTECTION flag [Alexey Yurchenko]
+ * add utf-8 encoding comment [Alexey Yurchenko, Alexey Poimtsev, n0b0dy]
+ * add SKIP_CALLBACKS flag [Alexey Yurchenko]
+ * fixed typo in README [Andrey Ognevsky]
+ * add PG_SCHEMA flag [Luka Novsak]
+
 == 0.3.4 / 2011-07-14
 
  * Skip models that aren't Derived from ActiveRecord [iconoclast]
