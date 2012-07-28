@@ -1,3 +1,5 @@
+require "true"
+
 module SeedDump
   class Perform
 
@@ -14,27 +16,36 @@ module SeedDump
 
     def setup(env)
       # config
-      @opts['with_id'] = !env["WITH_ID"].nil?
-      @opts['no-data'] = !env['NO_DATA'].nil?
-      @opts['without_protection'] = !env['WITHOUT_PROTECTION'].nil?
-      @opts['skip_callbacks'] = !env['SKIP_CALLBACKS'].nil?
+      @opts['debug'] = env["DEBUG"].true?
+      @opts['with_id'] = env["WITH_ID"].true?
+      @opts['no-data'] = env['NO_DATA'].true?
+      @opts['without_protection'] = env['WITHOUT_PROTECTION'].true?
+      @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
-      @opts['append']  = (!env['APPEND'].nil? && File.exists?(@opts['file']) )
+      @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
       @opts['schema']  = env['PG_SCHEMA']
+      @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
     end
 
     def loadModels
-      Dir[@model_dir].sort.each do |f|
+      puts "Searching in #{@opts['model_dir']} for models" if @opts['debug']
+      Dir[@opts['model_dir']].sort.each do |f|
+        puts "Processing file #{f}" if @opts['debug']
         # parse file name and path leading up to file name and assume the path is a module
-        f =~ /app\/models\/(.*).rb/
+        f =~ /models\/(.*).rb/
         # split path by /, camelize the constituents, and then reform as a formal class name
         model = $1.split("/").map {|x| x.camelize}.join("::")
+        puts "Detected model #{model}" if @opts['debug']
         @models.push model if @opts['models'].include?(model) || @opts['models'].empty? 
       end
+    end
+
+    def models
+      @models
     end
 
     def dumpAttribute(a_s,r,k,v)
@@ -43,10 +54,10 @@ module SeedDump
       else
         v = attribute_for_inspect(r,k)
       end 
-      if k == 'id' && @opts['with_id']
-        @id_set_string = "{ |c| c.#{k} = #{v} }.save"
-      else
-        a_s.push("#{k.to_sym.inspect} => #{v}") unless k == 'id' && !@opts['with_id']
+
+      unless k == 'id' && !@opts['with_id']
+        @opts['without_protection'] = true if ["id", "created_at", "updated_at"].include?(k)
+        a_s.push("#{k.to_sym.inspect} => #{v}")
       end 
     end
 
@@ -59,25 +70,17 @@ module SeedDump
       arr = model.find(:all, @ar_options) unless @opts['no-data']
       arr = arr.empty? ? [model.new] : arr 
 
-      if @opts['without_protection']
-        options = ', :without_protection => true'
-      end
-
       arr.each_with_index { |r,i| 
         attr_s = [];
         r.attributes.each { |k,v| dumpAttribute(attr_s,r,k,v) }
-        if @id_set_string.empty?
-          rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
-        else
-          create_hash << "\n#{model}.create" << '( ' << attr_s.join(', ') << options << ' )' << @id_set_string
-        end
+        rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
       } 
 
-      if @id_set_string.empty?
-        "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
-      else
-        create_hash
+      if @opts['without_protection']
+        options = ', :without_protection => true '
       end
+
+      "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
     end
 
     def dumpModels
@@ -90,12 +93,14 @@ module SeedDump
             if @opts['skip_callbacks']
               @seed_rb << "#{model}.reset_callbacks :save\n"
               @seed_rb << "#{model}.reset_callbacks :create\n"
+              puts "Callbacks are disabled." if @verbose
             end
 
             @seed_rb << dumpModel(m) << "\n\n"
           else
             puts "Skipping non-ActiveRecord model #{model}..." if @verbose
           end
+          puts "Protection is disabled." if @verbose && @opts['without_protection']
       end
     end
 
