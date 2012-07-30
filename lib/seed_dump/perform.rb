@@ -18,6 +18,7 @@ module SeedDump
       # config
       @opts['debug'] = env["DEBUG"].true?
       @opts['with_id'] = env["WITH_ID"].true?
+      @opts['timestamps'] = env["TIMESTAMPS"].true?
       @opts['no-data'] = env['NO_DATA'].true?
       @opts['without_protection'] = env['WITHOUT_PROTECTION'].true?
       @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
@@ -56,8 +57,9 @@ module SeedDump
       end 
 
       unless k == 'id' && !@opts['with_id']
-        @opts['without_protection'] = true if ["id", "created_at", "updated_at"].include?(k)
-        a_s.push("#{k.to_sym.inspect} => #{v}")
+        if (!(k == 'created_at' || k == 'updated_at') || @opts['timestamps'])
+          a_s.push("#{k.to_sym.inspect} => #{v}")
+        end
       end 
     end
 
@@ -72,7 +74,11 @@ module SeedDump
 
       arr.each_with_index { |r,i| 
         attr_s = [];
-        r.attributes.each { |k,v| dumpAttribute(attr_s,r,k,v) }
+        r.attributes.each do |k,v|
+          if ((model.attr_accessible[:default].include? k) || @opts['without_protection'])
+            dumpAttribute(attr_s,r,k,v)
+          end
+        end
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
       } 
 

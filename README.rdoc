@@ -78,6 +78,9 @@ NO_DATA:
 WITH_ID:
  Inlcude the +:id+ in the create options
 
+TIMESTAMPS:
+ Include the :created_by and :updated_by timestamps
+
 SKIP_CALLBACKS:
  Deactivate callbacks while importing.
 
@@ -85,7 +88,8 @@ PG_SCHEMA:
  Postgres schema support
 
 WITHOUT_PROTECTION:
- Skip protection for columns that are protected by default. (Automatically activated if such columns are present)
+ Skip protection for columns that are protected by default. (Automatically activated if such columns are present).
+ Note : WITH_ID and TIMESTAMPS do not override protection
 
 MODEL_DIR:
  Specify an alternative model dir
