@@ -1,4 +1,5 @@
 require "true"
+require "clip"
 
 module SeedDump
   class Perform
@@ -8,14 +9,15 @@ module SeedDump
       @ar_options = {} 
       @indent = ""
       @models = []
+      @last_record = []
       @seed_rb = "" 
       @id_set_string = ""
-      @verbose = true
       @model_dir = 'app/models/**/*.rb'
     end
 
     def setup(env)
       # config
+      @opts['verbose'] = env["VERBOSE"].true? || env['VERBOSE'].nil?
       @opts['debug'] = env["DEBUG"].true?
       @opts['with_id'] = env["WITH_ID"].true?
       @opts['timestamps'] = env["TIMESTAMPS"].true?
@@ -34,12 +36,17 @@ module SeedDump
 
     def loadModels
       puts "Searching in #{@opts['model_dir']} for models" if @opts['debug']
-      Dir[@opts['model_dir']].sort.each do |f|
+      Dir[Dir.pwd + '/' + @opts['model_dir']].sort.each do |f|
         puts "Processing file #{f}" if @opts['debug']
         # parse file name and path leading up to file name and assume the path is a module
         f =~ /models\/(.*).rb/
         # split path by /, camelize the constituents, and then reform as a formal class name
-        model = $1.split("/").map {|x| x.camelize}.join("::")
+        parts = $1.split("/").map {|x| x.camelize}
+        # Initialize nested model namespaces
+        parts.clip.inject(Object) { |x, y| x.const_set(y, Module.new) }
+        model = parts.join("::")
+        require f
+
         puts "Detected model #{model}" if @opts['debug']
         @models.push model if @opts['models'].include?(model) || @opts['models'].empty? 
       end
@@ -47,6 +54,10 @@ module SeedDump
 
     def models
       @models
+    end
+
+    def last_record
+      @last_record
     end
 
     def dumpAttribute(a_s,r,k,v)
@@ -65,6 +76,7 @@ module SeedDump
 
     def dumpModel(model)
       @id_set_string = ''
+      @last_record = []
       create_hash = ""
       options = ''
       rows = []
@@ -75,8 +87,9 @@ module SeedDump
       arr.each_with_index { |r,i| 
         attr_s = [];
         r.attributes.each do |k,v|
-          if ((model.attr_accessible[:default].include? k) || @opts['without_protection'])
+          if ((model.attr_accessible[:default].include? k) || @opts['without_protection'] || @opts['with_id'])
             dumpAttribute(attr_s,r,k,v)
+            @last_record.push k 
           end
         end
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
@@ -94,17 +107,17 @@ module SeedDump
       @models.sort.each do |model|
           m = model.constantize
           if m.ancestors.include?(ActiveRecord::Base)
-            puts "Adding #{model} seeds." if @verbose
+            puts "Adding #{model} seeds." if @opts['verbose']
 
             if @opts['skip_callbacks']
               @seed_rb << "#{model}.reset_callbacks :save\n"
               @seed_rb << "#{model}.reset_callbacks :create\n"
-              puts "Callbacks are disabled." if @verbose
+              puts "Callbacks are disabled." if @opts['verbose']
             end
 
             @seed_rb << dumpModel(m) << "\n\n"
           else
-            puts "Skipping non-ActiveRecord model #{model}..." if @verbose
+            puts "Skipping non-ActiveRecord model #{model}..." if @opts['verbose']
           end
       end
     end
@@ -139,7 +152,7 @@ module SeedDump
 
       setup env
 
-      puts "Protection is disabled." if @verbose && @opts['without_protection']
+      puts "Protection is disabled." if @opts['verbose'] && @opts['without_protection']
 
       setSearchPath @opts['schema'] if @opts['schema']
 
