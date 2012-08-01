@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "seed_dump"
-  s.version = "0.4.0"
+  s.version = "0.4.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff"]
-  s.date = "2012-07-28"
+  s.date = "2012-08-01"
   s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
   s.email = "rob.halff@gmail.com"
   s.extra_rdoc_files = [
@@ -21,6 +21,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "lib/clip.rb",
     "lib/seed_dump.rb",
     "lib/seed_dump/perform.rb",
     "lib/seed_dump/railtie.rb",
