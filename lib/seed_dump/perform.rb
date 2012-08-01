@@ -20,7 +20,7 @@ module SeedDump
       @opts['verbose'] = env["VERBOSE"].true? || env['VERBOSE'].nil?
       @opts['debug'] = env["DEBUG"].true?
       @opts['with_id'] = env["WITH_ID"].true?
-      @opts['timestamps'] = env["TIMESTAMPS"].true?
+      @opts['timestamps'] = env["TIMESTAMPS"].true? || env["TIMESTAMPS"].nil?
       @opts['no-data'] = env['NO_DATA'].true?
       @opts['without_protection'] = env['WITHOUT_PROTECTION'].true? || (env['WITHOUT_PROTECTION'].nil? && @opts['timestamps'])
       @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
