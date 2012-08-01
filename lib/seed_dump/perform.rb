@@ -20,7 +20,7 @@ module SeedDump
       @opts['with_id'] = env["WITH_ID"].true?
       @opts['timestamps'] = env["TIMESTAMPS"].true?
       @opts['no-data'] = env['NO_DATA'].true?
-      @opts['without_protection'] = env['WITHOUT_PROTECTION'].true?
+      @opts['without_protection'] = env['WITHOUT_PROTECTION'].true? || (env['WITHOUT_PROTECTION'].nil? && @opts['timestamps'])
       @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
@@ -106,7 +106,6 @@ module SeedDump
           else
             puts "Skipping non-ActiveRecord model #{model}..." if @verbose
           end
-          puts "Protection is disabled." if @verbose && @opts['without_protection']
       end
     end
 
@@ -139,6 +138,8 @@ module SeedDump
     def run(env)
 
       setup env
+
+      puts "Protection is disabled." if @verbose && @opts['without_protection']
 
       setSearchPath @opts['schema'] if @opts['schema']
 
