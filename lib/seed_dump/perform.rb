@@ -42,8 +42,16 @@ module SeedDump
         f =~ /models\/(.*).rb/
         # split path by /, camelize the constituents, and then reform as a formal class name
         parts = $1.split("/").map {|x| x.camelize}
+
         # Initialize nested model namespaces
-        parts.clip.inject(Object) { |x, y| x.const_set(y, Module.new) }
+        parts.clip.inject(Object) do |x, y|
+          if x.const_defined?(y)
+            x.const_get(y)
+          else
+            x.const_set(y, Module.new)
+          end
+        end
+
         model = parts.join("::")
         require f
 
