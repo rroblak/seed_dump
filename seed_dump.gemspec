@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
     "test/seed_dump_test.rb",
     "test/test_helper.rb"
   ]
-  s.homepage = "http://github.com/rhalff/seed_dump"
+  s.homepage = "http://github.com/zenprogrammer/seed_dump"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.24"
   s.summary = "{Seed Dumper for Rails}"
