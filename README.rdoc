@@ -68,6 +68,10 @@ FILE:
 
 LIMIT:
  Dump no more then this amount of data, default: no limit
+ 
+MAX:
+ Split one create action per model to several create actions with MAX elements in each, default: no limit
+ It usefull for large data dumping to reduce memory usage
 
 MODEL(S):
  A model name or a comma seperated list of models, default: all models
