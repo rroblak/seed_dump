@@ -27,6 +27,7 @@ module SeedDump
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
+      @opts['max']     = env['MAX'] && env['MAX'].to_i > 0 ? env['MAX'].to_i : nil
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
@@ -106,8 +107,18 @@ module SeedDump
       if @opts['without_protection']
         options = ', :without_protection => true '
       end
-
-      "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
+      
+      if @opts['max']
+        splited_rows = rows.each_slice(@opts['max']).to_a
+        maxsarr = []
+        splited_rows.each do |sr|
+          maxsarr << "\n#{model}.create([\n" << sr.join(",\n") << "\n]#{options})\n"
+        end 
+        maxsarr.join('')
+      else
+        "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
+      end
+      
     end
 
     def dumpModels
