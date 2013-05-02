@@ -125,7 +125,7 @@ module SeedDump
       @seed_rb = ""
       @models.sort.each do |model|
           m = model.constantize
-          if m.ancestors.include?(ActiveRecord::Base)
+          if m.ancestors.include?(ActiveRecord::Base) && !m.abstract_class
             puts "Adding #{model} seeds." if @opts['verbose']
 
             if @opts['skip_callbacks']

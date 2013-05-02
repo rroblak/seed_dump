@@ -18,14 +18,14 @@ class SeedDumpTest < ActiveSupport::TestCase
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @sd.setup @env 
     @sd.loadModels
-    assert_equal ["Sample"], @sd.models
+    assert_equal ["AbstractSample", "ChildSample", "Sample"], @sd.models
   end
 
   test "support nested models" do
     @env['MODEL_DIR'] = 'test/models/**/*.rb'
     @sd.setup @env 
     @sd.loadModels
-    assert_equal ["Nested::Sample", "Sample"], @sd.models
+    assert_equal ["AbstractSample", "ChildSample", "Nested::Sample", "Sample"], @sd.models
   end
 
   test "without timestamps" do
@@ -53,6 +53,16 @@ class SeedDumpTest < ActiveSupport::TestCase
     @sd.loadModels
     @sd.dumpModels
     assert @sd.last_record.include?("id"), "WITH_ID must include id"
+  end
+
+  test "skip abstract model" do
+    @env['MODELS'] = "AbstractSample"
+    @env['MODEL_DIR'] = 'test/models/*.rb'
+    @env['TIMESTAMPS'] = false
+    @sd.setup @env
+    @sd.loadModels
+    @sd.dumpModels
+    assert_equal [], @sd.last_record
   end
 
 
