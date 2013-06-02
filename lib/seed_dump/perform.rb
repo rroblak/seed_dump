@@ -33,6 +33,7 @@ module SeedDump
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
       @opts['schema']  = env['PG_SCHEMA']
       @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
+      @opts['create_throws_exception'] = env['CREATE_THROWS_EXCEPTION']
     end
 
     def loadModels
@@ -107,16 +108,18 @@ module SeedDump
       if @opts['without_protection']
         options = ', :without_protection => true '
       end
-      
+
+      create_command = @opts['create_throws_exception'].true? ? 'create!' : 'create'
+
       if @opts['max']
         splited_rows = rows.each_slice(@opts['max']).to_a
         maxsarr = []
         splited_rows.each do |sr|
-          maxsarr << "\n#{model}.create([\n" << sr.join(",\n") << "\n]#{options})\n"
+          maxsarr << "\n#{model}.#{create_command}([\n" << sr.join(",\n") << "\n]#{options})\n"
         end 
         maxsarr.join('')
       else
-        "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
+        "\n#{model}.#{create_command}([\n" << rows.join(",\n") << "\n]#{options})\n"
       end
       
     end
