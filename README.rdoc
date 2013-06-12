@@ -63,6 +63,9 @@ Here is a full example using all of the options above:
 APPEND:
  Append the data to db/seeds.rb instead of overwriting it.
 
+CREATE_METHOD:
+ Use the specified create method rather than 'create' (the default).  Note: if you are using bash and want to use 'create!', be sure to use single quotes on the command line (i.e. CREATE_METHOD='create!').
+
 FILE:
  Use a different output file, default: db/seeds.rb
 

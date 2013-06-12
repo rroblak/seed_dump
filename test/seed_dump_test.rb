@@ -10,20 +10,20 @@ class SeedDumpTest < ActiveSupport::TestCase
      "MODEL_DIR" => 'test/models/**.rb',
      "FILE" => Dir.pwd + '/test/db/seeds.rb',
      "VERBOSE" => false,
-     "DEBUG" => false 
+     "DEBUG" => false
     }
   end
 
   test "load sample model" do
     @env['MODEL_DIR'] = 'test/models/*.rb'
-    @sd.setup @env 
+    @sd.setup @env
     @sd.loadModels
     assert_equal ["AbstractSample", "ChildSample", "Sample"], @sd.models
   end
 
   test "support nested models" do
     @env['MODEL_DIR'] = 'test/models/**/*.rb'
-    @sd.setup @env 
+    @sd.setup @env
     @sd.loadModels
     assert_equal ["AbstractSample", "ChildSample", "Nested::Sample", "Sample"], @sd.models
   end
@@ -65,5 +65,12 @@ class SeedDumpTest < ActiveSupport::TestCase
     assert_equal [], @sd.last_record
   end
 
-
+  test "create method" do
+    @env['MODEL_DIR'] = 'test/models/*.rb'
+    @env['CREATE_METHOD'] = 'create!'
+    @sd.setup @env
+    @sd.loadModels
+    @sd.dumpModels
+    assert @sd.instance_variable_get(:@seed_rb) =~ /create!/, 'CREATE_METHOD must specify the creation method'
+  end
 end

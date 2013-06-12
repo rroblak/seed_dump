@@ -6,11 +6,11 @@ module SeedDump
 
     def initialize
       @opts = {}
-      @ar_options = {} 
+      @ar_options = {}
       @indent = ""
       @models = []
       @last_record = []
-      @seed_rb = "" 
+      @seed_rb = ""
       @id_set_string = ""
       @model_dir = 'app/models/**/*.rb'
     end
@@ -33,6 +33,7 @@ module SeedDump
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
       @opts['schema']  = env['PG_SCHEMA']
       @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
+      @opts['create_method']  = env['CREATE_METHOD'] || 'create'
     end
 
     def loadModels
@@ -57,7 +58,7 @@ module SeedDump
         require f
 
         puts "Detected model #{model}" if @opts['debug']
-        @models.push model if @opts['models'].include?(model) || @opts['models'].empty? 
+        @models.push model if @opts['models'].include?(model) || @opts['models'].empty?
       end
     end
 
@@ -74,13 +75,13 @@ module SeedDump
         v = v.to_s
       else
         v = attribute_for_inspect(r,k)
-      end 
+      end
 
       unless k == 'id' && !@opts['with_id']
         if (!(k == 'created_at' || k == 'updated_at') || @opts['timestamps'])
           a_s.push("#{k.to_sym.inspect} => #{v}")
         end
-      end 
+      end
     end
 
     def dumpModel(model)
@@ -91,34 +92,34 @@ module SeedDump
       rows = []
       arr = []
       arr = model.find(:all, @ar_options) unless @opts['no-data']
-      arr = arr.empty? ? [model.new] : arr 
+      arr = arr.empty? ? [model.new] : arr
 
-      arr.each_with_index { |r,i| 
+      arr.each_with_index { |r,i|
         attr_s = [];
         r.attributes.each do |k,v|
           if ((model.attr_accessible[:default].include? k) || @opts['without_protection'] || @opts['with_id'])
             dumpAttribute(attr_s,r,k,v)
-            @last_record.push k 
+            @last_record.push k
           end
         end
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
-      } 
+      }
 
       if @opts['without_protection']
         options = ', :without_protection => true '
       end
-      
+
       if @opts['max']
         splited_rows = rows.each_slice(@opts['max']).to_a
         maxsarr = []
         splited_rows.each do |sr|
-          maxsarr << "\n#{model}.create([\n" << sr.join(",\n") << "\n]#{options})\n"
-        end 
+          maxsarr << "\n#{model}.#{@opts['create_method']}([\n" << sr.join(",\n") << "\n]#{options})\n"
+        end
         maxsarr.join('')
       else
-        "\n#{model}.create([\n" << rows.join(",\n") << "\n]#{options})\n"
+        "\n#{model}.#{@opts['create_method']}([\n" << rows.join(",\n") << "\n]#{options})\n"
       end
-      
+
     end
 
     def dumpModels
@@ -152,7 +153,7 @@ module SeedDump
     #override the rails version of this function to NOT truncate strings
     def attribute_for_inspect(r,k)
       value = r.attributes[k]
-      
+
       if value.is_a?(String) && value.length > 50
         "#{value}".inspect
       elsif value.is_a?(Date) || value.is_a?(Time)
