@@ -42,7 +42,7 @@ Use another output file instead of db/seeds.rb
 
   rake db:seed:dump FILE=db/categories.rb
 
-By default the :id column will not be added to the generated Create statements
+By default the :id column will not be added to the generated create statements.
 If you do want the :id to be included use WITH_ID:
 
   rake db:seed:dump WITH_ID=1
@@ -54,9 +54,13 @@ It's up to you to edit these and change the values into something meaningful:
 
   rake db:seed:dump MODEL=User NO_DATA=1 APPEND=true 
 
+If you want the dump to use `create!` rather than `create`:
+
+  rake db:seed:dump CREATE_METHOD='create!'
+
 Here is a full example using all of the options above:
 
-  rake db:seed:dump MODELS=Category LIMIT=10 APPEND=true FILE=db/categories.rb WITH_ID=1 NO_DATA=1
+  rake db:seed:dump MODELS=Category LIMIT=10 APPEND=true FILE=db/categories.rb WITH_ID=1 NO_DATA=1 CREATE_METHOD='create!'
 
 == All environment variables
 
