@@ -7,9 +7,9 @@ begin
     gem.name = "seed_dump"
     gem.summary = "{Seed Dumper for Rails}"
     gem.description = %Q{Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file}
-    gem.email = "rob.halff@gmail.com"
-    gem.homepage = "https://github.com/rroblak/seed_dump"
-    gem.authors = ["Rob Halff"]
+    gem.email = 'rroblak@gmail.com'
+    gem.homepage = 'https://github.com/rroblak/seed_dump'
+    gem.authors = ['Rob Halff', 'Ryan Oblak']
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
