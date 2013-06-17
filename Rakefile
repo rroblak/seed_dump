@@ -8,7 +8,7 @@ begin
     gem.summary = "{Seed Dumper for Rails}"
     gem.description = %Q{Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file}
     gem.email = "rob.halff@gmail.com"
-    gem.homepage = "http://github.com/rhalff/seed_dump"
+    gem.homepage = "https://github.com/rroblak/seed_dump"
     gem.authors = ["Rob Halff"]
   end
   Jeweler::GemcutterTasks.new
