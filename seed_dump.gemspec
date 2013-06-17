@@ -5,7 +5,7 @@
 
 Gem::Specification.new do |s|
   s.name = "seed_dump"
-  s.version = "0.5.1"
+  s.version = "0.5.2"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff"]
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
     "test/seed_dump_test.rb",
     "test/test_helper.rb"
   ]
-  s.homepage = "http://github.com/rhalff/seed_dump"
+  s.homepage = "https://github.com/rroblak/seed_dump"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.25"
   s.summary = "{Seed Dumper for Rails}"
