@@ -5,11 +5,11 @@
 
 Gem::Specification.new do |s|
   s.name = "seed_dump"
-  s.version = "0.5.0"
+  s.version = "0.5.1"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff"]
-  s.date = "2013-06-12"
+  s.date = "2013-06-17"
   s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
   s.email = "rob.halff@gmail.com"
   s.extra_rdoc_files = [
@@ -36,7 +36,7 @@ Gem::Specification.new do |s|
     "test/seed_dump_test.rb",
     "test/test_helper.rb"
   ]
-  s.homepage = "https://github.com/rroblak/seed_dump"
+  s.homepage = "http://github.com/rhalff/seed_dump"
   s.require_paths = ["lib"]
   s.rubygems_version = "1.8.25"
   s.summary = "{Seed Dumper for Rails}"
