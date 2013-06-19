@@ -17,14 +17,14 @@ class SeedDumpTest < ActiveSupport::TestCase
   test "load sample model" do
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @sd.setup @env
-    @sd.loadModels
+    @sd.load_models
     assert_equal ["AbstractSample", "ChildSample", "Sample"], @sd.models
   end
 
   test "support nested models" do
     @env['MODEL_DIR'] = 'test/models/**/*.rb'
     @sd.setup @env
-    @sd.loadModels
+    @sd.load_models
     assert_equal ["AbstractSample", "ChildSample", "Nested::Sample", "Sample"], @sd.models
   end
 
@@ -32,8 +32,8 @@ class SeedDumpTest < ActiveSupport::TestCase
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @env['TIMESTAMPS'] = false
     @sd.setup @env
-    @sd.loadModels
-    @sd.dumpModels
+    @sd.load_models
+    @sd.dump_models
     assert !@sd.last_record.include?("created_at"), "Should not include created_at if timestamps are off"
   end
 
@@ -41,8 +41,8 @@ class SeedDumpTest < ActiveSupport::TestCase
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @env['TIMESTAMPS'] = true
     @sd.setup @env
-    @sd.loadModels
-    @sd.dumpModels
+    @sd.load_models
+    @sd.dump_models
     assert @sd.last_record.include?("created_at"), "Must include created_at if timestamps are desired"
   end
 
@@ -50,8 +50,8 @@ class SeedDumpTest < ActiveSupport::TestCase
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @env['WITH_ID'] = true
     @sd.setup @env
-    @sd.loadModels
-    @sd.dumpModels
+    @sd.load_models
+    @sd.dump_models
     assert @sd.last_record.include?("id"), "WITH_ID must include id"
   end
 
@@ -60,8 +60,8 @@ class SeedDumpTest < ActiveSupport::TestCase
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @env['TIMESTAMPS'] = false
     @sd.setup @env
-    @sd.loadModels
-    @sd.dumpModels
+    @sd.load_models
+    @sd.dump_models
     assert_equal [], @sd.last_record
   end
 
@@ -69,8 +69,8 @@ class SeedDumpTest < ActiveSupport::TestCase
     @env['MODEL_DIR'] = 'test/models/*.rb'
     @env['CREATE_METHOD'] = 'create!'
     @sd.setup @env
-    @sd.loadModels
-    @sd.dumpModels
+    @sd.load_models
+    @sd.dump_models
     assert @sd.instance_variable_get(:@seed_rb) =~ /create!/, 'CREATE_METHOD must specify the creation method'
   end
 end
