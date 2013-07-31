@@ -10,7 +10,8 @@ class SeedDumpTest < ActiveSupport::TestCase
      "MODEL_DIR" => 'test/models/**.rb',
      "FILE" => Dir.pwd + '/test/db/seeds.rb',
      "VERBOSE" => false,
-     "DEBUG" => false
+     "DEBUG" => false,
+     "RAILS4" => ENV['RAILS4']
     }
   end
 
