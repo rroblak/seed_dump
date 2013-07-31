@@ -34,6 +34,16 @@ module SeedDump
       @opts['schema']  = env['PG_SCHEMA']
       @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
       @opts['create_method']  = env['CREATE_METHOD'] || 'create'
+      @opts['rails4'] = env['RAILS4'].true?
+      monkeypatch_AR if @opts['rails4']
+    end
+
+    def monkeypatch_AR
+      ActiveRecord::Base.instance_eval do
+        def attr_accessible(*opts)
+          nil
+        end
+      end
     end
 
     def load_models
@@ -71,6 +81,7 @@ module SeedDump
     end
 
     def dump_attribute(a_s, r, k, v)
+      pushed = false
       if v.is_a?(BigDecimal)
         v = v.to_s
       else
@@ -80,8 +91,10 @@ module SeedDump
       unless k == 'id' && !@opts['with_id']
         if (!(k == 'created_at' || k == 'updated_at') || @opts['timestamps'])
           a_s.push("#{k.to_sym.inspect} => #{v}")
+          pushed = true
         end
       end
+      pushed
     end
 
     def dump_model(model)
@@ -97,9 +110,9 @@ module SeedDump
       arr.each_with_index { |r,i|
         attr_s = [];
         r.attributes.each do |k,v|
-          if ((model.attr_accessible[:default].include? k) || @opts['without_protection'] || @opts['with_id'])
-            dump_attribute(attr_s,r,k,v)
-            @last_record.push k
+          if (@opts['rails4'] || (model.attr_accessible[:default].include? k) || @opts['without_protection'] || @opts['with_id'])
+            pushed_key = dump_attribute(attr_s,r,k,v)
+            @last_record.push k if pushed_key
           end
         end
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
