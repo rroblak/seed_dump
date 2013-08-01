@@ -1,12 +1,14 @@
 = SeedDump
 
-Seed dump is a simple plugin that adds a rake task named db:seed:dump.
+Seed dump is a Rails plugin that adds a rake task named db:seed:dump.
 
 It allows you to create a db/seeds.rb from your existing data in the database.
 When there is no data in the database it will generate empty create statements.
 
 It mainly exists for people who are too lazy writing create statements in db/seeds.rb themselves
-and need something (+seed_dump+) to dump data from the table(s) into seeds.rb
+and need something to dump data from their existing database data into seeds.rb
+
+Note: for Rails 4 compatibility please add "RAILS4=true WITHOUT_PROTECTION=false".  This will be cleaned up in the future.
 
 == Example Usage
 
@@ -63,6 +65,9 @@ Here is a full example using all of the options above:
   rake db:seed:dump MODELS=Category LIMIT=10 APPEND=true FILE=db/categories.rb WITH_ID=1 NO_DATA=1 CREATE_METHOD='create!'
 
 == All environment variables
+
+RAILS4:
+  Specify as "true" for Rails 4 compatibility.
 
 APPEND:
  Append the data to db/seeds.rb instead of overwriting it.
