@@ -140,15 +140,19 @@ module SeedDump
       @models.sort.each do |model|
           m = model.constantize
           if m.ancestors.include?(ActiveRecord::Base) && !m.abstract_class
-            puts "Adding #{model} seeds." if @opts['verbose']
+            if m.count > 0
+              puts "Adding #{model} seeds." if @opts['verbose']
 
-            if @opts['skip_callbacks']
-              @seed_rb << "#{model}.reset_callbacks :save\n"
-              @seed_rb << "#{model}.reset_callbacks :create\n"
-              puts "Callbacks are disabled." if @opts['verbose']
+              if @opts['skip_callbacks']
+                @seed_rb << "#{model}.reset_callbacks :save\n"
+                @seed_rb << "#{model}.reset_callbacks :create\n"
+                puts "Callbacks are disabled." if @opts['verbose']
+              end
+
+              @seed_rb << dump_model(m) << "\n\n"
+            else
+              puts "Skipping model #{model}."
             end
-
-            @seed_rb << dump_model(m) << "\n\n"
           else
             puts "Skipping non-ActiveRecord model #{model}..." if @opts['verbose']
           end
