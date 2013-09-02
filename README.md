@@ -5,8 +5,6 @@ Seed Dump is a Rails plugin that adds a rake task named db:seed:dump.
 
 It allows you to create a `db/seeds.rb` from the existing data in your database.
 
-Note: for Rails 4 compatibility please add "`RAILS4=true WITHOUT_PROTECTION=false`".  This will be cleaned up in the future.
-
 
 Example Usage
 -------------
@@ -65,8 +63,6 @@ Or install it by hand:
 All environment variables
 -------------------------
 
-`RAILS4`: Specify as `true` for Rails 4 compatibility.
-
 `APPEND`: Append the data to the file instead of overwriting it.
 
 `CREATE_METHOD`: Use the specified create method rather than `create` (the default).  Note: if you are using bash and want to use `create!`, be sure to use single quotes on the command line (i.e. `CREATE_METHOD='create!'`).
@@ -88,7 +84,5 @@ All environment variables
 `SKIP_CALLBACKS`: Deactivate callbacks while importing.
 
 `PG_SCHEMA`: Postgres schema support.
-
-`WITHOUT_PROTECTION`: Skip protection for columns that are protected by default.  Note: `WITH_ID` and `TIMESTAMPS` automatically override protection.
 
 `MODEL_DIR`: Specify an alternate model dir.

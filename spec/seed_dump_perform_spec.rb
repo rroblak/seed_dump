@@ -35,8 +35,7 @@ describe SeedDump::Perform do
     @env = {'MODEL_DIR' => 'spec/models/*.rb',
             'FILE' => Dir.pwd + '/spec/db/seeds.rb',
             'VERBOSE' => false,
-            'DEBUG' => false,
-            'RAILS4' => ENV['RAILS4']}
+            'DEBUG' => false}
   end
 
   it 'should load models from the specified directory' do

@@ -22,7 +22,6 @@ module SeedDump
       @opts['with_id'] = env["WITH_ID"].true?
       @opts['timestamps'] = env["TIMESTAMPS"].true? || env["TIMESTAMPS"].nil?
       @opts['no-data'] = env['NO_DATA'].true?
-      @opts['without_protection'] = env['WITHOUT_PROTECTION'].true? || (env['WITHOUT_PROTECTION'].nil? && @opts['timestamps'])
       @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
@@ -34,16 +33,6 @@ module SeedDump
       @opts['schema']  = env['PG_SCHEMA']
       @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
       @opts['create_method']  = env['CREATE_METHOD'] || 'create'
-      @opts['rails4'] = env['RAILS4'].true?
-      monkeypatch_AR if @opts['rails4']
-    end
-
-    def monkeypatch_AR
-      ActiveRecord::Base.instance_eval do
-        def attr_accessible(*opts)
-          nil
-        end
-      end
     end
 
     def log(msg)
@@ -134,10 +123,6 @@ module SeedDump
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
       }
 
-      if @opts['without_protection']
-        options = ', :without_protection => true '
-      end
-
       if @opts['max']
         splited_rows = rows.each_slice(@opts['max']).to_a
         maxsarr = []
@@ -198,10 +183,7 @@ module SeedDump
     end
 
     def run(env)
-
       setup env
-
-      puts "Protection is disabled." if @opts['verbose'] && @opts['without_protection']
 
       set_search_path @opts['schema'] if @opts['schema']
 
