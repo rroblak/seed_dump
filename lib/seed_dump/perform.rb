@@ -46,29 +46,44 @@ module SeedDump
       end
     end
 
+    def log(msg)
+      puts msg if @opts['debug']
+    end
+
     def load_models
-      puts "Searching in #{@opts['model_dir']} for models" if @opts['debug']
-      Dir[Dir.pwd + '/' + @opts['model_dir']].sort.each do |f|
-        puts "Processing file #{f}" if @opts['debug']
-        # parse file name and path leading up to file name and assume the path is a module
-        f =~ /models\/(.*).rb/
-        # split path by /, camelize the constituents, and then reform as a formal class name
-        parts = $1.split("/").map {|x| x.camelize}
+      log("Searching in #{@opts['model_dir']} for models")
+
+      Dir[File.join(Dir.pwd, @opts['model_dir'])].sort.each do |f|
+        log("Processing file #{f}")
+
+        dirname, basename = File.split(f)
+
+        dir_array = dirname.split(File::SEPARATOR)
+
+        # Find index of last occurence of 'models' in path
+        models_index = nil
+        dir_array.each_with_index {|x, i| models_index = i if x == 'models'}
+
+        model_dir_array = dir_array[models_index + 1..-1]
 
         # Initialize nested model namespaces
-        parts.clip.inject(Object) do |x, y|
-          if x.const_defined?(y)
-            x.const_get(y)
+        model_dir_array.inject(Object) do |parent, child|
+          child = child.camelize
+
+          if parent.const_defined?(child)
+            parent.const_get(child)
           else
-            x.const_set(y, Module.new)
+            parent.const_set(child, Module.new)
           end
         end
 
-        model = parts.join("::")
         require f
 
-        puts "Detected model #{model}" if @opts['debug']
-        @models.push model if @opts['models'].include?(model) || @opts['models'].empty?
+        model = File.join(model_dir_array + [File.basename(basename, '.rb')]).camelize
+
+        log("Detected model #{model}")
+
+        @models << model if @opts['models'].include?(model) || @opts['models'].empty?
       end
     end
 
@@ -103,17 +118,18 @@ module SeedDump
       create_hash = ""
       options = ''
       rows = []
-      arr = []
-      arr = model.find(:all, @ar_options) unless @opts['no-data']
+      arr = nil
+      unless @opts['no-data']
+        arr = model.all
+        arr.limit(@ar_options[:limit]) if @ar_options[:limit]
+      end
       arr = arr.empty? ? [model.new] : arr
 
       arr.each_with_index { |r,i|
         attr_s = [];
         r.attributes.each do |k,v|
-          if (@opts['rails4'] || (model.attr_accessible[:default].include? k) || @opts['without_protection'] || @opts['with_id'])
-            pushed_key = dump_attribute(attr_s,r,k,v)
-            @last_record.push k if pushed_key
-          end
+          pushed_key = dump_attribute(attr_s,r,k,v)
+          @last_record.push k if pushed_key
         end
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
       }
