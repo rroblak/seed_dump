@@ -1,7 +1,7 @@
 Seed Dump
 ========
 
-Seed Dump is a Rails plugin that adds a rake task named db:seed:dump.
+Seed Dump is a Rails plugin that adds a rake task named `db:seed:dump`.
 
 It allows you to create a `db/seeds.rb` from the existing data in your database.
 
