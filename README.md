@@ -5,7 +5,7 @@ Seed Dump is a Rails 4 plugin that adds a rake task named `db:seed:dump`.
 
 It allows you to create a `db/seeds.rb` from the existing data in your database.
 
-Note: if you want to use Seed Dump with Rails 3 or earlier, use version 0.5.3 or earlier.
+Note: if you want to use Seed Dump with Rails 3 or earlier, use [version 0.5.3](http://rubygems.org/gems/seed_dump/versions/0.5.3) or earlier.
 
 Example Usage
 -------------
