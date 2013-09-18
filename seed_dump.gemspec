@@ -5,20 +5,22 @@
 
 Gem::Specification.new do |s|
   s.name = "seed_dump"
-  s.version = "0.6.0"
+  s.version = "1.0.0"
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff", "Ryan Oblak"]
-  s.date = "2013-08-01"
+  s.date = "2013-09-18"
   s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
   s.email = "rroblak@gmail.com"
   s.extra_rdoc_files = [
-    "README.rdoc"
+    "README.md"
   ]
   s.files = [
+    ".rspec",
     "CHANGELOG.rdoc",
+    "Gemfile",
     "MIT-LICENSE",
-    "README.rdoc",
+    "README.md",
     "Rakefile",
     "VERSION",
     "lib/clip.rb",
@@ -28,17 +30,34 @@ Gem::Specification.new do |s|
     "lib/tasks/seed_dump.rake",
     "lib/true.rb",
     "seed_dump.gemspec",
-    "test/fixtures/samples.yml",
-    "test/models/abstract_sample.rb",
-    "test/models/child_sample.rb",
-    "test/models/nested/sample.rb",
-    "test/models/sample.rb",
-    "test/seed_dump_test.rb",
-    "test/test_helper.rb"
+    "spec/models/abstract_sample.rb",
+    "spec/models/child_sample.rb",
+    "spec/models/nested/sample.rb",
+    "spec/models/sample.rb",
+    "spec/seed_dump_perform_spec.rb",
+    "spec/spec_helper.rb"
   ]
   s.homepage = "https://github.com/rroblak/seed_dump"
   s.require_paths = ["lib"]
   s.rubygems_version = "2.0.3"
   s.summary = "{Seed Dumper for Rails}"
+
+  if s.respond_to? :specification_version then
+    s.specification_version = 4
+
+    if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
+      s.add_runtime_dependency(%q<activesupport>, [">= 0"])
+      s.add_runtime_dependency(%q<activerecord>, [">= 0"])
+      s.add_development_dependency(%q<jeweler>, [">= 0"])
+    else
+      s.add_dependency(%q<activesupport>, [">= 0"])
+      s.add_dependency(%q<activerecord>, [">= 0"])
+      s.add_dependency(%q<jeweler>, [">= 0"])
+    end
+  else
+    s.add_dependency(%q<activesupport>, [">= 0"])
+    s.add_dependency(%q<activerecord>, [">= 0"])
+    s.add_dependency(%q<jeweler>, [">= 0"])
+  end
 end
 
