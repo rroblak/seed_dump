@@ -4,7 +4,7 @@ gem 'activesupport'
 gem 'activerecord'
 
 group :development do
-  gem 'jeweler'
+  gem 'jeweler', :git => 'git://github.com/technicalpickles/jeweler.git'
 end
 
 group :test do
