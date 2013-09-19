@@ -2,8 +2,6 @@ require 'spec_helper'
 
 describe SeedDump::Perform do
   before(:all) do
-    ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
-
     ActiveRecord::Schema.define(:version => 1) do
       create_table 'child_samples', :force => true do |t|
         t.string   'name'
@@ -29,7 +27,7 @@ describe SeedDump::Perform do
     end
   end
 
-  before do
+  before(:each) do
     @sd = SeedDump::Perform.new
 
     @env = {'MODEL_DIR' => 'spec/models/*.rb',
@@ -56,63 +54,91 @@ describe SeedDump::Perform do
     @sd.models.should eq(['AbstractSample', 'ChildSample', 'Nested::Sample', 'Sample'])
   end
 
-  it 'should not include timestamps if the TIMESTAMPS parameter is false' do
-    @env['TIMESTAMPS'] = false
+  context 'when a model has records' do
+    before do
+      ChildSample.create!(name: Faker::Name.name)
 
-    @sd.setup @env
+      Sample.create!(string: Faker::Lorem.word,
+                     text: Faker::Lorem.paragraphs.join('\n'),
+                     integer: rand(1000),
+                     float: rand,
+                     decimal: rand,
+                     datetime: Time.now,
+                     timestamp: Time.now.to_i,
+                     time: Time.now.strftime('%H:%M:%S'),
+                     date: Time.now,
+                     binary: nil,
+                     boolean: true)
+    end
 
-    @sd.load_models
+    it 'should not include timestamps if the TIMESTAMPS parameter is false' do
+      @env['TIMESTAMPS'] = false
 
-    @sd.dump_models
+      @sd.setup @env
 
-    @sd.last_record.should_not include('created_at')
+      @sd.load_models
+
+      @sd.dump_models
+
+      @sd.last_record.should_not include('created_at')
+    end
+
+    it 'should include timestamps if the TIMESTAMPS parameter is true' do
+      @env['TIMESTAMPS'] = true
+
+      @sd.setup @env
+
+      @sd.load_models
+
+      @sd.dump_models
+
+      @sd.last_record.should include('created_at')
+    end
+
+    it 'should include ids if the WITH_ID parameter is true' do
+      @env['WITH_ID'] = true
+
+      @sd.setup @env
+
+      @sd.load_models
+
+      @sd.dump_models
+
+      @sd.last_record.should include('id')
+    end
+
+    it 'should skip abstract models' do
+      @env['MODELS'] = 'AbstractSample'
+
+      @sd.setup @env
+
+      @sd.load_models
+
+      @sd.dump_models
+
+      @sd.last_record.should eq([])
+    end
+
+    it 'should use the create method specified in the CREATE_METHOD parameter' do
+      @env['CREATE_METHOD'] = 'create!'
+
+      @sd.setup @env
+
+      @sd.load_models
+
+      @sd.dump_models
+
+      @sd.instance_variable_get(:@seed_rb).should include('create!')
+    end
   end
 
-  it 'should include timestamps if the TIMESTAMPS parameter is true' do
-    @env['TIMESTAMPS'] = true
+  context 'when a model has no records' do
+    it 'does not export a create method' do
+      @sd.setup @env
+      @sd.load_models
+      @sd.dump_models
 
-    @sd.setup @env
-
-    @sd.load_models
-
-    @sd.dump_models
-
-    @sd.last_record.should include('created_at')
-  end
-
-  it 'should include ids if the WITH_ID parameter is true' do
-    @env['WITH_ID'] = true
-
-    @sd.setup @env
-
-    @sd.load_models
-
-    @sd.dump_models
-
-    @sd.last_record.should include('id')
-  end
-
-  it 'should skip abstract models' do
-    @env['MODELS'] = 'AbstractSample'
-
-    @sd.setup @env
-
-    @sd.load_models
-
-    @sd.dump_models
-
-    @sd.last_record.should eq([])
-  end
-
-  it 'should use the create method specified in the CREATE_METHOD parameter' do
-    @env['CREATE_METHOD'] = 'create!'
-
-    @sd.setup @env
-
-    @sd.load_models
-
-    @sd.dump_models
-
-    @sd.instance_variable_get(:@seed_rb).should include('create!')
+      @sd.last_record.size.should eq(0)
+    end
   end
 end

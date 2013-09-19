@@ -139,8 +139,9 @@ module SeedDump
     def dump_models
       @seed_rb = ""
       @models.sort.each do |model|
-          m = model.constantize
-          if m.ancestors.include?(ActiveRecord::Base) && !m.abstract_class
+        m = model.constantize
+        if m.ancestors.include?(ActiveRecord::Base) && !m.abstract_class
+          if m.count > 0
             puts "Adding #{model} seeds." if @opts['verbose']
 
             if @opts['skip_callbacks']
@@ -151,8 +152,11 @@ module SeedDump
 
             @seed_rb << dump_model(m) << "\n\n"
           else
-            puts "Skipping non-ActiveRecord model #{model}..." if @opts['verbose']
+            puts "Skipping empty model #{model}..."
           end
+        else
+          puts "Skipping non-ActiveRecord model #{model}..." if @opts['verbose']
+        end
       end
     end
 
