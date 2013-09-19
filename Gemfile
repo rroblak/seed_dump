@@ -1,13 +1,9 @@
 source 'https://rubygems.org'
 
-gem 'activesupport'
-gem 'activerecord'
+gemspec
 
 group :development do
   gem 'jeweler', :git => 'git://github.com/technicalpickles/jeweler.git'
+  gem 'activerecord', '~> 3'
 end
 
-group :test do
-  gem 'rspec'
-  gem 'sqlite3'
-end
