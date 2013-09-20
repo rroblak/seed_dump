@@ -116,7 +116,7 @@ module SeedDump
 
       arr.each_with_index { |r,i|
         attr_s = [];
-        r.attributes.each do |k,v|
+        r.attributes.select{|x| x.is_a?(String) }.each do |k,v|
           pushed_key = dump_attribute(attr_s,r,k,v)
           @last_record.push k if pushed_key
         end
