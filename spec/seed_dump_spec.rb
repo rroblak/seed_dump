@@ -105,7 +105,7 @@ describe SeedDump do
   end
 
   it 'should use the create method specified in the CREATE_METHOD parameter' do
-    @env['CREATE_METHOD'] = 'create!'
+    @env['CREATE_METHOD'] = 'create'
 
     @sd.setup @env
 
@@ -113,6 +113,28 @@ describe SeedDump do
 
     @sd.dump_models
 
-    @sd.instance_variable_get(:@seed_rb).should include('create!')
+    @sd.output.should eq("\nChildSample.create([\n  { :name => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n\nSample.create([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n")
+  end
+
+  it "should use 'create!' as the default create method" do
+    @sd.setup @env
+
+    @sd.load_models
+
+    @sd.dump_models
+
+    @sd.output.should eq("\nChildSample.create!([\n  { :name => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n")
+  end
+
+  describe '#output' do
+    it "should return the contents of the dump" do
+      @sd.setup(@env)
+
+      @sd.load_models
+
+      @sd.dump_models
+
+      @sd.output.should eq("\nChildSample.create!([\n  { :name => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n")
+    end
   end
 end

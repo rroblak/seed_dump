@@ -32,7 +32,7 @@ class SeedDump
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
       @opts['schema']  = env['PG_SCHEMA']
       @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
-      @opts['create_method']  = env['CREATE_METHOD'] || 'create'
+      @opts['create_method']  = env['CREATE_METHOD'] || 'create!'
     end
 
     def log(msg)
@@ -180,6 +180,10 @@ class SeedDump
     def set_search_path(path, append_public=true)
         path_parts = [path.to_s, ('public' if append_public)].compact
         ActiveRecord::Base.connection.schema_search_path = path_parts.join(',')
+    end
+
+    def output
+      @seed_rb
     end
 
     def run(env)
