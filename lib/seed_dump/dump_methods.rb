@@ -12,7 +12,6 @@ class SeedDump
       @last_record = []
       @seed_rb = ""
       @id_set_string = ""
-      @model_dir = 'app/models/**/*.rb'
     end
 
     def setup(env)
@@ -30,7 +29,6 @@ class SeedDump
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
-      @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
       @opts['create_method']  = env['CREATE_METHOD'] || 'create!'
     end
 
