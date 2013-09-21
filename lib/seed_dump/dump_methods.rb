@@ -2,7 +2,7 @@ require "true"
 require "clip"
 
 class SeedDump
-  module Perform
+  module DumpMethods
 
     def initialize
       @opts = {}

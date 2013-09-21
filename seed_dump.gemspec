@@ -25,7 +25,6 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/clip.rb",
     "lib/seed_dump.rb",
-    "lib/seed_dump/perform.rb",
     "lib/seed_dump/railtie.rb",
     "lib/tasks/seed_dump.rake",
     "lib/true.rb",
