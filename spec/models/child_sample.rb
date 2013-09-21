@@ -1,3 +1,0 @@
-class ChildSample < AbstractSample
-end
-

@@ -84,6 +84,4 @@ All environment variables
 
 `SKIP_CALLBACKS`: Deactivate callbacks while importing.
 
-`PG_SCHEMA`: Postgres schema support.
-
 `MODEL_DIR`: Specify an alternate model dir.

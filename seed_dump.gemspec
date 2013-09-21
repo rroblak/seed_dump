@@ -25,14 +25,12 @@ Gem::Specification.new do |s|
     "VERSION",
     "lib/clip.rb",
     "lib/seed_dump.rb",
+    "lib/seed_dump/dump_methods.rb",
     "lib/seed_dump/railtie.rb",
     "lib/tasks/seed_dump.rake",
     "lib/true.rb",
     "seed_dump.gemspec",
-    "spec/models/abstract_sample.rb",
-    "spec/models/child_sample.rb",
-    "spec/models/nested/sample.rb",
-    "spec/models/sample.rb",
+    "spec/helpers.rb",
     "spec/seed_dump_spec.rb",
     "spec/spec_helper.rb"
   ]

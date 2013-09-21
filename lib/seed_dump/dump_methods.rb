@@ -30,50 +30,12 @@ class SeedDump
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
-      @opts['schema']  = env['PG_SCHEMA']
       @opts['model_dir']  = env['MODEL_DIR'] || @model_dir
       @opts['create_method']  = env['CREATE_METHOD'] || 'create!'
     end
 
     def log(msg)
       puts msg if @opts['debug']
-    end
-
-    def load_models
-      log("Searching in #{@opts['model_dir']} for models")
-
-      Dir[File.join(Dir.pwd, @opts['model_dir'])].sort.each do |f|
-        log("Processing file #{f}")
-
-        dirname, basename = File.split(f)
-
-        dir_array = dirname.split(File::SEPARATOR)
-
-        # Find index of last occurence of 'models' in path
-        models_index = nil
-        dir_array.each_with_index {|x, i| models_index = i if x == 'models'}
-
-        model_dir_array = dir_array[models_index + 1..-1]
-
-        # Initialize nested model namespaces
-        model_dir_array.inject(Object) do |parent, child|
-          child = child.camelize
-
-          if parent.const_defined?(child)
-            parent.const_get(child)
-          else
-            parent.const_set(child, Module.new)
-          end
-        end
-
-        require f
-
-        model = File.join(model_dir_array + [File.basename(basename, '.rb')]).camelize
-
-        log("Detected model #{model}")
-
-        @models << model if @opts['models'].include?(model) || @opts['models'].empty?
-      end
     end
 
     def models
@@ -137,23 +99,36 @@ class SeedDump
     end
 
     def dump_models
+      Rails.application.eager_load!
+
       @seed_rb = ""
-      @models.sort.each do |model|
-          m = model.constantize
-          if m.ancestors.include?(ActiveRecord::Base) && !m.abstract_class
-            puts "Adding #{model} seeds." if @opts['verbose']
 
-            if @opts['skip_callbacks']
-              @seed_rb << "#{model}.reset_callbacks :save\n"
-              @seed_rb << "#{model}.reset_callbacks :create\n"
-              puts "Callbacks are disabled." if @opts['verbose']
-            end
+      models = ActiveRecord::Base.descendants.select do |model|
+                 (model.to_s != 'ActiveRecord::SchemaMigration') && \
+                 (@opts['models'].empty? || \
+                  @opts['models'].include?(model.to_s)) && \
+                  model.table_exists?
+               end
 
-            @seed_rb << dump_model(m) << "\n\n"
-          else
-            puts "Skipping non-ActiveRecord model #{model}..." if @opts['verbose']
+      models.sort! { |a, b| a.to_s <=> b.to_s }
+
+      models.each do |model|
+        if !model.abstract_class
+          puts "Adding #{model} seeds." if @opts['verbose']
+
+          if @opts['skip_callbacks']
+            @seed_rb << "#{model}.reset_callbacks :save\n"
+            @seed_rb << "#{model}.reset_callbacks :create\n"
+            puts "Callbacks are disabled." if @opts['verbose']
           end
+
+          @seed_rb << dump_model(model) << "\n\n"
+        else
+          puts "Skipping abstract class #{model}..." if @opts['verbose']
+        end
       end
+
+      @seed_rb
     end
 
     def write_file
@@ -177,21 +152,12 @@ class SeedDump
       end
     end
 
-    def set_search_path(path, append_public=true)
-        path_parts = [path.to_s, ('public' if append_public)].compact
-        ActiveRecord::Base.connection.schema_search_path = path_parts.join(',')
-    end
-
     def output
       @seed_rb
     end
 
     def run(env)
       setup env
-
-      set_search_path @opts['schema'] if @opts['schema']
-
-      load_models
 
       puts "Appending seeds to #{@opts['file']}." if @opts['append']
       dump_models
