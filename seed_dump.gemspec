@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff", "Ryan Oblak"]
-  s.date = "2013-09-18"
+  s.date = "2013-09-21"
   s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
   s.email = "rroblak@gmail.com"
   s.extra_rdoc_files = [
@@ -34,7 +34,7 @@ Gem::Specification.new do |s|
     "spec/models/child_sample.rb",
     "spec/models/nested/sample.rb",
     "spec/models/sample.rb",
-    "spec/seed_dump_perform_spec.rb",
+    "spec/seed_dump_spec.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = "https://github.com/rroblak/seed_dump"

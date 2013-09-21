@@ -1,6 +1,6 @@
 require 'spec_helper'
 
-describe SeedDump::Perform do
+describe SeedDump do
   before(:all) do
     ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
 
@@ -30,7 +30,7 @@ describe SeedDump::Perform do
   end
 
   before do
-    @sd = SeedDump::Perform.new
+    @sd = SeedDump.new
 
     @env = {'MODEL_DIR' => 'spec/models/*.rb',
             'FILE' => Dir.pwd + '/spec/db/seeds.rb',

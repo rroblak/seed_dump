@@ -1,8 +1,8 @@
 require "true"
 require "clip"
 
-module SeedDump
-  class Perform
+class SeedDump
+  module Perform
 
     def initialize
       @opts = {}
