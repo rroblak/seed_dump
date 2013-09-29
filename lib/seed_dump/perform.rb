@@ -138,7 +138,7 @@ module SeedDump
 
     def dump_models
       @seed_rb = ""
-      @models.sort.each do |model|
+      @models.each do |model|
         m = model.constantize
         if m.ancestors.include?(ActiveRecord::Base) && !m.abstract_class
           if m.count > 0
