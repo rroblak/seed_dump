@@ -21,6 +21,8 @@ class Rails
       Object.const_set('Nested', Module.new)
       Nested.const_set('Sample', Class.new(ActiveRecord::Base))
 
+      Object.const_set('EmptyModel', Class.new(ActiveRecord::Base))
+
       @already_called = true
     end
   end
@@ -28,8 +30,6 @@ end
 
 module Helpers
   def create_db
-    ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
-
     ActiveRecord::Migration.verbose = false
 
     ActiveRecord::Schema.define(:version => 1) do
@@ -54,6 +54,16 @@ module Helpers
         t.datetime 'created_at', :null => false
         t.datetime 'updated_at', :null => false
       end
+
+      create_table 'empty_models', force: true
     end
+  end
+
+  def load_sample_data
+    Rails.application.eager_load!
+
+    Sample.create!
+
+    ChildSample.create!
   end
 end

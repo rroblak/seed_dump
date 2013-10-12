@@ -102,6 +102,11 @@ describe SeedDump do
       @sd.setup @env
 
       @sd.dump_models.should eq("\nChildSample.create!([\n  { :name => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n\nNested::Sample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n")
+
+    it "should skip any models that don't have have any rows" do
+      @sd.setup @env
+
+      @sd.dump_models.should_not include('EmptyModel')
     end
   end
 end

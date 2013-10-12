@@ -105,7 +105,8 @@ class SeedDump
 
         @models = ActiveRecord::Base.descendants.select do |model|
                     (model.to_s != 'ActiveRecord::SchemaMigration') && \
-                     model.table_exists?
+                     model.table_exists? && \
+                     model.exists?
         end
       end
 
