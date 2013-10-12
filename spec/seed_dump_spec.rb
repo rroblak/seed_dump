@@ -108,5 +108,17 @@ describe SeedDump do
 
       @sd.dump_models.should_not include('EmptyModel')
     end
+
+    it 'should respect the LIMIT parameter' do
+      load_sample_data
+      load_sample_data
+
+      @env['MODELS'] = 'Sample'
+      @env['LIMIT'] = '1'
+
+      @sd.setup @env
+
+      @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n/)
+    end
   end
 end
