@@ -9,7 +9,6 @@ class SeedDump
       @ar_options = {}
       @indent = ""
       @models = []
-      @last_record = []
       @seed_rb = ""
       @id_set_string = ""
     end
@@ -26,9 +25,10 @@ class SeedDump
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
       @opts['max']     = env['MAX'] && env['MAX'].to_i > 0 ? env['MAX'].to_i : nil
-      @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
       @opts['create_method']  = env['CREATE_METHOD'] || 'create!'
+
+      @limit = (env['LIMIT'].to_i > 0) ? env['LIMIT'].to_i : nil
 
       @models = @opts['models'].split(',').collect {|x| x.strip.underscore.singularize.camelize.constantize }
     end
@@ -39,10 +39,6 @@ class SeedDump
 
     def models
       @models
-    end
-
-    def last_record
-      @last_record
     end
 
     def dump_attribute(a_s, r, k, v)
@@ -64,35 +60,31 @@ class SeedDump
 
     def dump_model(model)
       @id_set_string = ''
-      @last_record = []
       create_hash = ""
-      options = ''
       rows = []
-      arr = nil
-      unless @opts['no-data']
-        arr = model.all
-        arr.limit(@ar_options[:limit]) if @ar_options[:limit]
-      end
-      arr = arr.empty? ? [model.new] : arr
 
-      arr.each_with_index { |r,i|
+
+      model.find_each(batch_size: (@limit || 1000)) do |record|
         attr_s = [];
-        r.attributes.each do |k,v|
-          pushed_key = dump_attribute(attr_s,r,k,v)
-          @last_record.push k if pushed_key
+
+        record.attributes.each do |k,v|
+          dump_attribute(attr_s, record, k, v)
         end
+
         rows.push "#{@indent}{ " << attr_s.join(', ') << " }"
-      }
+
+        break if rows.length == @limit
+      end
 
       if @opts['max']
         splited_rows = rows.each_slice(@opts['max']).to_a
         maxsarr = []
         splited_rows.each do |sr|
-          maxsarr << "\n#{model}.#{@opts['create_method']}([\n" << sr.join(",\n") << "\n]#{options})\n"
+          maxsarr << "\n#{model}.#{@opts['create_method']}([\n" << sr.join(",\n") << "\n])\n"
         end
         maxsarr.join('')
       else
-        "\n#{model}.#{@opts['create_method']}([\n" << rows.join(",\n") << "\n]#{options})\n"
+        "\n#{model}.#{@opts['create_method']}([\n" << rows.join(",\n") << "\n])\n"
       end
 
     end
@@ -113,19 +105,9 @@ class SeedDump
       @models.sort! { |a, b| a.to_s <=> b.to_s }
 
       @models.each do |model|
-        if !model.abstract_class
-          puts "Adding #{model} seeds." if @opts['verbose']
+        puts "Adding #{model} seeds." if @opts['verbose']
 
-          if @opts['skip_callbacks']
-            @seed_rb << "#{model}.reset_callbacks :save\n"
-            @seed_rb << "#{model}.reset_callbacks :create\n"
-            puts "Callbacks are disabled." if @opts['verbose']
-          end
-
-          @seed_rb << dump_model(model) << "\n\n"
-        else
-          puts "Skipping abstract class #{model}..." if @opts['verbose']
-        end
+        @seed_rb << dump_model(model) << "\n\n"
       end
 
       @seed_rb
