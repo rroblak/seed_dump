@@ -22,14 +22,15 @@ class SeedDump
       @opts['timestamps'] = env["TIMESTAMPS"].true? || env["TIMESTAMPS"].nil?
       @opts['no-data'] = env['NO_DATA'].true?
       @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
-      @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
+      @opts['models']  = env['MODELS'] || env['MODEL'] || ""
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
       @opts['max']     = env['MAX'] && env['MAX'].to_i > 0 ? env['MAX'].to_i : nil
       @ar_options      = env['LIMIT'].to_i > 0 ? { :limit => env['LIMIT'].to_i } : {}
       @indent          = " " * (env['INDENT'].nil? ? 2 : env['INDENT'].to_i)
-      @opts['models']  = @opts['models'].split(',').collect {|x| x.underscore.singularize.camelize }
       @opts['create_method']  = env['CREATE_METHOD'] || 'create!'
+
+      @models = @opts['models'].split(',').collect {|x| x.strip.underscore.singularize.camelize.constantize }
     end
 
     def log(msg)
@@ -97,20 +98,20 @@ class SeedDump
     end
 
     def dump_models
-      Rails.application.eager_load!
+      if @models.empty?
+        Rails.application.eager_load!
 
-      @seed_rb = ""
+        @seed_rb = ""
 
-      models = ActiveRecord::Base.descendants.select do |model|
-                 (model.to_s != 'ActiveRecord::SchemaMigration') && \
-                 (@opts['models'].empty? || \
-                  @opts['models'].include?(model.to_s)) && \
-                  model.table_exists?
-               end
+        @models = ActiveRecord::Base.descendants.select do |model|
+                    (model.to_s != 'ActiveRecord::SchemaMigration') && \
+                     model.table_exists?
+        end
+      end
 
-      models.sort! { |a, b| a.to_s <=> b.to_s }
+      @models.sort! { |a, b| a.to_s <=> b.to_s }
 
-      models.each do |model|
+      @models.each do |model|
         if !model.abstract_class
           puts "Adding #{model} seeds." if @opts['verbose']
 
