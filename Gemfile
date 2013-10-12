@@ -3,6 +3,10 @@ source 'https://rubygems.org'
 gem 'activesupport'
 gem 'activerecord'
 
+group :development, :test do
+  gem 'byebug'
+end
+
 group :development do
   gem 'jeweler', :git => 'git://github.com/technicalpickles/jeweler.git'
 end
