@@ -64,7 +64,7 @@ Or install it by hand:
 All environment variables
 -------------------------
 
-`APPEND`: Append the data to the file instead of overwriting it.
+`APPEND`: If set to `true`, append the data to the file instead of overwriting it.  Default: `false`.
 
 `CREATE_METHOD`: Use the specified create method rather than `create!` (the default).
 
@@ -76,7 +76,6 @@ All environment variables
 
 `MODEL[S]`: A model name or a comma-separated list of models.  Default: all models.
 
-`WITH_ID`: Include the `:id` in the `create` options.
+`WITH_ID`: If set to `true, include the `:id` in the `create` options.  Default: `false`.
 
-`TIMESTAMPS`: If true, include the `:created_by` and `:updated_by` timestamps.  If false, don't include them.  Default: true.
-
+`TIMESTAMPS`: If set to `true`, include the `:created_by` and `:updated_by` timestamps.  Default: `true`.
