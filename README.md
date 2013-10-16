@@ -80,4 +80,3 @@ All environment variables
 
 `TIMESTAMPS`: If true, include the `:created_by` and `:updated_by` timestamps.  If false, don't include them.  Default: true.
 
-`SKIP_CALLBACKS`: Deactivate callbacks while importing.

@@ -19,7 +19,6 @@ class SeedDump
       @opts['debug'] = env["DEBUG"].true?
       @opts['with_id'] = env["WITH_ID"].true?
       @opts['timestamps'] = env["TIMESTAMPS"].true? || env["TIMESTAMPS"].nil?
-      @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
       @opts['models']  = env['MODELS'] || env['MODEL'] || ""
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
