@@ -137,5 +137,21 @@ describe SeedDump do
 
       @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n/)
     end
+
+    it 'should only pull attributes that are returned as strings' do
+      load_sample_data
+
+      @env['MODELS'] = 'Sample'
+      @env['LIMIT'] = '1'
+
+      @sd.setup @env
+
+      original_attributes = Sample.new.attributes
+      attributes = original_attributes.merge(['col1', 'col2', 'col3'] => 'ABC')
+
+      Sample.any_instance.stub(:attributes).and_return(attributes)
+
+      @sd.dump_models.should eq("\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n")
+    end
   end
 end

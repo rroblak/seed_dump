@@ -65,7 +65,7 @@ class SeedDump
       model.find_each(batch_size: (@limit || 1000)) do |record|
         attr_s = [];
 
-        record.attributes.each do |k,v|
+        record.attributes.select {|x| x.is_a?(String) }.each do |k,v|
           dump_attribute(attr_s, record, k, v)
         end
 
