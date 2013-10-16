@@ -76,8 +76,6 @@ All environment variables
 
 `MODEL[S]`: A model name or a comma-separated list of models.  Default: all models.
 
-`NO_DATA`: Don't dump any data from the db, instead generate empty `create` options. 
-
 `WITH_ID`: Include the `:id` in the `create` options.
 
 `TIMESTAMPS`: If true, include the `:created_by` and `:updated_by` timestamps.  If false, don't include them.  Default: true.
