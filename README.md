@@ -76,6 +76,6 @@ All environment variables
 
 `MODEL[S]`: A model name or a comma-separated list of models.  Default: all models.
 
-`WITH_ID`: If set to `true, include the `:id` in the `create` options.  Default: `false`.
+`WITH_ID`: If set to `true`, include the `:id` in the `create` options.  Default: `false`.
 
 `TIMESTAMPS`: If set to `true`, include the `:created_by` and `:updated_by` timestamps.  Default: `true`.
