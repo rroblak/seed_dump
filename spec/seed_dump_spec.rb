@@ -1,21 +1,21 @@
 require 'spec_helper'
 
 describe SeedDump do
+  before(:all) do
+    create_db
+  end
+
+  before(:each) do
+    @sd = SeedDump.new
+
+    @env = {'FILE' => Dir.pwd + '/spec/db/seeds.rb',
+      'VERBOSE' => false,
+      'DEBUG' => false}
+
+    ActiveSupport::DescendantsTracker.clear
+  end
+
   describe '#dump_models' do
-    before(:all) do
-      create_db
-    end
-
-    before(:each) do
-      @sd = SeedDump.new
-
-      @env = {'FILE' => Dir.pwd + '/spec/db/seeds.rb',
-              'VERBOSE' => false,
-              'DEBUG' => false}
-
-      ActiveSupport::DescendantsTracker.clear
-    end
-
     it 'should not include timestamps if the TIMESTAMPS parameter is false' do
       Rails.application.eager_load!
 
@@ -152,6 +152,21 @@ describe SeedDump do
       Sample.any_instance.stub(:attributes).and_return(attributes)
 
       @sd.dump_models.should eq("\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => nil, :updated_at => nil }\n])\n\n\n")
+    end
+  end
+
+  describe '#clean_models' do
+    it 'should delete existing data if the CLEAN parameter is true' do
+      Rails.application.eager_load!
+
+      @env['MODELS'] = 'Sample'
+      @env['CLEAN'] = true
+
+      @sd.setup @env
+
+      load_sample_data
+
+      @sd.clean_models.should match(/Sample.delete_all\n\n/)
     end
   end
 end
