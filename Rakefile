@@ -10,6 +10,7 @@ begin
     gem.email = 'rroblak@gmail.com'
     gem.homepage = 'https://github.com/rroblak/seed_dump'
     gem.authors = ['Rob Halff', 'Ryan Oblak']
+    gem.license = 'MIT'
   end
   Jeweler::GemcutterTasks.new
 rescue LoadError
