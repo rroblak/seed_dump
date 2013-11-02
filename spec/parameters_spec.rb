@@ -16,49 +16,6 @@ describe SeedDump do
       ActiveSupport::DescendantsTracker.clear
     end
 
-    context 'TIMESTAMPS' do
-      it 'should not include timestamps if the TIMESTAMPS parameter is false' do
-        Rails.application.eager_load!
-
-        @env['MODELS'] = 'Sample'
-        @env['TIMESTAMPS'] = false
-
-        @sd.setup @env
-
-        load_sample_data
-
-        @sd.dump_models.should match(/^\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n$/)
-      end
-
-      it 'should include timestamps if the TIMESTAMPS parameter is true' do
-        Rails.application.eager_load!
-
-        @env['MODELS'] = 'Sample'
-        @env['TIMESTAMPS'] = true
-
-        load_sample_data
-
-        @sd.setup @env
-
-        @sd.dump_models.should match(/^\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n$/)
-      end
-    end
-
-    context 'WITH_ID' do
-      it 'should include ids if the WITH_ID parameter is true' do
-        Rails.application.eager_load!
-
-        @env['MODELS'] = 'Sample'
-        @env['WITH_ID'] = true
-
-        @sd.setup @env
-
-        load_sample_data
-
-        @sd.dump_models.should match(/^\nSample\.create!\(\[\n  { :id => \d+, :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n$/)
-      end
-    end
-
     context 'MODELS' do
       it 'should respect the MODELS parameter' do
         Rails.application.eager_load!
@@ -69,7 +26,7 @@ describe SeedDump do
 
         load_sample_data
 
-        @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n/)
+        @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n/)
       end
     end
 
@@ -82,7 +39,7 @@ describe SeedDump do
 
         @sd.setup @env
 
-        @sd.dump_models.should match(/\nSample\.create\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n/)
+        @sd.dump_models.should match(/\nSample\.create\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n/)
       end
     end
 
@@ -96,7 +53,31 @@ describe SeedDump do
 
         @sd.setup @env
 
-        @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil, :created_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", :updated_at => "\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}" }\n\]\)\n\n\n/)
+        @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n/)
+      end
+    end
+
+    context 'EXCLUDE' do
+      it 'should default to excluding :id, :created_at, and :updated_at' do
+        load_sample_data
+
+        @sd.setup @env
+
+        @sd.dump_models.should_not include('id')
+        @sd.dump_models.should_not include('created_at')
+        @sd.dump_models.should_not include('updated_at')
+      end
+
+      it "should not exclude any attributes if it's specified as empty" do
+        load_sample_data
+
+        @env['EXCLUDE'] = ''
+
+        @sd.setup @env
+
+        @sd.dump_models.should include('id')
+        @sd.dump_models.should include('created_at')
+        @sd.dump_models.should include('updated_at')
       end
     end
   end

@@ -68,6 +68,8 @@ All environment variables
 
 `CREATE_METHOD`: Use the specified create method rather than `create!` (the default).
 
+`EXCLUDE`: Comma-separated list of attributes to be excluded from the dump.  Default: `id, created_at, updated_at`.
+
 `FILE`: Use a different output file.  Default: `db/seeds.rb`.
 
 `LIMIT`: Dump no more then this amount of data.  Default: no limit.
@@ -75,7 +77,3 @@ All environment variables
 `MAX`: Split one create action per model into several create actions with MAX elements in each.  Default: no limit.  Useful for large data dumping to reduce memory usage.
 
 `MODEL[S]`: A model name or a comma-separated list of models.  Default: all models.
-
-`WITH_ID`: If set to `true`, include the `:id` in the `create` options.  Default: `false`.
-
-`TIMESTAMPS`: If set to `true`, include the `:created_by` and `:updated_by` timestamps.  Default: `true`.

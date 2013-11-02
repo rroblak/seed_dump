@@ -17,8 +17,7 @@ class SeedDump
       # config
       @opts['verbose'] = env["VERBOSE"].true? || env['VERBOSE'].nil?
       @opts['debug'] = env["DEBUG"].true?
-      @opts['with_id'] = env["WITH_ID"].true?
-      @opts['timestamps'] = env["TIMESTAMPS"].true? || env["TIMESTAMPS"].nil?
+      @opts['exclude'] = env['EXCLUDE'].nil? ? ['id', 'created_at', 'updated_at'] : env['EXCLUDE'].split(',').map {|x| x.strip}
       @opts['models']  = env['MODELS'] || env['MODEL'] || ""
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
@@ -40,20 +39,19 @@ class SeedDump
     end
 
     def dump_attribute(a_s, r, k, v)
-      pushed = false
       if v.is_a?(BigDecimal)
         v = v.to_s
       else
         v = attribute_for_inspect(r,k)
       end
 
-      unless k == 'id' && !@opts['with_id']
-        if (!(k == 'created_at' || k == 'updated_at') || @opts['timestamps'])
-          a_s.push("#{k.to_sym.inspect} => #{v}")
-          pushed = true
-        end
+      if @opts['exclude'].include?(k)
+        false
+      else
+        a_s.push("#{k.to_sym.inspect} => #{v}")
+
+        true
       end
-      pushed
     end
 
     def dump_model(model)
