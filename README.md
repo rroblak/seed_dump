@@ -46,6 +46,17 @@ If you want the dump to use `create` rather than `create!`:
 
     rake db:seed:dump CREATE_METHOD='create'
 
+You can dump data from a rails engine as well.
+	
+	rake db:seed:dump MODELS="Spree::Zone" FILE=db/seeds/spree/zones.seeds.rb
+	
+You can use SeedDump from the rails console. This is helpful if you want to dump specific data (using a where clause).
+
+Fire up a rails console "rails c"
+    
+	SeedDump.dump(MyModel.where(is_active: true)) # dumps all active records to db/seeds.rb
+    
+    
 There are more environment variables that can be set— see below for all of them.
 
 
