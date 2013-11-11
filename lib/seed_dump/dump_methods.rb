@@ -98,7 +98,9 @@ class SeedDump
         end
       end
 
-      @models.sort! { |a, b| a.to_s <=> b.to_s }
+      if @opts['exclude'].include? 'id'
+        @models.sort! { |a, b| a.to_s <=> b.to_s }
+      end
 
       @models.each do |model|
         puts "Adding #{model} seeds." if @opts['verbose']
