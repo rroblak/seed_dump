@@ -26,7 +26,7 @@ describe SeedDump do
 
         load_sample_data
 
-        @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n/)
+        @sd.dump_models.should eq("\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n])\n\n\n")
       end
     end
 
@@ -39,7 +39,7 @@ describe SeedDump do
 
         @sd.setup @env
 
-        @sd.dump_models.should match(/\nSample\.create\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n/)
+        @sd.dump_models.should eq("\nSample.create([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n])\n\n\n")
       end
     end
 
@@ -53,7 +53,7 @@ describe SeedDump do
 
         @sd.setup @env
 
-        @sd.dump_models.should match(/\nSample\.create!\(\[\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :timestamp => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n\]\)\n\n\n/)
+        @sd.dump_models.should eq("\nSample.create!([\n  { :string => nil, :text => nil, :integer => nil, :float => nil, :decimal => nil, :datetime => nil, :time => nil, :date => nil, :binary => nil, :boolean => nil }\n])\n\n\n")
       end
     end
 
@@ -68,7 +68,7 @@ describe SeedDump do
         @sd.dump_models.should_not include('updated_at')
       end
 
-      it "should not exclude any attributes if it's specified as empty" do
+      it "should not exclude any attributes if it's specified as an empty string" do
         load_sample_data
 
         @env['EXCLUDE'] = ''

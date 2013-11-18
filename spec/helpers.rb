@@ -46,7 +46,6 @@ module Helpers
         t.float    'float'
         t.decimal  'decimal'
         t.datetime 'datetime'
-        t.datetime 'timestamp'
         t.time     'time'
         t.date     'date'
         t.binary   'binary'

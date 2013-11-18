@@ -82,7 +82,6 @@ class SeedDump
       else
         "\n#{model}.#{@opts['create_method']}([\n" << rows.join(",\n") << "\n])\n"
       end
-
     end
 
     def dump_models

@@ -5,6 +5,7 @@ gem 'activerecord'
 
 group :development, :test do
   gem 'byebug'
+  gem 'factory_girl'
 end
 
 group :development do
