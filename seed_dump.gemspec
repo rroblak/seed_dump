@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
 
   s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
   s.authors = ["Rob Halff", "Ryan Oblak"]
-  s.date = "2013-11-02"
+  s.date = "2013-12-07"
   s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
   s.email = "rroblak@gmail.com"
   s.extra_rdoc_files = [
@@ -17,21 +17,24 @@ Gem::Specification.new do |s|
   ]
   s.files = [
     ".rspec",
-    "CHANGELOG.rdoc",
     "Gemfile",
     "MIT-LICENSE",
     "README.md",
     "Rakefile",
     "VERSION",
-    "lib/clip.rb",
     "lib/seed_dump.rb",
     "lib/seed_dump/dump_methods.rb",
+    "lib/seed_dump/dump_methods/enumeration.rb",
+    "lib/seed_dump/environment.rb",
     "lib/seed_dump/railtie.rb",
     "lib/tasks/seed_dump.rake",
-    "lib/true.rb",
     "seed_dump.gemspec",
+    "spec/dump_methods_spec.rb",
+    "spec/environment_spec.rb",
+    "spec/factories/another_samples.rb",
+    "spec/factories/samples.rb",
+    "spec/factories/yet_another_samples.rb",
     "spec/helpers.rb",
-    "spec/seed_dump_spec.rb",
     "spec/spec_helper.rb"
   ]
   s.homepage = "https://github.com/rroblak/seed_dump"
@@ -47,17 +50,20 @@ Gem::Specification.new do |s|
       s.add_runtime_dependency(%q<activesupport>, [">= 0"])
       s.add_runtime_dependency(%q<activerecord>, [">= 0"])
       s.add_development_dependency(%q<byebug>, [">= 0"])
+      s.add_development_dependency(%q<factory_girl>, [">= 0"])
       s.add_development_dependency(%q<jeweler>, [">= 0"])
     else
       s.add_dependency(%q<activesupport>, [">= 0"])
       s.add_dependency(%q<activerecord>, [">= 0"])
       s.add_dependency(%q<byebug>, [">= 0"])
+      s.add_dependency(%q<factory_girl>, [">= 0"])
       s.add_dependency(%q<jeweler>, [">= 0"])
     end
   else
     s.add_dependency(%q<activesupport>, [">= 0"])
     s.add_dependency(%q<activerecord>, [">= 0"])
     s.add_dependency(%q<byebug>, [">= 0"])
+    s.add_dependency(%q<factory_girl>, [">= 0"])
     s.add_dependency(%q<jeweler>, [">= 0"])
   end
 end
