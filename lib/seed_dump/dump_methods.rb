@@ -58,7 +58,7 @@ class SeedDump
     end
 
     def write_records_to_io(records, io, options)
-      io.write("#{model_for(records)}.#{options[:create_method] || 'create!'}([\n  ")
+      io.write("#{model_for(records)}.create!([\n  ")
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration

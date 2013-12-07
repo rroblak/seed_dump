@@ -107,13 +107,5 @@ describe SeedDump do
         SeedDump.dump(Sample, exclude: [:id, :created_at, :updated_at, :string, :float, :datetime]).should eq(expected_output)
       end
     end
-
-    context 'with :create_method option' do
-      it 'should use the specified create method' do
-        expected_output = "Sample.create([\n  {string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
-
-        SeedDump.dump(Sample, create_method: 'create').should eq(expected_output)
-      end
-    end
   end
 end

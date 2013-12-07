@@ -29,14 +29,6 @@ describe SeedDump do
       end
     end
 
-    describe 'CREATE_METHOD' do
-      it 'should pass along a create method if one is specified' do
-        SeedDump.should_receive(:dump).with(anything, include(create_method: 'save'))
-
-        SeedDump.dump_using_environment('CREATE_METHOD' => 'save')
-      end
-    end
-
     describe 'EXCLUDE' do
       it 'should pass along any attributes to be excluded' do
         SeedDump.should_receive(:dump).with(anything, include(exclude: [:baggins, :saggins]))
