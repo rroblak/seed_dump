@@ -22,7 +22,7 @@ class SeedDump
         SeedDump.dump(model,
                       append: append,
                       create_method: env['CREATE_METHOD'],
-                      exclude_attributes: (env['EXCLUDE'] ? env['EXCLUDE'].split(',').map {|e| e.strip.to_sym} : nil),
+                      exclude: (env['EXCLUDE'] ? env['EXCLUDE'].split(',').map {|e| e.strip.to_sym} : nil),
                       file: (env['FILE'] || 'db/seeds.rb'))
 
         append = true

@@ -39,7 +39,7 @@ describe SeedDump do
 
     describe 'EXCLUDE' do
       it 'should pass along any attributes to be excluded' do
-        SeedDump.should_receive(:dump).with(anything, include(exclude_attributes: [:baggins, :saggins]))
+        SeedDump.should_receive(:dump).with(anything, include(exclude: [:baggins, :saggins]))
 
         SeedDump.dump_using_environment('EXCLUDE' => 'baggins,saggins')
       end

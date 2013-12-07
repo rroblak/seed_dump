@@ -18,13 +18,13 @@ class SeedDump
     def dump_record(record, options)
       attribute_strings = []
 
-      options[:exclude_attributes] ||= [:id, :created_at, :updated_at]
+      options[:exclude] ||= [:id, :created_at, :updated_at]
 
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
       record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value) unless options[:exclude_attributes].include?(attribute.to_sym)
+        attribute_strings << dump_attribute_new(attribute, value) unless options[:exclude].include?(attribute.to_sym)
       end
 
       "{#{attribute_strings.join(", ")}}"

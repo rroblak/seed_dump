@@ -100,12 +100,11 @@ describe SeedDump do
       end
     end
 
-    context 'with an exclude_attributes parameter' do
+    context 'with an exclude parameter' do
       it 'should exclude the specified attributes from the dump' do
         expected_output = "Sample.create!([\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
 
-        SeedDump.dump(Sample, exclude_attributes: [:id, :created_at, :updated_at,
-                                                   :string, :float, :datetime]).should eq(expected_output)
+        SeedDump.dump(Sample, exclude: [:id, :created_at, :updated_at, :string, :float, :datetime]).should eq(expected_output)
       end
     end
 
