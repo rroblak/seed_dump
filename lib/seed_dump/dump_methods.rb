@@ -1,5 +1,5 @@
 class SeedDump
-  module ConsoleMethods
+  module DumpMethods
     include Enumeration
 
     def dump(records, options = {})
