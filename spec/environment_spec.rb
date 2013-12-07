@@ -29,6 +29,20 @@ describe SeedDump do
       end
     end
 
+    describe 'BATCH_SIZE' do
+      it 'should pass along the specified batch size' do
+        SeedDump.should_receive(:dump).with(anything, include(batch_size: 17))
+
+        SeedDump.dump_using_environment('BATCH_SIZE' => '17')
+      end
+
+      it 'should pass along a nil batch size if BATCH_SIZE is not specified' do
+        SeedDump.should_receive(:dump).with(anything, include(batch_size: nil))
+
+        SeedDump.dump_using_environment
+      end
+    end
+
     describe 'EXCLUDE' do
       it 'should pass along any attributes to be excluded' do
         SeedDump.should_receive(:dump).with(anything, include(exclude: [:baggins, :saggins]))
