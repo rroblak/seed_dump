@@ -15,14 +15,16 @@ class SeedDump
 
     private
 
-    def dump_record(record)
+    def dump_record(record, options)
       attribute_strings = []
+
+      options[:exclude_attributes] ||= [:id, :created_at, :updated_at]
 
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
       record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value) unless [:id, :created_at, :updated_at].include?(attribute.to_sym)
+        attribute_strings << dump_attribute_new(attribute, value) unless options[:exclude_attributes].include?(attribute.to_sym)
       end
 
       "{#{attribute_strings.join(", ")}}"
@@ -47,14 +49,16 @@ class SeedDump
 
     def open_io(options)
       if options[:file].present?
-        File.open(options[:file], 'w+')
+        mode = options[:append] ? 'a+' : 'w+'
+
+        File.open(options[:file], mode)
       else
         StringIO.new('', 'w+')
       end
     end
 
     def write_records_to_io(records, io, options)
-      io.write("#{model_for(records)}.create!([")
+      io.write("#{model_for(records)}.#{options[:create_method] || 'create!'}([")
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
@@ -62,10 +66,10 @@ class SeedDump
                              :enumerable_enumeration
                            end
 
-      send(enumeration_method, records, io, options) do |record_strings, batch_number, last_batch_number|
+      send(enumeration_method, records, io, options) do |record_strings, last_batch|
         io.write("#{record_strings.join(",\n" + (' ' * 16))}")
 
-        io.write(",\n#{' ' * 16}") if batch_number != last_batch_number
+        io.write(",\n#{' ' * 16}") unless last_batch
       end
 
       io.write("])\n")

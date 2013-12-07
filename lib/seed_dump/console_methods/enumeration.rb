@@ -8,34 +8,44 @@ class SeedDump
           records.order("#{records.quoted_table_name}.#{records.quoted_primary_key} ASC")
         end
 
-        batch_size, last_batch_number = batch_params_from(records, options)
+        num_of_batches, batch_size, last_batch_size = batch_params_from(records, options)
 
         # Loop through each batch
-        (1..last_batch_number).each do |batch_number|
+        (1..num_of_batches).each do |batch_number|
 
           record_strings = []
 
+          last_batch = (batch_number == num_of_batches)
+
+          cur_batch_size = if last_batch
+                             last_batch_size
+                           else
+                             batch_size
+                           end
+
           # Loop through the records of the current batch
-          records.offset((batch_number - 1) * batch_size).limit(batch_size).each do |record|
-            record_strings << dump_record(record)
+          records.offset((num_of_batches - 1) * batch_size).limit(cur_batch_size).each do |record|
+            record_strings << dump_record(record, options)
           end
 
-          yield record_strings, batch_number, last_batch_number
+          yield record_strings, last_batch
         end
       end
 
       def enumerable_enumeration(records, io, options)
-        batch_size, last_batch_number = batch_params_from(records, options)
+        num_of_batches, batch_size = batch_params_from(records, options)
 
         record_strings = []
 
         batch_number = 1
 
         records.each_with_index do |record, i|
-          record_strings << dump_record(record)
+          record_strings << dump_record(record, options)
 
-          if (record_strings.length == batch_size) || (i == records.length - 1)
-            yield record_strings, batch_number, last_batch_number
+          last_batch = (i == records.length - 1)
+
+          if (record_strings.length == batch_size) || last_batch
+            yield record_strings, last_batch
 
             record_strings = []
             batch_number += 1
@@ -44,14 +54,14 @@ class SeedDump
       end
 
       def batch_params_from(records, options)
-        batch_size = batch_size_from(options)
+        batch_size = batch_size_from(records, options)
 
-        last_batch_number = (records.count.to_f / batch_size).ceil
+        count = records.count
 
-        [batch_size, last_batch_number]
+        [((count / batch_size) + 1), batch_size, (count % batch_size)]
       end
 
-      def batch_size_from(options)
+      def batch_size_from(records, options)
         if options[:batch_size].present?
           options[:batch_size].to_i
         else
