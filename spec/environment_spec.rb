@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe SeedDump do
-  describe '#dump_using_environment' do
+  describe '.dump_using_environment' do
     before(:all) do
       create_db
     end
