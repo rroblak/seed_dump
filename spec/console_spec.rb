@@ -45,6 +45,10 @@ describe SeedDump do
     end
 
     context 'ActiveRecord relation' do
+      it 'should return nil if the count is 0' do
+        SeedDump.dump(EmptyModel).should be(nil)
+      end
+
       context 'with an order parameter' do
         it 'should dump the models in the specified order' do
           Sample.delete_all
@@ -86,7 +90,7 @@ describe SeedDump do
       end
     end
 
-    context 'with an array' do
+    context 'Array' do
       it 'should return the dump of the models passed in' do
         SeedDump.dump(Sample.all.to_a, batch_size: 2).should eq(@expected_output)
       end

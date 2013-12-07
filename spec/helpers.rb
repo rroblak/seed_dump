@@ -11,15 +11,11 @@ class Rails
     if !@already_called
       Object.const_set('Sample', Class.new(ActiveRecord::Base))
 
-      Object.const_set('AbstractSample', Class.new(ActiveRecord::Base))
-      AbstractSample.abstract_class = true
+      Object.const_set('AnotherSample', Class.new(ActiveRecord::Base))
 
-      Object.const_set('ChildSample', Class.new(AbstractSample))
+      Object.const_set('YetAnotherSample', Class.new(ActiveRecord::Base))
 
       Object.const_set('NoTableModel', Class.new(ActiveRecord::Base))
-
-      Object.const_set('Nested', Module.new)
-      Nested.const_set('Sample', Class.new(ActiveRecord::Base))
 
       Object.const_set('EmptyModel', Class.new(ActiveRecord::Base))
 
@@ -33,13 +29,37 @@ module Helpers
     ActiveRecord::Migration.verbose = false
 
     ActiveRecord::Schema.define(:version => 1) do
-      create_table 'child_samples', :force => true do |t|
-        t.string   'name'
+      create_table 'samples', :force => true do |t|
+        t.string   'string'
+        t.text     'text'
+        t.integer  'integer'
+        t.float    'float'
+        t.decimal  'decimal'
+        t.datetime 'datetime'
+        t.time     'time'
+        t.date     'date'
+        t.binary   'binary'
+        t.boolean  'boolean'
         t.datetime 'created_at', :null => false
         t.datetime 'updated_at', :null => false
       end
 
-      create_table 'samples', :force => true do |t|
+      create_table 'another_samples', :force => true do |t|
+        t.string   'string'
+        t.text     'text'
+        t.integer  'integer'
+        t.float    'float'
+        t.decimal  'decimal'
+        t.datetime 'datetime'
+        t.time     'time'
+        t.date     'date'
+        t.binary   'binary'
+        t.boolean  'boolean'
+        t.datetime 'created_at', :null => false
+        t.datetime 'updated_at', :null => false
+      end
+
+      create_table 'yet_another_samples', :force => true do |t|
         t.string   'string'
         t.text     'text'
         t.integer  'integer'
