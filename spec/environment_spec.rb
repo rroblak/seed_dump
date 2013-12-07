@@ -77,6 +77,26 @@ describe SeedDump do
       end
     end
 
+    describe 'MODEL' do
+      it 'if MODEL is not specified it should dump all non-empty models' do
+        FactoryGirl.create(:another_sample)
+
+        [Sample, AnotherSample].each do |model|
+          SeedDump.should_receive(:dump).with(model, anything)
+        end
+
+        SeedDump.dump_using_environment
+      end
+
+      it 'if MODEL is specified it should only dump the specified model' do
+        FactoryGirl.create(:another_sample)
+
+        SeedDump.should_receive(:dump).with(Sample, anything)
+
+        SeedDump.dump_using_environment('MODEL' => 'Sample')
+      end
+    end
+
     describe 'MODELS' do
       it 'if MODELS is not specified it should dump all non-empty models' do
         FactoryGirl.create(:another_sample)
