@@ -74,6 +74,4 @@ All environment variables
 
 `LIMIT`: Dump no more then this amount of data.  Default: no limit.
 
-`MAX`: Split one create action per model into several create actions with MAX elements in each.  Default: no limit.  Useful for large data dumping to reduce memory usage.
-
 `MODEL[S]`: A model name or a comma-separated list of models.  Default: all models.
