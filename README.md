@@ -40,7 +40,7 @@ Result:
       {id: 2, password: "234567", username: "test_2"}
     ])
 
-Dump only data from the users table and dump a maximum amount of 1 record:
+Dump only data from the users table and dump a maximum of 1 record:
 
     $ rake db:seed:dump MODELS=User,Product LIMIT=1
 
