@@ -85,8 +85,13 @@ describe SeedDump do
 
     context 'with a batch_size parameter' do
       it 'should not raise an exception' do
-
         SeedDump.dump(Sample, batch_size: 100)
+      end
+
+      it 'should not cause records to not be dumped' do
+        SeedDump.dump(Sample, batch_size: 2).should eq(@expected_output)
+
+        SeedDump.dump(Sample, batch_size: 1).should eq(@expected_output)
       end
     end
 

@@ -58,7 +58,9 @@ class SeedDump
 
         count = records.count
 
-        [((count / batch_size) + 1), batch_size, (count % batch_size)]
+        remainder = count % batch_size
+
+        [((count.to_f / batch_size).ceil), batch_size, (remainder == 0 ? batch_size : remainder)]
       end
 
       def batch_size_from(records, options)
