@@ -24,7 +24,7 @@ class SeedDump
                            end
 
           # Loop through the records of the current batch
-          records.offset((num_of_batches - 1) * batch_size).limit(cur_batch_size).each do |record|
+          records.offset((batch_number - 1) * batch_size).limit(cur_batch_size).each do |record|
             record_strings << dump_record(record, options)
           end
 
