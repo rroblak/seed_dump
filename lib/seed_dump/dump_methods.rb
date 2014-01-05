@@ -40,11 +40,19 @@ class SeedDump
                 value.to_s
               when Date, Time, DateTime
                 value.to_s(:db)
+              when Range
+                range_to_string(value)
               else
                 value
               end
 
       value.inspect
+    end
+
+    def range_to_string(object)
+      from = object.begin.respond_to?(:infinite?) && object.begin.infinite? ? '' : object.begin
+      to   = object.end.respond_to?(:infinite?) && object.end.infinite? ? '' : object.end
+      "[#{from},#{to}#{object.exclude_end? ? ')' : ']'}"
     end
 
     def open_io(options)
