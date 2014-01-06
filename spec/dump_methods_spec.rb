@@ -112,5 +112,25 @@ describe SeedDump do
         SeedDump.dump(Sample, exclude: [:id, :created_at, :updated_at, :string, :float, :datetime]).should eq(expected_output)
       end
     end
+
+    context 'Range' do
+      it 'should dump a class with ranges' do
+        expected_output = "RangeSample.create!([\n  {range_with_end_included: \"[1,3]\", range_with_end_excluded: \"[1,3)\", positive_infinite_range: \"[1,]\", negative_infinite_range: \"[,1]\", infinite_range: \"[,]\"}\n])\n"
+
+        SeedDump.dump([RangeSample.new]).should eq(expected_output)
+      end
+    end
+  end
+end
+
+class RangeSample
+  def attributes
+    {
+      "range_with_end_included" => (1..3),
+      "range_with_end_excluded" => (1...3),
+      "positive_infinite_range" => (1..Float::INFINITY),
+      "negative_infinite_range" => (-Float::INFINITY..1),
+      "infinite_range" => (-Float::INFINITY..Float::INFINITY)
+    }
   end
 end
