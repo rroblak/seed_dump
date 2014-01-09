@@ -76,9 +76,9 @@ Write the dump to a file:
 
 Append the dump to a file:
 
-    irb(main):003:0> puts SeedDump.dump(User, file: 'db/seeds.rb', append: true)
+    irb(main):003:0> SeedDump.dump(User, file: 'db/seeds.rb', append: true)
 
-Options are specified as a Hash to the second argument.
+Options are specified as a Hash for the second argument.
 
 Options
 -------
