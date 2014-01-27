@@ -80,7 +80,7 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n])\n")
+      io.write("\n], without_protection: true)\n")
 
       if options[:file].present?
         nil
