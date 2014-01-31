@@ -89,11 +89,11 @@ Options are common to both the Rake task and the console, except where noted.
 
 `batch_size`: Controls the number of records that are written to file at a given time.  Default: 1000.  If you're running out of memory when dumping, try decreasing this.  If things are dumping too slow, trying increasing this.
 
-`exclude`: Attributes to be excluded from the dump.  Default: `id, created_at, updated_at`.
+`exclude`: Attributes to be excluded from the dump.  Default: `id, created_at, updated_at`. If you need to include these columns pass "EXCLUDE=" as empty and the columns will be included
 
 `file`: Write to the specified output file.  Default in Rake task is `db/seeds.rb`.  Console returns the dump as a string by default.
 
 `limit`: Dump no more then this amount of data.  Default: no limit.  Rake task only.  In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
 
-`model[s]`: Restrict the dump to the specified comma-separated list of models.  Default: all models.  Rake task only.
+`model[s]`: Restrict the dump to the specified comma-separated list of models.  Default: all models.  If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only.
 
