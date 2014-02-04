@@ -18,7 +18,7 @@ class SeedDump
     def dump_record(record, options)
       attribute_strings = []
 
-      options[:exclude] ||= [:id, :created_at, :updated_at]
+      options[:exclude] ||= [] # we don't wat to exclude any default attributes! [:id, :created_at, :updated_at]
 
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
@@ -80,7 +80,7 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n])\n")
+      io.write("\n], without_protection: true)\n")
 
       if options[:file].present?
         nil

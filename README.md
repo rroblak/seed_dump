@@ -42,7 +42,7 @@ Result:
 
 Dump only data from the users table and dump a maximum of 1 record:
 
-    $ rake db:seed:dump MODELS=User,Product LIMIT=1
+    $ rake db:seed:dump MODELS=User LIMIT=1
 
 Result:
 
