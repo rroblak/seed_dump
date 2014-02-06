@@ -93,7 +93,7 @@ Options are common to both the Rake task and the console, except where noted.
 
 `file`: Write to the specified output file.  Default in Rake task is `db/seeds.rb`.  Console returns the dump as a string by default.
 
-`limit`: Dump no more then this amount of data.  Default: no limit.  Rake task only.  In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
+`limit`: Dump no more than this amount of data.  Default: no limit.  Rake task only.  In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
 
 `model[s]`: Restrict the dump to the specified comma-separated list of models.  Default: all models.  If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only.
 
