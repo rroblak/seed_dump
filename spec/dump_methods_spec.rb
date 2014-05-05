@@ -124,6 +124,10 @@ describe SeedDump do
 end
 
 class RangeSample
+  def self.column_names
+    %w(range_with_end_included range_with_end_excluded positive_infinite_range negative_infinite_range infinite_range)
+  end
+
   def attributes
     {
       "range_with_end_included" => (1..3),

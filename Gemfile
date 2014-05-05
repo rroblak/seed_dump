@@ -2,6 +2,7 @@ source 'https://rubygems.org'
 
 gem 'activesupport'
 gem 'activerecord'
+gem 'activerecord-import'
 
 group :development, :test do
   gem 'byebug'
