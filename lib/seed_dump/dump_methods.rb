@@ -23,11 +23,12 @@ class SeedDump
     private
 
     def dump_record(record, options)
+      attributes = record.attributes.symbolize_keys
       if options[:use_import]
         # NOTE: order is important.
-        "[#{@column_names.map { |n| value_to_s(record.public_send(n)) }.join(', ')}]"
+        "[#{@column_names.map { |n| value_to_s(attributes[n]) }.join(', ')}]"
       else
-        attribute_strings = record.attributes.symbolize_keys.slice(*@column_names).map do |k, v|
+        attribute_strings = attributes.slice(*@column_names).map do |k, v|
           "#{k}: #{value_to_s(v)}"
         end
         "{#{attribute_strings.join(", ")}}"
