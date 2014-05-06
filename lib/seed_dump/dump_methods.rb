@@ -7,7 +7,7 @@ class SeedDump
 
       io = open_io(options)
 
-      options[:exclude] ||= (options[:use_import] ? [:id] : [:id, :created_at, :updated_at])
+      options[:exclude] ||= (options[:use_import] ? [] : [:id, :created_at, :updated_at])
 
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
