@@ -25,7 +25,8 @@ class SeedDump
                       exclude: (env['EXCLUDE'] ? env['EXCLUDE'].split(',').map {|e| e.strip.to_sym} : nil),
                       file: (env['FILE'] || 'db/seeds.rb'),
                       use_import: %w(true t 1).include?(env['USE_IMPORT']), # default is false
-                      validate: %w(true t 1).include?(env['VALIDATE'])) # default is false
+                      validate: %w(true t 1).include?(env['VALIDATE']),
+                      timestamps: %w(true t 1).include?(env['TIMESTAMPS']))
 
         append = true
       end

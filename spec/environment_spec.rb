@@ -1,5 +1,14 @@
 require 'spec_helper'
 
+shared_examples 'dumps with expected options' do |*args|
+  it 'specifies expected options obtained from environment' do
+    options = args.extract_options!
+    env = Hash[args.each_slice(2).to_a]
+    SeedDump.should_receive(:dump).with(anything, include(options))
+    SeedDump.dump_using_environment(env)
+  end
+end
+
 describe SeedDump do
   describe '.dump_using_environment' do
     before(:all) do
@@ -13,11 +22,7 @@ describe SeedDump do
     end
 
     describe 'APPEND' do
-      it "should specify append as true if the APPEND env var is 'true'" do
-        SeedDump.should_receive(:dump).with(anything, include(append: true))
-
-        SeedDump.dump_using_environment('APPEND' => 'true')
-      end
+      it_behaves_like 'dumps with expected options', 'APPEND', 'true', append: true
 
       it "should specify append as false the first time if the APPEND env var is not 'true' (and true after that)" do
         FactoryGirl.create(:another_sample)
@@ -30,39 +35,17 @@ describe SeedDump do
     end
 
     describe 'BATCH_SIZE' do
-      it 'should pass along the specified batch size' do
-        SeedDump.should_receive(:dump).with(anything, include(batch_size: 17))
-
-        SeedDump.dump_using_environment('BATCH_SIZE' => '17')
-      end
-
-      it 'should pass along a nil batch size if BATCH_SIZE is not specified' do
-        SeedDump.should_receive(:dump).with(anything, include(batch_size: nil))
-
-        SeedDump.dump_using_environment
-      end
+      it_behaves_like 'dumps with expected options', 'BATCH_SIZE', '17', batch_size: 17
+      it_behaves_like 'dumps with expected options', batch_size: nil
     end
 
     describe 'EXCLUDE' do
-      it 'should pass along any attributes to be excluded' do
-        SeedDump.should_receive(:dump).with(anything, include(exclude: [:baggins, :saggins]))
-
-        SeedDump.dump_using_environment('EXCLUDE' => 'baggins,saggins')
-      end
+      it_behaves_like 'dumps with expected options', 'EXCLUDE', 'baggins,saggins', exclude: [:baggins, :saggins]
     end
 
     describe 'FILE' do
-      it 'should pass the FILE parameter to the dump method correctly' do
-        SeedDump.should_receive(:dump).with(anything, include(file: 'blargle'))
-
-        SeedDump.dump_using_environment('FILE' => 'blargle')
-      end
-
-      it 'should pass db/seeds.rb as the file parameter if no FILE is specified' do
-        SeedDump.should_receive(:dump).with(anything, include(file: 'db/seeds.rb'))
-
-        SeedDump.dump_using_environment
-      end
+      it_behaves_like 'dumps with expected options', 'FILE', 'blargle', file: 'blargle'
+      it_behaves_like 'dumps with expected options', file: 'db/seeds.rb'
     end
 
     describe 'LIMIT' do
@@ -117,6 +100,22 @@ describe SeedDump do
 
         SeedDump.dump_using_environment('MODELS' => 'Sample, AnotherSample')
       end
+    end
+
+    describe 'USE_IMPORT' do
+      it_behaves_like 'dumps with expected options', use_import: false
+      it_behaves_like 'dumps with expected options', 'USE_IMPORT', 'true', use_import: true
+      it_behaves_like 'dumps with expected options', 'USE_IMPORT', 't', use_import: true
+      it_behaves_like 'dumps with expected options', 'USE_IMPORT', '1', use_import: true
+      it_behaves_like 'dumps with expected options', 'USE_IMPORT', 'unknown', use_import: false
+    end
+
+    describe 'VALIDATE' do
+      it_behaves_like 'dumps with expected options', validate: false
+      it_behaves_like 'dumps with expected options', 'VALIDATE', 'true', validate: true
+      it_behaves_like 'dumps with expected options', 'VALIDATE', 't', validate: true
+      it_behaves_like 'dumps with expected options', 'VALIDATE', '1', validate: true
+      it_behaves_like 'dumps with expected options', 'VALIDATE', 'unknown', validate: false
     end
 
     it 'should run ok without ActiveRecord::SchemaMigration being set (needed for Rails Engines)' do

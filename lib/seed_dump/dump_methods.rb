@@ -86,7 +86,7 @@ class SeedDump
       end
 
       if options[:use_import]
-        io.write("\n], validate: #{options[:validate]}, timestamps: false)\n")
+        io.write("\n], validate: #{!!options[:validate]}, timestamps: #{!!options[:timestamps]})\n")
       else
         io.write("\n])\n")
       end
