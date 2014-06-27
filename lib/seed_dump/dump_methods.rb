@@ -6,6 +6,7 @@ class SeedDump
       return nil if records.count == 0
 
       io = open_io(options)
+      io.write("# encoding: utf-8\n") if options[:encoding_utf8]
 
       options[:exclude] ||= (options[:use_import] ? [] : [:id, :created_at, :updated_at])
 

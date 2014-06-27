@@ -141,6 +141,17 @@ Sample.import([:string, :text, :integer, :float, :decimal, :datetime, :time, :da
 ], validate: true, timestamps: false)
 RUBY
       end
+
+      it 'should return bulk import with encoding comment' do
+        SeedDump.dump(Sample, use_import: true, exclude: [:created_at, :updated_at], encoding_utf8: true).should eq <<-RUBY
+# encoding: utf-8
+Sample.import([:id, :string, :text, :integer, :float, :decimal, :datetime, :time, :date, :binary, :boolean], [
+  [1, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false],
+  [2, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false],
+  [3, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false]
+], validate: false, timestamps: false)
+RUBY
+      end
     end
   end
 end
