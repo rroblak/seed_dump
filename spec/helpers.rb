@@ -22,6 +22,10 @@ class Rails
       @already_called = true
     end
   end
+
+  def self.env
+    'test'
+  end
 end
 
 module Helpers
