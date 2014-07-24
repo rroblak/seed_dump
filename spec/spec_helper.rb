@@ -8,9 +8,9 @@ require 'byebug'
 require 'database_cleaner'
 require 'factory_girl'
 
-require './spec/helpers'
-
 ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
+
+require './spec/helpers'
 
 FactoryGirl.find_definitions
 

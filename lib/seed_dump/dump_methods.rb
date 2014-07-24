@@ -6,6 +6,14 @@ class SeedDump
       return nil if records.count == 0
 
       io = open_io(options)
+      io.write("# encoding: utf-8\n") if options[:encoding_utf8]
+
+      options[:exclude] ||= (options[:use_import] ? [] : [:id, :created_at, :updated_at])
+
+      # We select only string attribute names to avoid conflict
+      # with the composite_primary_keys gem (it returns composite
+      # primary key attribute names as hashes).
+      @column_names = model_for(records).column_names.select {|k| k.is_a?(String) }.map(&:to_sym) - options[:exclude]
 
       write_records_to_io(records, io, options)
 
@@ -16,22 +24,16 @@ class SeedDump
     private
 
     def dump_record(record, options)
-      attribute_strings = []
-
-      options[:exclude] ||= [:id, :created_at, :updated_at]
-
-      # We select only string attribute names to avoid conflict
-      # with the composite_primary_keys gem (it returns composite
-      # primary key attribute names as hashes).
-      record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value) unless options[:exclude].include?(attribute.to_sym)
+      attributes = record.attributes.symbolize_keys
+      if options[:use_import]
+        # NOTE: order is important.
+        "[#{@column_names.map { |n| value_to_s(attributes[n]) }.join(', ')}]"
+      else
+        attribute_strings = attributes.slice(*@column_names).map do |k, v|
+          "#{k}: #{value_to_s(v)}"
+        end
+        "{#{attribute_strings.join(", ")}}"
       end
-
-      "{#{attribute_strings.join(", ")}}"
-    end
-
-    def dump_attribute_new(attribute, value)
-      "#{attribute}: #{value_to_s(value)}"
     end
 
     def value_to_s(value)
@@ -66,7 +68,11 @@ class SeedDump
     end
 
     def write_records_to_io(records, io, options)
-      io.write("#{model_for(records)}.create!([\n  ")
+      if options[:use_import]
+        io.write("#{model_for(records)}.import(#{@column_names}, [\n  ")
+      else
+        io.write("#{model_for(records)}.create!([\n  ")
+      end
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
@@ -80,7 +86,11 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n])\n")
+      if options[:use_import]
+        io.write("\n], validate: #{!!options[:validate]}, timestamps: #{!!options[:timestamps]})\n")
+      else
+        io.write("\n])\n")
+      end
 
       if options[:file].present?
         nil

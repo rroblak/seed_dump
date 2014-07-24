@@ -97,3 +97,31 @@ Options are common to both the Rake task and the console, except where noted.
 
 `model[s]`: Restrict the dump to the specified comma-separated list of models.  Default: all models.  If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only. Example: `rake db:seed:dump MODELS="User, Position, Function"`
 
+
+Bulk Import with [activarecord-import](https://github.com/zdennis/activerecord-import) ( [wiki](https://github.com/zdennis/activerecord-import/wiki) )
+----------
+
+    $ rake db:seed:dump USE_IMPORT=true
+
+db/seeds.rb
+
+```ruby
+Product.import([:id, :category_id, :description, :name], [
+  [1, 1, "Long Sleeve Shirt", "Long Sleeve Shirt"],
+  [2, 3, "Plain White Tee Shirt", "Plain T-Shirt"]
+], validate: false, timestamps: false)
+User.import([:id, :password, :username], [
+  [1, "123456", "test_1"],
+  [2, "234567", "test_2"]
+], validate: false, timestamps: false)
+```
+
+For bulk import by default all columns are included (default value for exlude option is empty array)
+
+Also available options VALIDATE and TIMESTAMPS
+
+    $ rake db:seed:dump USE_IMPORT=true VALIDATE=true TIMESTAMPS=true
+
+```ruby
+irb> SeedDump.dump(User, use_import: true, validate: true, timestamps: true)
+```
