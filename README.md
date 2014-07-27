@@ -5,7 +5,7 @@ Seed Dump is a Rails 4 plugin that adds a rake task named `db:seed:dump`.
 
 It allows you to create seed data files from the existing data in your database.
 
-You can also use Seed Dump from the Rails console.  See below for usage examples.
+You can also use Seed Dump from the Rails console. See below for usage examples.
 
 Note: if you want to use Seed Dump with Rails 3 or earlier, use [version 0.5.3](http://rubygems.org/gems/seed_dump/versions/0.5.3).
 
@@ -58,6 +58,10 @@ Use another output file instead of `db/seeds.rb`:
 
     rake db:seed:dump FILE=db/seeds/users.rb
 
+Exclude `name` and `age` from the dump:
+
+    rake db:seed:dump EXCLUDE=name,age
+
 There are more options that can be set— see below for all of them.
 
 ### Console
@@ -78,6 +82,10 @@ Append the dump to a file:
 
     irb(main):003:0> SeedDump.dump(User, file: 'db/seeds.rb', append: true)
 
+Exclude `name` and `age` from the dump:
+
+    irb(main):004:0> SeedDump.dump(User, exclude: [:name, :age])
+
 Options are specified as a Hash for the second argument.
 
 Options
@@ -85,15 +93,17 @@ Options
 
 Options are common to both the Rake task and the console, except where noted.
 
-`append`: If set to `true`, append the data to the file instead of overwriting it.  Default: `false`.
+`append`: If set to `true`, append the data to the file instead of overwriting it. Default: `false`.
 
-`batch_size`: Controls the number of records that are written to file at a given time.  Default: 1000.  If you're running out of memory when dumping, try decreasing this.  If things are dumping too slow, trying increasing this.
+`batch_size`: Controls the number of records that are written to file at a given time. Default: 1000. If you're running out of memory when dumping, try decreasing this. If things are dumping too slow, trying increasing this.
 
-`exclude`: Attributes to be excluded from the dump.  Default: `id, created_at, updated_at`. If you need to include these columns pass `EXCLUDE=` to the Rake task or an empty array on the console (i.e. `SeedDump.dump(User, exclude: [])`) and these columns will be included.
+`exclude`: Attributes to be excluded from the dump. By default `id`, `created_at`, and `updated_at` are excluded. Pass a comma-separated list to the Rake task (i.e. `name,age`) and an array on the console (i.e. `[:name, :age]`).
 
-`file`: Write to the specified output file.  Default in Rake task is `db/seeds.rb`.  Console returns the dump as a string by default.
+`file`: Write to the specified output file. The Rake task default is `db/seeds.rb`. The console returns the dump as a string by default.
 
-`limit`: Dump no more than this amount of data.  Default: no limit.  Rake task only.  In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
+`import`: If `true`, output will be in the format needed by the [activerecord-import](https://github.com/zdennis/activerecord-import) gem, rather than the default format. Default: `false`.
 
-`model[s]`: Restrict the dump to the specified comma-separated list of models.  Default: all models.  If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only. Example: `rake db:seed:dump MODELS="User, Position, Function"`
+`limit`: Dump no more than this amount of data. Default: no limit. Rake task only. In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
+
+`model[s]`: Restrict the dump to the specified comma-separated list of models. Default: all models. If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only. Example: `rake db:seed:dump MODELS="User, Position, Function"`
 

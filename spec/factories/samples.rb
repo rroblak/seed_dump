@@ -10,5 +10,7 @@ FactoryGirl.define do
     date     Date.parse('November 19, 1863')
     binary   'binary'
     boolean  false
+    created_at DateTime.parse('July 20, 1969 20:18 UTC')
+    updated_at DateTime.parse('November 10, 1989 4:20 UTC')
   end
 end

@@ -6,6 +6,7 @@ gem 'activerecord'
 group :development, :test do
   gem 'byebug'
   gem 'factory_girl'
+  gem 'activerecord-import'
 end
 
 group :development do

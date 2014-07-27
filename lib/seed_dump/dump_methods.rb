@@ -18,20 +18,20 @@ class SeedDump
     def dump_record(record, options)
       attribute_strings = []
 
-      options[:exclude] ||= [:id, :created_at, :updated_at]
-
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
       record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value) unless options[:exclude].include?(attribute.to_sym)
+        attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
       end
 
-      "{#{attribute_strings.join(", ")}}"
+      open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
+
+      "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
     end
 
-    def dump_attribute_new(attribute, value)
-      "#{attribute}: #{value_to_s(value)}"
+    def dump_attribute_new(attribute, value, options)
+      options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
     end
 
     def value_to_s(value)
@@ -66,7 +66,14 @@ class SeedDump
     end
 
     def write_records_to_io(records, io, options)
-      io.write("#{model_for(records)}.create!([\n  ")
+      options[:exclude] ||= [:id, :created_at, :updated_at]
+
+      method = options[:import] ? 'import' : 'create!'
+      io.write("#{model_for(records)}.#{method}(")
+      if options[:import]
+        io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
+      end
+      io.write("[\n  ")
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
@@ -88,6 +95,16 @@ class SeedDump
         io.rewind
         io.read
       end
+    end
+
+    def attribute_names(records, options)
+      attribute_names = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
+                          records.attribute_names
+                        else
+                          records[0].attribute_names
+                        end
+
+      attribute_names.select {|name| !options[:exclude].include?(name.to_sym)}
     end
 
     def model_for(records)
