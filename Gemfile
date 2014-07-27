@@ -1,20 +1,20 @@
 source 'https://rubygems.org'
 
-gem 'activesupport'
-gem 'activerecord'
+gem 'activesupport', '~> 4'
+gem 'activerecord', '~> 4'
 
 group :development, :test do
-  gem 'byebug'
-  gem 'factory_girl'
-  gem 'activerecord-import'
+  gem 'byebug', '~> 2.0'
+  gem 'factory_girl', '~> 4.0'
+  gem 'activerecord-import', '~> 0.4'
 end
 
 group :development do
-  gem 'jeweler', :git => 'git://github.com/technicalpickles/jeweler.git'
+  gem 'jeweler', '~> 2.0'
 end
 
 group :test do
-  gem 'rspec'
-  gem 'sqlite3'
-  gem 'database_cleaner'
+  gem 'rspec', '~> 2.0'
+  gem 'sqlite3', '~> 1.0'
+  gem 'database_cleaner', '~> 1.0'
 end
