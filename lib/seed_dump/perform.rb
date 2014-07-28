@@ -24,6 +24,7 @@ module SeedDump
       @opts['no-data'] = env['NO_DATA'].true?
       @opts['without_protection'] = env['WITHOUT_PROTECTION'].true? || (env['WITHOUT_PROTECTION'].nil? && @opts['timestamps'])
       @opts['skip_callbacks'] = env['SKIP_CALLBACKS'].true?
+      @opts['skip_validations'] = env['SKIP_VALIDATIONS'].true?
       @opts['models']  = env['MODELS'] || (env['MODEL'] ? env['MODEL'] : "")
       @opts['file']    = env['FILE'] || "#{Rails.root}/db/seeds.rb"
       @opts['append']  = (env['APPEND'].true? && File.exists?(@opts['file']) )
@@ -133,6 +134,11 @@ module SeedDump
               @seed_rb << "#{model}.reset_callbacks :save\n"
               @seed_rb << "#{model}.reset_callbacks :create\n"
               puts "Callbacks are disabled." if @opts['verbose']
+            end
+
+            if @opts['skip_validations']
+              @seed_rb << "#{model}.reset_callbacks :validate\n"
+              puts "Validations are disabled." if @opts['verbose']
             end
 
             @seed_rb << dumpModel(m) << "\n\n"

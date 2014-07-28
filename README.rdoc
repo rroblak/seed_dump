@@ -95,6 +95,9 @@ TIMESTAMPS:
 SKIP_CALLBACKS:
  Deactivate callbacks while importing.
 
+SKIP_VALIDATIONS:
+ Deactivate validations while importing.
+
 PG_SCHEMA:
  Postgres schema support
 
