@@ -36,8 +36,8 @@ Result:
       {category_id: 3, description: "Plain White Tee Shirt", name: "Plain T-Shirt"}
     ])
     User.create!([
-      {id: 1, password: "123456", username: "test_1"},
-      {id: 2, password: "234567", username: "test_2"}
+      {password: "123456", username: "test_1"},
+      {password: "234567", username: "test_2"}
     ])
 
 Dump only data from the users table and dump a maximum of 1 record:
@@ -47,7 +47,7 @@ Dump only data from the users table and dump a maximum of 1 record:
 Result:
 
     User.create!([
-      {id: 1, password: "123456", username: "test_1"}
+      {password: "123456", username: "test_1"}
     ])
 
 Append to `db/seeds.rb` instead of overwriting it:
@@ -70,8 +70,8 @@ Output a dump of all User records:
 
     irb(main):001:0> puts SeedDump.dump(User)
     User.create!([
-      {id: 1, password: "123456", username: "test_1"},
-      {id: 2, password: "234567", username: "test_2"}
+      {password: "123456", username: "test_1"},
+      {password: "234567", username: "test_2"}
     ])
 
 Write the dump to a file:
@@ -106,4 +106,3 @@ Options are common to both the Rake task and the console, except where noted.
 `limit`: Dump no more than this amount of data. Default: no limit. Rake task only. In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
 
 `model[s]`: Restrict the dump to the specified comma-separated list of models. Default: all models. If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only. Example: `rake db:seed:dump MODELS="User, Position, Function"`
-
