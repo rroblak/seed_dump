@@ -36,7 +36,7 @@ class SeedDump
 
     def value_to_s(value)
       value = case value
-              when BigDecimal
+              when BigDecimal, IPAddr
                 value.to_s
               when Date, Time, DateTime
                 value.to_s(:db)
