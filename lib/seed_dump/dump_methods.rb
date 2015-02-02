@@ -42,6 +42,8 @@ class SeedDump
                 value.to_s(:db)
               when Range
                 range_to_string(value)
+              when ActiveSupport::HashWithIndifferentAccess
+                return "#{value.to_s}.with_indifferent_access"
               else
                 value
               end
