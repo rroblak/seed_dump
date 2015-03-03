@@ -81,22 +81,32 @@ describe SeedDump do
       model_env = 'MODEL' + model_suffix
 
       describe model_env do
-        it "if #{model_env} is not specified it should dump all non-empty models" do
-          FactoryGirl.create(:another_sample)
+        context "if #{model_env} is not specified" do
+          it "should dump all non-empty models" do
+            FactoryGirl.create(:another_sample)
 
-          [Sample, AnotherSample].each do |model|
-            SeedDump.should_receive(:dump).with(model, anything)
+            [Sample, AnotherSample].each do |model|
+              SeedDump.should_receive(:dump).with(model, anything)
+            end
+
+            SeedDump.dump_using_environment
           end
-
-          SeedDump.dump_using_environment
         end
 
-        it "if #{model_env} is specified it should only dump the specified model" do
-          FactoryGirl.create(:another_sample)
+        context "if #{model_env} is specified" do
+          it "should dump only the specified model" do
+            FactoryGirl.create(:another_sample)
 
-          SeedDump.should_receive(:dump).with(Sample, anything)
+            SeedDump.should_receive(:dump).with(Sample, anything)
 
-          SeedDump.dump_using_environment(model_env => 'Sample')
+            SeedDump.dump_using_environment(model_env => 'Sample')
+          end
+
+          it "should not dump empty models" do
+            SeedDump.should_not_receive(:dump).with(EmptyModel, anything)
+
+            SeedDump.dump_using_environment(model_env => 'EmptyModel, Sample')
+          end
         end
       end
     end
