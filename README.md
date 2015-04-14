@@ -90,7 +90,7 @@ Options are specified as a Hash for the second argument.
 
 In the console, any relation of ActiveRecord rows can be dumped (not individual objects though)
 
-    irb(main):001:0> puts SeedDump.dump(User.where(is_admin: false)
+    irb(main):001:0> puts SeedDump.dump(User.where(is_admin: false))
     User.create!([
       {password: "123456", username: "test_1", is_admin: false},
       {password: "234567", username: "test_2", is_admin: false}
