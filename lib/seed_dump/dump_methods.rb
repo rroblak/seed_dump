@@ -1,3 +1,5 @@
+require 'ipaddr'
+
 class SeedDump
   module DumpMethods
     include Enumeration
