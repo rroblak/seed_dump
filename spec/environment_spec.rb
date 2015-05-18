@@ -111,6 +111,16 @@ describe SeedDump do
       end
     end
 
+    describe "ALL_EXCEPT" do
+        it "should dump all non-empty models except the specified models" do
+          FactoryGirl.create(:another_sample)
+
+          SeedDump.should_receive(:dump).with(Sample, anything)
+
+          SeedDump.dump_using_environment('ALL_EXCEPT' => 'AnotherSample')
+        end
+      end
+
     it 'should run ok without ActiveRecord::SchemaMigration being set (needed for Rails Engines)' do
       schema_migration = ActiveRecord::SchemaMigration
 
