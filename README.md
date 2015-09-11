@@ -13,89 +13,99 @@ Installation
 ------------
 
 Add it to your Gemfile with:
-
-    gem 'seed_dump'
-
+```ruby
+gem 'seed_dump'
+```
 Or install it by hand:
-
-    $ gem install seed_dump
-
+```sh
+$ gem install seed_dump
+```
 Examples
 --------
 
 ### Rake task
 
 Dump all data directly to `db/seeds.rb`:
-
-    $ rake db:seed:dump
-
+```sh
+  $ rake db:seed:dump
+```
 Result:
-
-    Product.create!([
-      {category_id: 1, description: "Long Sleeve Shirt", name: "Long Sleeve Shirt"},
-      {category_id: 3, description: "Plain White Tee Shirt", name: "Plain T-Shirt"}
-    ])
-    User.create!([
-      {password: "123456", username: "test_1"},
-      {password: "234567", username: "test_2"}
-    ])
+```ruby
+Product.create!([
+  { category_id: 1, description: "Long Sleeve Shirt", name: "Long Sleeve Shirt" },
+  { category_id: 3, description: "Plain White Tee Shirt", name: "Plain T-Shirt" }
+])
+User.create!([
+  { password: "123456", username: "test_1" },
+  { password: "234567", username: "test_2" }
+])
+```
 
 Dump only data from the users table and dump a maximum of 1 record:
-
-    $ rake db:seed:dump MODELS=User LIMIT=1
+```sh
+$ rake db:seed:dump MODELS=User LIMIT=1
+```
 
 Result:
-
-    User.create!([
-      {password: "123456", username: "test_1"}
-    ])
+```ruby
+User.create!([
+  { password: "123456", username: "test_1" }
+])
+```
 
 Append to `db/seeds.rb` instead of overwriting it:
-
-    rake db:seed:dump APPEND=true
+```sh
+rake db:seed:dump APPEND=true
+```
 
 Use another output file instead of `db/seeds.rb`:
-
-    rake db:seed:dump FILE=db/seeds/users.rb
+```sh
+rake db:seed:dump FILE=db/seeds/users.rb
+```
 
 Exclude `name` and `age` from the dump:
-
-    rake db:seed:dump EXCLUDE=name,age
+```sh
+rake db:seed:dump EXCLUDE=name,age
+```
 
 There are more options that can be set— see below for all of them.
 
 ### Console
 
 Output a dump of all User records:
-
-    irb(main):001:0> puts SeedDump.dump(User)
-    User.create!([
-      {password: "123456", username: "test_1"},
-      {password: "234567", username: "test_2"}
-    ])
+```ruby
+irb(main):001:0> puts SeedDump.dump(User)
+User.create!([
+  { password: "123456", username: "test_1" },
+  { password: "234567", username: "test_2" }
+])
+```
 
 Write the dump to a file:
-
-    irb(main):002:0> SeedDump.dump(User, file: 'db/seeds.rb')
+```ruby
+irb(main):002:0> SeedDump.dump(User, file: 'db/seeds.rb')
+```
 
 Append the dump to a file:
-
-    irb(main):003:0> SeedDump.dump(User, file: 'db/seeds.rb', append: true)
+```ruby
+irb(main):003:0> SeedDump.dump(User, file: 'db/seeds.rb', append: true)
+```
 
 Exclude `name` and `age` from the dump:
-
-    irb(main):004:0> SeedDump.dump(User, exclude: [:name, :age])
+```ruby
+irb(main):004:0> SeedDump.dump(User, exclude: [:name, :age])
+```
 
 Options are specified as a Hash for the second argument.
 
 In the console, any relation of ActiveRecord rows can be dumped (not individual objects though)
-
-    irb(main):001:0> puts SeedDump.dump(User.where(is_admin: false))
-    User.create!([
-      {password: "123456", username: "test_1", is_admin: false},
-      {password: "234567", username: "test_2", is_admin: false}
-    ])
-
+```ruby
+irb(main):001:0> puts SeedDump.dump(User.where(is_admin: false))
+User.create!([
+  { password: "123456", username: "test_1", is_admin: false },
+  { password: "234567", username: "test_2", is_admin: false }
+])
+```
 
 Options
 -------
