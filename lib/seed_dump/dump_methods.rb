@@ -57,7 +57,7 @@ class SeedDump
 
     def open_io(options)
       if options[:stdout]
-        $stdout
+        IO.new(IO.sysopen("/dev/tty", "w"),"w")
       elsif options[:file].present?
         mode = options[:append] ? 'a+' : 'w+'
         File.open(options[:file], mode)
