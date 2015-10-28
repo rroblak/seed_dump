@@ -65,6 +65,13 @@ describe SeedDump do
       end
     end
 
+    describe 'STDOUT' do
+      it 'should pass the STDOUT parameter to the dump method' do
+        SeedDump.should_receive(:dump).with(anything, include(stdout: true))
+        SeedDump.dump_using_environment('STDOUT')
+      end
+    end
+
     describe 'LIMIT' do
       it 'should apply the specified limit to the records' do
         relation_double = double('ActiveRecord relation double')

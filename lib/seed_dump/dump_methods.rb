@@ -56,9 +56,10 @@ class SeedDump
     end
 
     def open_io(options)
-      if options[:file].present?
+      if options[:stdout]
+        $stdout
+      elsif options[:file].present?
         mode = options[:append] ? 'a+' : 'w+'
-
         File.open(options[:file], mode)
       else
         StringIO.new('', 'w+')
