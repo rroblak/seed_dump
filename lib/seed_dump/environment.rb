@@ -20,15 +20,11 @@ class SeedDump
 
       append = (env['APPEND'] == 'true')
 
-      all_except_env = env['ALL_EXCEPT']
-      excluded_models = if all_except_env
-                           all_except_env.split(',')
-                                        .collect {|x| x.strip.underscore.singularize.camelize.constantize }
-                        end
-      if excluded_models
-        excluded_models.each do |exclude|
-          models.delete(exclude)
-        end
+      models_exclude_env = env['MODELS_EXCLUDE']
+      if models_exclude_env
+        models_exclude_env.split(',')
+                          .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                          .each { |exclude| models.delete(exclude) }
       end
 
       models.each do |model|
