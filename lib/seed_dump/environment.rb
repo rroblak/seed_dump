@@ -20,6 +20,17 @@ class SeedDump
 
       append = (env['APPEND'] == 'true')
 
+      all_except_env = env['ALL_EXCEPT']
+      excluded_models = if all_except_env
+                           all_except_env.split(',')
+                                        .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                        end
+      if excluded_models
+        excluded_models.each do |exclude|
+          models.delete(exclude)
+        end
+      end
+
       models.each do |model|
         model = model.limit(env['LIMIT'].to_i) if env['LIMIT']
 
@@ -35,4 +46,3 @@ class SeedDump
     end
   end
 end
-
