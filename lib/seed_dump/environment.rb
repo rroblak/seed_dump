@@ -4,7 +4,14 @@ class SeedDump
     def dump_using_environment(env = {})
       Rails.application.eager_load!
 
-      models_env = env['MODEL'] || env['MODELS']
+      tables = Mongoid.default_session.collections
+      mong = []
+      tables.each do |table|
+        mong.append(table.name)
+      end
+      puts mong
+
+      models_env = env['MODEL'] || env['MODELS'] || mong
       models = if models_env
                  models_env.split(',')
                            .collect {|x| x.strip.underscore.singularize.camelize.constantize }
