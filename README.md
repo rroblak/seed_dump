@@ -41,6 +41,18 @@ User.create!([
 ])
 ```
 
+Dump Mongoid data:
+```sh
+$ rake db:seed:dump MONGO="true"
+```
+
+Result:
+```ruby
+Skill.create!([
+  {_id: BSON::ObjectId('563a350b2a8fc512a6000000'), name: "Palm Tree", level: 3}
+])
+```
+
 Dump only data from the users table and dump a maximum of 1 record:
 ```sh
 $ rake db:seed:dump MODELS=User LIMIT=1
