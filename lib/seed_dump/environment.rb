@@ -12,9 +12,9 @@ class SeedDump
         tables.each do |table|
           mong = mong + table.name + ","
         end
-        models_env = env['MODEL'] || env['MODELS']
-      else
         models_env = env['MODEL'] || env['MODELS'] || mong
+      else
+        models_env = env['MODEL'] || env['MODELS']
       end
 
       models = if models_env
@@ -33,7 +33,7 @@ class SeedDump
                    (model.to_s != 'ActiveRecord::SchemaMigration') && \
                     model.table_exists? && \
                     model.exists?
-                 end        
+                 end
       end
 
       append = (env['APPEND'] == 'true')
