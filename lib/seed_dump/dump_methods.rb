@@ -7,7 +7,7 @@ class SeedDump
 
       io = open_io(options)
 
-      write_records_to_io(records, io, options)
+      write_records_to_io(records, io, options, true)
 
       ensure
         io.close if io.present?
@@ -15,14 +15,23 @@ class SeedDump
 
     private
 
-    def dump_record(record, options)
+    def dump_record(record, io, options)
       attribute_strings = []
 
+
+      if record.respond_to? 'attributes'
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
-      record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+        record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
+          attribute_strings << dump_attribute_new(attribute, value, io, options) unless options[:exclude].include?(attribute.to_sym)
+        end
+
+      else
+        # use record.each directly for mongo internal documents
+        record.each do |attribute, value|
+          attribute_strings << dump_attribute_new(attribute, value, io, options) unless options[:exclude].include?(attribute.to_sym)
+        end
       end
 
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
@@ -30,13 +39,20 @@ class SeedDump
       "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
     end
 
-    def dump_attribute_new(attribute, value, options)
-      options[:import] ? value_to_s(value) : "#{attribute}: #{value_to_s(value)}"
+    def dump_attribute_new(attribute, value, io, options)
+      options[:import] ? value_to_s(value, io, options) : "#{attribute}: #{value_to_s(value, io, options)}"
     end
 
     def value_to_s(value)
       if value.class == BSON::ObjectId
         value = value.to_s
+        value.inspect
+
+      elsif value.class == Array
+        buffer = open_io(file: false)
+        write_records_to_io(value, buffer, options, false)
+
+        value = buffer.string
 
       else
         value = case value
@@ -49,9 +65,10 @@ class SeedDump
                 else
                   value
                 end
+
+        value.inspect
       end
 
-      value.inspect
     end
 
     def range_to_string(object)
@@ -70,7 +87,7 @@ class SeedDump
       end
     end
 
-    def write_records_to_io(records, io, options)
+    def write_records_to_io(records, io, options, main)
       options[:exclude] ||= [:id, :created_at, :updated_at]
 
       method = options[:import] ? 'import' : 'create!'

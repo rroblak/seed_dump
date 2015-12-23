@@ -32,7 +32,7 @@ puts "end"
 
           # Loop through the records of the current batch
           records.offset((batch_number - 1) * batch_size).limit(cur_batch_size).each do |record|
-            record_strings << dump_record(record, options)
+            record_strings << dump_record(record, io, options)
           end
 
           yield record_strings, last_batch
@@ -47,7 +47,7 @@ puts "end"
         batch_number = 1
 
         records.each_with_index do |record, i|
-          record_strings << dump_record(record, options)
+          record_strings << dump_record(record, io, options)
 
           last_batch = (i == records.length - 1)
 
