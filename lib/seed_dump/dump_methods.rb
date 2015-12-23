@@ -43,7 +43,7 @@ class SeedDump
       options[:import] ? value_to_s(value, io, options) : "#{attribute}: #{value_to_s(value, io, options)}"
     end
 
-    def value_to_s(value)
+    def value_to_s(value, io, options)
       if value.class == BSON::ObjectId
         value = value.to_s
         value.inspect
