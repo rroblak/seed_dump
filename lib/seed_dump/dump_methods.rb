@@ -35,16 +35,21 @@ class SeedDump
     end
 
     def value_to_s(value)
-      value = case value
-              when BigDecimal, IPAddr
-                value.to_s
-              when Date, Time, DateTime
-                value.to_s(:db)
-              when Range
-                range_to_string(value)
-              else
-                value
-              end
+      if value.class == BSON::ObjectId
+        value = value.to_s
+
+      else
+        value = case value
+                when BigDecimal, IPAddr
+                  value.to_s
+                when Date, Time, DateTime
+                  value.to_s(:db)
+                when Range
+                  range_to_string(value)
+                else
+                  value
+                end
+      end
 
       value.inspect
     end
