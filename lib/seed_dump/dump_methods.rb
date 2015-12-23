@@ -90,12 +90,18 @@ class SeedDump
     def write_records_to_io(records, io, options, main)
       options[:exclude] ||= [:id, :created_at, :updated_at]
 
-      method = options[:import] ? 'import' : 'create!'
-      io.write("#{model_for(records)}.#{method}(")
+      if main
+        method = options[:import] ? 'import' : 'create!'
+        io.write("#{model_for(records)}.#{method}(")
+        io.write("[\n  ")
+      else
+        io.write("[")
+      end
+
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
+        io.write("[\n  ")
       end
-      io.write("[\n  ")
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
@@ -104,12 +110,20 @@ class SeedDump
                            end
 
       send(enumeration_method, records, io, options) do |record_strings, last_batch|
+        if main
         io.write(record_strings.join(",\n  "))
+        else
+        io.write(record_strings.join(",  "))
+        end
 
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n])\n")
+      if main
+        io.write("\n])\n")
+      else
+        io.write("]")
+      end
 
       if options[:file].present?
         nil
