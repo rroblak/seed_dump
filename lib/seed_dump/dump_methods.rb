@@ -27,6 +27,12 @@ class SeedDump
           attribute_strings << dump_attribute_new(attribute, value, io, options) unless options[:exclude].include?(attribute.to_sym)
         end
 
+      elsif record.class == BSON::ObjectId || record.class == Fixnum
+        # received an id element of a whole array of single record ids
+          attribute = "_id"
+          value = record
+          attribute_strings << dump_attribute_new(attribute, value, io, options)
+
       else
         # use record.each directly for mongo internal documents
         record.each do |attribute, value|
