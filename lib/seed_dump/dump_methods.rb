@@ -27,7 +27,7 @@ class SeedDump
           attribute_strings << dump_attribute_new(attribute, value, io, options) unless options[:exclude].include?(attribute.to_sym)
         end
 
-      elsif record.class == BSON::ObjectId || record.class == Fixnum
+      elsif record.class == BSON::ObjectId || record.class == Fixnum || record.class  == String
         # received an id element of a whole array of single record ids
           attribute = "_id"
           value = record
