@@ -17,12 +17,23 @@ class SeedDump
         models_env = env['MODEL'] || env['MODELS']
       end
 
-      models = if models_env
+      models_with_empties = if models_env
                  models_env.split(',')
-                           .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                           .collect do |x|
+                              y = x.strip.underscore.singularize.camelize
+                              begin
+                                y.constantize
+                              rescue NameError => err
+                                #TODO: raise a warning that this x model isn't constantizeable ... will be skipped
+                              end
+                           end
                else
                  ActiveRecord::Base.descendants
                end
+
+      # reject nils that represent the constanized models
+      models = models_with_empties.reject { |c| c == nil}
+
       if mongo
         models = models.select do |model|
                    (model.to_s != 'ActiveRecord::SchemaMigration') && \
@@ -41,7 +52,14 @@ class SeedDump
       models_exclude_env = env['MODELS_EXCLUDE']
       if models_exclude_env
         models_exclude_env.split(',')
-                          .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                          .collect do |x|
+                                y = x.strip.underscore.singularize.camelize
+                              begin
+                                y.constantize
+                              rescue NameError => err
+                                #TODO: raise a warning
+                              end
+                            end
                           .each { |exclude| models.delete(exclude) }
       end
 
