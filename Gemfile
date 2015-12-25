@@ -1,7 +1,7 @@
 source 'https://rubygems.org'
 
-gem 'activesupport', '~> 4'
-gem 'activerecord', '~> 4'
+gem 'activesupport', '>= 4'
+gem 'activerecord', '>= 4'
 
 group :development, :test do
   gem 'byebug', '~> 2.0'
