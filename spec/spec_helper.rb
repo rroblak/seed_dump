@@ -3,6 +3,8 @@ require 'seed_dump'
 require 'active_support'
 require 'active_record'
 
+require 'tempfile'
+
 require 'byebug'
 
 require 'database_cleaner'
