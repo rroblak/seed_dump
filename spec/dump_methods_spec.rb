@@ -13,6 +13,43 @@ describe SeedDump do
       output + data.join(",\n  ") + "\n])\n"
   end
 
+  describe '::set_inclusions' do
+    context '"include" values is empty' do
+      let(:options) do
+        { exclude: [:id, :created_at, :updated_at], include: [] }
+      end
+
+      it 'returns unchanged value' do
+        SeedDump.send(:set_inclusions, options).should \
+          eq([:id, :created_at, :updated_at])
+      end
+    end
+
+    context '"include" values are on the "exclude" values list' do
+      let(:options) do
+        { exclude: [:id, :created_at, :updated_at],
+          include: [:id, :created_at] }
+      end
+
+      it 'returns value not on the "include" values list' do
+        SeedDump.send(:set_inclusions, options).should \
+          eq([:updated_at])
+      end
+    end
+
+    context '"include" values are not on the "exclude" values list' do
+      let(:options) do
+        { exclude: [:id, :created_at, :updated_at],
+          include: [:hoge, :fuga] }
+      end
+
+      it 'returns unchanged value' do
+        SeedDump.send(:set_inclusions, options).should \
+          eq([:id, :created_at, :updated_at])
+      end
+    end
+  end
+
   describe '::set_exclusions' do
     context 'exclude key has no value' do
       let(:options) { { exclude: nil } }
@@ -23,7 +60,7 @@ describe SeedDump do
       end
     end
 
-    context 'exclude key has only one value' do
+    context '"exclude" key has only one value' do
       let(:options) { { exclude: [:foo] } }
 
       it 'returns given options' do
@@ -32,7 +69,7 @@ describe SeedDump do
       end
     end
 
-    context 'exclude key has more than one value' do
+    context '"exclude" key has more than one value' do
       let(:options) { { exclude: [:foo, :bar] } }
 
       it 'returns given options' do
