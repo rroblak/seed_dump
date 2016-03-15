@@ -96,6 +96,11 @@ Exclude `name` and `age` from the dump:
 irb(main):004:0> SeedDump.dump(User, exclude: [:name, :age])
 ```
 
+Include `id` to the dump:
+```ruby
+irb(main):005:0> SeedDump.dump(User, include: [:created_at, :updated_at])
+```
+
 Options are specified as a Hash for the second argument.
 
 In the console, any relation of ActiveRecord rows can be dumped (not individual objects though)
@@ -117,6 +122,8 @@ Options are common to both the Rake task and the console, except where noted.
 `batch_size`: Controls the number of records that are written to file at a given time. Default: 1000. If you're running out of memory when dumping, try decreasing this. If things are dumping too slow, trying increasing this.
 
 `exclude`: Attributes to be excluded from the dump. Pass a comma-separated list to the Rake task (i.e. `name,age`) and an array on the console (i.e. `[:name, :age]`). Default: `[:id, :created_at, :updated_at]`.
+
+`include`: Attributes to be excluded from the default excluded colmuns such as `[:id, :created_at, :updated_at]`. Pass a comma-separated list to the Rake task (i.e. `created_at,updated_at`) and an array on the console (i.e. `[:created_at, :updated_at]`). Default: `[]`.
 
 `file`: Write to the specified output file. The Rake task default is `db/seeds.rb`. The console returns the dump as a string by default.
 
