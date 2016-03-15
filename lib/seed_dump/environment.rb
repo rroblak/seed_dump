@@ -31,6 +31,7 @@ class SeedDump
         model = model.limit(env['LIMIT'].to_i) if env['LIMIT']
 
         SeedDump.dump(model,
+                      include: (env['INCLUDE'] ? env['INCLUDE'].split(',').map {|i| i.strip.to_sym} : []),
                       append: append,
                       batch_size: (env['BATCH_SIZE'] ? env['BATCH_SIZE'].to_i : nil),
                       exclude: (env['EXCLUDE'] ? env['EXCLUDE'].split(',').map {|e| e.strip.to_sym} : nil),
