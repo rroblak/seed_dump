@@ -14,14 +14,25 @@ describe SeedDump do
   end
 
   describe '::set_inclusions' do
+    context '"include" is not given' do
+      let(:options) do
+        { exclude: [:id, :created_at, :updated_at] }
+      end
+
+      it 'does not change "options"' do
+        SeedDump.send(:set_inclusions, options)
+        options.should eq exclude: [:id, :created_at, :updated_at]
+      end
+    end
+
     context '"include" values is empty' do
       let(:options) do
         { exclude: [:id, :created_at, :updated_at], include: [] }
       end
 
-      it 'returns unchanged value' do
-        SeedDump.send(:set_inclusions, options).should \
-          eq([:id, :created_at, :updated_at])
+      it 'does not change "options' do
+        SeedDump.send(:set_inclusions, options)
+        options.should eq(exclude: [:id, :created_at, :updated_at], include: [])
       end
     end
 
@@ -32,8 +43,10 @@ describe SeedDump do
       end
 
       it 'returns value not on the "include" values list' do
-        SeedDump.send(:set_inclusions, options).should \
-          eq([:updated_at])
+        SeedDump.send(:set_inclusions, options)
+        options.should eq(
+          exclude: [:updated_at],
+          include: [:id, :created_at])
       end
     end
 
@@ -43,9 +56,11 @@ describe SeedDump do
           include: [:hoge, :fuga] }
       end
 
-      it 'returns unchanged value' do
-        SeedDump.send(:set_inclusions, options).should \
-          eq([:id, :created_at, :updated_at])
+      it 'does not change "option"' do
+        SeedDump.send(:set_inclusions, options)
+        options.should eq(
+          exclude: [:id, :created_at, :updated_at],
+          include: [:hoge, :fuga])
       end
     end
   end
@@ -54,9 +69,9 @@ describe SeedDump do
     context 'exclude key has no value' do
       let(:options) { { exclude: nil } }
 
-      it 'returns given options' do
-        SeedDump.send(:set_exclusions, options).should \
-          eq([:id, :created_at, :updated_at])
+      it '"exclude" values is default' do
+        SeedDump.send(:set_exclusions, options)
+        options.should eq(exclude: [:id, :created_at, :updated_at])
       end
     end
 
@@ -64,8 +79,8 @@ describe SeedDump do
       let(:options) { { exclude: [:foo] } }
 
       it 'returns given options' do
-        SeedDump.send(:set_exclusions, options).should \
-          eq([:foo])
+        SeedDump.send(:set_exclusions, options)
+        options.should eq(exclude: [:foo])
       end
     end
 
@@ -73,8 +88,8 @@ describe SeedDump do
       let(:options) { { exclude: [:foo, :bar] } }
 
       it 'returns given options' do
-        SeedDump.send(:set_exclusions, options).should \
-          eq([:foo, :bar])
+        SeedDump.send(:set_exclusions, options)
+        options.should eq(exclude: [:foo, :bar])
       end
     end
   end
