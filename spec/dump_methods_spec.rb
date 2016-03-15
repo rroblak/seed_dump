@@ -13,6 +13,35 @@ describe SeedDump do
       output + data.join(",\n  ") + "\n])\n"
   end
 
+  describe '::set_exclusions' do
+    context 'exclude key has no value' do
+      let(:options) { { exclude: nil } }
+
+      it 'returns given options' do
+        SeedDump.send(:set_exclusions, options).should \
+          eq([:id, :created_at, :updated_at])
+      end
+    end
+
+    context 'exclude key has only one value' do
+      let(:options) { { exclude: [:foo] } }
+
+      it 'returns given options' do
+        SeedDump.send(:set_exclusions, options).should \
+          eq([:foo])
+      end
+    end
+
+    context 'exclude key has more than one value' do
+      let(:options) { { exclude: [:foo, :bar] } }
+
+      it 'returns given options' do
+        SeedDump.send(:set_exclusions, options).should \
+          eq([:foo, :bar])
+      end
+    end
+  end
+
   describe '.dump' do
     before do
       Rails.application.eager_load!

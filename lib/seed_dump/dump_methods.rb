@@ -65,9 +65,12 @@ class SeedDump
       end
     end
 
-    def write_records_to_io(records, io, options)
+    def set_exclusions(options)
       options[:exclude] ||= [:id, :created_at, :updated_at]
+    end
 
+    def write_records_to_io(records, io, options)
+      set_exclusions(options)
       method = options[:import] ? 'import' : 'create!'
       io.write("#{model_for(records)}.#{method}(")
       if options[:import]
