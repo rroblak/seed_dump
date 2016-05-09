@@ -27,6 +27,15 @@ class SeedDump
                           .each { |exclude| models.delete(exclude) }
       end
 
+
+      # Eliminate HABTM models that have the same underlying table; otherwise 
+      # they'll be dumped twice, once in each direction. Probably should apply
+      # to all models, but it's possible there are edge cases in which this 
+      # is not the right behavior.
+
+      habtm, non_habtm = models.partition {|m| m.name =~ /^HABTM_/}
+      models = non_habtm + habtm.uniq { |m| m.table_name }
+
       models.each do |model|
         model = model.limit(env['LIMIT'].to_i) if env['LIMIT']
 
