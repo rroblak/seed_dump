@@ -21,8 +21,9 @@ class SeedDump
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
-      record.attributes.select {|key| key.is_a?(String) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+      record.attributes_before_type_cast.select {|key| key.is_a?(String) }.each do |attribute, value|
+        new_value = record.instance_variable_get("@attributes")[attribute].try(:serialized_value) ? record.instance_variable_get("@attributes")[attribute].serialized_value : value
+        attribute_strings << dump_attribute_new(attribute, new_value, options) unless options[:exclude].include?(attribute.to_sym)
       end
 
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
