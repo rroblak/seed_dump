@@ -87,7 +87,14 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n])\n")
+      io.write("\n]")
+      if options[:validate]==false && options[:import] 
+        io.write(",:validate => #{options[:validate]}")
+      end 
+      if options[:serialized]==false && options[:import] 
+        io.write(",:serialized => #{options[:serialized]}")
+      end 
+      io.write(")\n")
 
       if options[:file].present?
         nil
