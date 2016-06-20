@@ -23,7 +23,7 @@ class SeedDump
       # primary key attribute names as hashes).
       record.attributes_before_type_cast.select {|key| key.is_a?(String) }.each do |attribute, value|
         new_value = value
-        if (options[:serialized]=="false")
+        if (options[:serialized]==false)
           new_value = record.instance_variable_get("@attributes")[attribute].try(:serialized_value) ? record.instance_variable_get("@attributes")[attribute].serialized_value : value
         end
         attribute_strings << dump_attribute_new(attribute, new_value, options) unless options[:exclude].include?(attribute.to_sym)
