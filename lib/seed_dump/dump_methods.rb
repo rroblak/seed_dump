@@ -44,6 +44,8 @@ class SeedDump
                 value.to_s(:db)
               when Range
                 range_to_string(value)
+              when Hash
+                hash_to_string(value)
               else
                 value
               end
@@ -55,6 +57,36 @@ class SeedDump
       from = object.begin.respond_to?(:infinite?) && object.begin.infinite? ? '' : object.begin
       to   = object.end.respond_to?(:infinite?) && object.end.infinite? ? '' : object.end
       "[#{from},#{to}#{object.exclude_end? ? ')' : ']'}"
+    end
+
+    def hash_to_string(object)
+      object.each do |key, value|
+        case value
+        when Hash
+          hash_to_string(value)
+        when Array
+          array_to_string(value)
+        else
+          corrected_value = value_to_s(value)
+          object[key] = corrected_value
+        end
+      end
+      return object
+    end
+
+    def array_to_string(object)
+      object.each_index do |index|
+        value = object[index]
+        case value
+        when Hash
+          hash_to_string(value)
+        when Array
+          array_to_string(value)
+        else
+          object[index] = value_to_s(value)
+        end
+      end
+      return object
     end
 
     def open_io(options)
