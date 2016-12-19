@@ -31,8 +31,16 @@ class SeedDump
       "#{attribute_strings.join("; ")}"
     end
 
-    def dump_attribute_new(attribute, value, variable_name, options)
-      options[:import] ? value_to_s(value) : "#{variable_name}.try(:#{attribute}=, #{value_to_s(value)})"
+    def dump_attribute_new(record, attribute, value, variable_name, options)
+      if options[:import]
+        value_to_s(value)
+      else
+        if record.send(attribute).class.ancestors.include?(Cloudinary::CarrierWave)
+          "#{variable_name}.write_attribute(:#{attribute} ,#{value_to_s(value)})"
+        else
+          "#{variable_name}.try(:#{attribute}=, #{value_to_s(value)})"
+        end
+      end
     end
 
     def value_to_s(value)
