@@ -27,6 +27,31 @@ class SeedDump
                           .each { |exclude| models.delete(exclude) }
       end
 
+      # Orders the models to avoid conflicts with foreign keys
+      i = 0
+      repetition = 0  #To avoid an infinite loop if there are circular relations
+      while i < models.length
+        model = models[i]
+        reflections = model.reflections
+        foreign_key_klasses = reflections.collect{|a, b| b.klass if b.macro==:belongs_to && !%w(creator updater).include?(a)}
+        index = i
+        switched = false
+        foreign_key_klasses.each do |klass|
+          foreign_key_index = models.index(klass)
+          if !foreign_key_index.nil? && foreign_key_index > index
+            models[index], models[foreign_key_index] = models[foreign_key_index], models[index]
+            index = foreign_key_index
+            switched = true
+          end
+        end
+        if !switched || repetition == models.length
+          i += 1
+          repetition = 0
+        else
+          repetition += 1
+        end
+      end
+
       models.each do |model|
         model = model.limit(env['LIMIT'].to_i) if env['LIMIT']
 
