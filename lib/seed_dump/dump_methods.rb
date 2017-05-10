@@ -42,6 +42,8 @@ class SeedDump
                 value.to_s(:db)
               when Range
                 range_to_string(value)
+              when ->(v) { v.class.ancestors.map(&:to_s).include?('RGeo::Feature::Instance') }
+                value.to_s
               else
                 value
               end
