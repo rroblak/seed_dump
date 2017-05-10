@@ -1,3 +1,5 @@
+require 'tsort'
+
 class SeedDump
   module Environment
 
@@ -27,6 +29,35 @@ class SeedDump
                           .each { |exclude| models.delete(exclude) }
       end
 
+      # Eliminate HABTM models that have the same underlying table; otherwise 
+      # they'll be dumped twice, once in each direction. Probably should apply
+      # to all models, but it's possible there are edge cases in which this 
+      # is not the right behavior.
+
+      habtm, non_habtm = models.partition {|m| m.name =~ /^HABTM_/}
+      models = non_habtm + habtm.uniq { |m| m.table_name }
+
+      # Sort models in dependency order to accommodate foreign key checks or validations.
+      # Based on code by Ryan Stenberg
+      # https://www.viget.com/articles/identifying-foreign-key-dependencies-from-activerecordbase-classes
+
+      dependencies = models.map do |model|
+        associations = model.reflect_on_all_associations(:belongs_to)
+        referents = associations.map do |association|
+          if association.options[:polymorphic]
+            ActiveRecord::Base.descendants.select do |other_model|
+              other_model.reflect_on_all_associations(:has_many).any? do |has_many_association|
+                has_many_association.options[:as] == association.name
+              end
+            end
+          else
+            association.klass
+          end
+        end
+        [ model, referents.flatten ]
+      end
+      models = TSortableHash[*dependencies.flatten(1)].tsort
+
       models.each do |model|
         model = model.limit(env['LIMIT'].to_i) if env['LIMIT']
 
@@ -40,5 +71,15 @@ class SeedDump
         append = true
       end
     end
+
+    class TSortableHash < Hash
+      include TSort
+      alias tsort_each_node each_key
+      def tsort_each_child(node, &block)
+        fetch(node).each(&block)
+      end
+    end      
+
   end
 end
+
