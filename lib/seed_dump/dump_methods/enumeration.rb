@@ -5,7 +5,11 @@ class SeedDump
         # If the records don't already have an order,
         # order them by primary key ascending.
         if !records.respond_to?(:arel) || records.arel.orders.blank?
-          records.order("#{records.quoted_table_name}.#{records.quoted_primary_key} ASC")
+          if options[:mongo].present?
+            records.order("#{records}.#{records.__id__} ASC")
+          else
+            records.order("#{records.quoted_table_name}.#{records.quoted_primary_key} ASC")
+          end
         end
 
         num_of_batches, batch_size, last_batch_size = batch_params_from(records, options)
