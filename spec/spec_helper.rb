@@ -17,8 +17,6 @@ ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':me
 FactoryGirl.find_definitions
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
-
   config.order = 'random'
 
   config.include Helpers
