@@ -122,6 +122,8 @@ Options are common to both the Rake task and the console, except where noted.
 
 `import`: If `true`, output will be in the format needed by the [activerecord-import](https://github.com/zdennis/activerecord-import) gem, rather than the default format. Default: `false`.
 
+`import_options`: Options hash that will be passed to the activerecord-import gem (e.g. `{validate: false}`). Default: `{}`.
+
 `limit`: Dump no more than this amount of data. Default: no limit. Rake task only. In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
 
 `conditions`: Dump only specific records. In the console just pass in an ActiveRecord::Relation with the appropriate conditions (e.g. `SeedDump.dump(User.where(state: :active))`).

@@ -147,6 +147,15 @@ Sample.import([:string, :text, :integer, :float, :decimal, :datetime, :time, :da
 ])
 RUBY
       end
+      it 'should add import options if they are specified' do
+        SeedDump.dump(Sample, import: true, import_options: 'validate: false').should eq <<-RUBY
+Sample.import([:string, :text, :integer, :float, :decimal, :datetime, :time, :date, :binary, :boolean], [
+  ["string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false],
+  ["string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false],
+  ["string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false]
+], validate: false)
+RUBY
+      end
     end
   end
 end

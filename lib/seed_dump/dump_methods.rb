@@ -89,7 +89,13 @@ class SeedDump
         io.write(",\n  ") unless last_batch
       end
 
-      io.write("\n])\n")
+      io.write("\n]")
+
+      if options[:import] && options[:import_options].present?
+        io.write(", #{options[:import_options]}")
+      end
+
+      io.write(")\n")
 
       if options[:file].present?
         nil
