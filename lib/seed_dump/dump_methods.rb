@@ -25,6 +25,10 @@ class SeedDump
         attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
       end
 
+      options[:includes].each do |attribute, value|
+        attribute_strings << dump_attribute_new(attribute, value, options)
+      end if options[:includes].present?
+
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
 
       "#{open_character}#{attribute_strings.join(", ")}#{close_character}"

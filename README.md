@@ -118,6 +118,8 @@ Options are common to both the Rake task and the console, except where noted.
 
 `exclude`: Attributes to be excluded from the dump. Pass a comma-separated list to the Rake task (i.e. `name,age`) and an array on the console (i.e. `[:name, :age]`). Default: `[:id, :created_at, :updated_at]`.
 
+`includes`: A hash of key values you want to include as attribute of the dump (i.e. `{ password: 123, password_confirmation: 123 }`). Useful when you need to populate a virtual value like password of Devise. Default: `{}`.
+
 `file`: Write to the specified output file. The Rake task default is `db/seeds.rb`. The console returns the dump as a string by default.
 
 `import`: If `true`, output will be in the format needed by the [activerecord-import](https://github.com/zdennis/activerecord-import) gem, rather than the default format. Default: `false`.

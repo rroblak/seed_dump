@@ -113,6 +113,15 @@ describe SeedDump do
 
     context 'with an exclude parameter' do
       it 'should exclude the specified attributes from the dump' do
+        expected_output = %(Sample.create!([\n  {string: "string", text: "text", integer: 42, float: 3.14, decimal: "2.72", datetime: "1776-07-04 19:14:00", time: "2000-01-01 03:15:00", date: "1863-11-19", binary: "binary", boolean: false, key_1: "value_1", key_2: "value_2"}\n])\n)
+        includes        = { key_1: "value_1", key_2: "value_2" }
+
+        expect(SeedDump.dump(Sample.limit(1), includes: includes)).to eq expected_output
+      end
+    end
+
+    context 'when includes options is given' do
+      it 'includes the key value provided' do
         expected_output = "Sample.create!([\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
 
         SeedDump.dump(Sample, exclude: [:id, :created_at, :updated_at, :string, :float, :datetime]).should eq(expected_output)
