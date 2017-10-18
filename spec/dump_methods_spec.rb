@@ -127,6 +127,15 @@ describe SeedDump do
           expect(SeedDump.dump(Sample.limit(1), includes: includes)).to eq expected_output
         end
       end
+
+      context 'as lambda' do
+        it 'is executed' do
+          expected_output = %(Sample.create!([\n  {string: "string", text: "text", integer: 42, float: 3.14, decimal: "2.72", datetime: "1776-07-04 19:14:00", time: "2000-01-01 03:15:00", date: "1863-11-19", binary: "binary", boolean: false, key: "lambda"}\n])\n)
+          includes        = { key: -> { "lambda" } }
+
+          expect(SeedDump.dump(Sample.limit(1), includes: includes)).to eq expected_output
+        end
+      end
     end
 
     context 'when includes options is given' do

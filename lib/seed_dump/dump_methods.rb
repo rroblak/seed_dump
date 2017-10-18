@@ -26,9 +26,7 @@ class SeedDump
         attributes[attribute] = value unless options[:exclude].include?(attribute.to_sym)
       end
 
-      options[:includes].each do |attribute, value|
-        attributes[attribute.to_s] = value
-      end if options[:includes].present?
+      options[:includes].each { |attribute, value| attributes[attribute.to_s] = value } if options[:includes].present?
 
       attributes.each do |attribute, value|
         attribute_strings << dump_attribute_new(attribute, value, options)
@@ -53,6 +51,8 @@ class SeedDump
                 range_to_string(value)
               when ->(v) { v.class.ancestors.map(&:to_s).include?('RGeo::Feature::Instance') }
                 value.to_s
+              when Proc
+                value.call
               else
                 value
               end
