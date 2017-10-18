@@ -111,8 +111,8 @@ describe SeedDump do
       end
     end
 
-    context 'with an exclude parameter' do
-      it 'should exclude the specified attributes from the dump' do
+    context 'with an includes parameter' do
+      it 'includes the specified attributes from the dump' do
         expected_output = %(Sample.create!([\n  {string: "string", text: "text", integer: 42, float: 3.14, decimal: "2.72", datetime: "1776-07-04 19:14:00", time: "2000-01-01 03:15:00", date: "1863-11-19", binary: "binary", boolean: false, key_1: "value_1", key_2: "value_2"}\n])\n)
         includes        = { key_1: "value_1", key_2: "value_2" }
 
