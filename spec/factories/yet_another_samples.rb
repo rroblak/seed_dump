@@ -1,4 +1,4 @@
-FactoryGirl.define do
+FactoryBot.define do
   factory :yet_another_sample do
     string   'string'
     text     'text'

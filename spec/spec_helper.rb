@@ -8,17 +8,15 @@ require 'tempfile'
 require 'byebug'
 
 require 'database_cleaner'
-require 'factory_girl'
+require 'factory_bot'
 
 require './spec/helpers'
 
 ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
 
-FactoryGirl.find_definitions
+FactoryBot.find_definitions
 
 RSpec.configure do |config|
-  config.treat_symbols_as_metadata_keys_with_true_values = true
-
   config.order = 'random'
 
   config.include Helpers

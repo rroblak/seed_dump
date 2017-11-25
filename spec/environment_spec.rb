@@ -9,7 +9,7 @@ describe SeedDump do
     before(:each) do
       Rails.application.eager_load!
 
-      FactoryGirl.create(:sample)
+      FactoryBot.create(:sample)
     end
 
     describe 'APPEND' do
@@ -20,7 +20,7 @@ describe SeedDump do
       end
 
       it "should specify append as false the first time if the APPEND env var is not 'true' (and true after that)" do
-        FactoryGirl.create(:another_sample)
+        FactoryBot.create(:another_sample)
 
         SeedDump.should_receive(:dump).with(anything, include(append: false)).ordered
         SeedDump.should_receive(:dump).with(anything, include(append: true)).ordered
@@ -83,7 +83,7 @@ describe SeedDump do
       describe model_env do
         context "if #{model_env} is not specified" do
           it "should dump all non-empty models" do
-            FactoryGirl.create(:another_sample)
+            FactoryBot.create(:another_sample)
 
             [Sample, AnotherSample].each do |model|
               SeedDump.should_receive(:dump).with(model, anything)
@@ -95,7 +95,7 @@ describe SeedDump do
 
         context "if #{model_env} is specified" do
           it "should dump only the specified model" do
-            FactoryGirl.create(:another_sample)
+            FactoryBot.create(:another_sample)
 
             SeedDump.should_receive(:dump).with(Sample, anything)
 
@@ -113,7 +113,7 @@ describe SeedDump do
 
     describe "MODELS_EXCLUDE" do
       it "should dump all non-empty models except the specified models" do
-        FactoryGirl.create(:another_sample)
+        FactoryBot.create(:another_sample)
 
         SeedDump.should_receive(:dump).with(Sample, anything)
 
