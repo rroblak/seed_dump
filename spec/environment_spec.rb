@@ -19,6 +19,12 @@ describe SeedDump do
         SeedDump.dump_using_environment('APPEND' => 'true')
       end
 
+      it "should specify append as true if the APPEND env var is 'TRUE'" do
+        SeedDump.should_receive(:dump).with(anything, include(append: true))
+
+        SeedDump.dump_using_environment('APPEND' => 'TRUE')
+      end
+
       it "should specify append as false the first time if the APPEND env var is not 'true' (and true after that)" do
         FactoryBot.create(:another_sample)
 
