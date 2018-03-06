@@ -1,0 +1,84 @@
+digraph RGL__DirectedAdjacencyGraph {
+    Account [
+        fontsize = 8,
+        label = Account
+    ]
+
+    Supplier [
+        fontsize = 8,
+        label = Supplier
+    ]
+
+    AccountHistory [
+        fontsize = 8,
+        label = AccountHistory
+    ]
+
+    Appointment [
+        fontsize = 8,
+        label = Appointment
+    ]
+
+    Physician [
+        fontsize = 8,
+        label = Physician
+    ]
+
+    Patient [
+        fontsize = 8,
+        label = Patient
+    ]
+
+    Assembly [
+        fontsize = 8,
+        label = Assembly
+    ]
+
+    Author [
+        fontsize = 8,
+        label = Author
+    ]
+
+    Book [
+        fontsize = 8,
+        label = Book
+    ]
+
+    Part [
+        fontsize = 8,
+        label = Part
+    ]
+
+    "Assembly::HABTM_Parts" [
+        fontsize = 8,
+        label = "Assembly::HABTM_Parts"
+    ]
+
+    Account -> Supplier [
+        fontsize = 8
+    ]
+
+    AccountHistory -> Account [
+        fontsize = 8
+    ]
+
+    Appointment -> Physician [
+        fontsize = 8
+    ]
+
+    Appointment -> Patient [
+        fontsize = 8
+    ]
+
+    Book -> Author [
+        fontsize = 8
+    ]
+
+    "Assembly::HABTM_Parts" -> Assembly [
+        fontsize = 8
+    ]
+
+    "Assembly::HABTM_Parts" -> Part [
+        fontsize = 8
+    ]
+}

@@ -5,15 +5,15 @@
 # stub: seed_dump 3.2.4 ruby lib
 
 Gem::Specification.new do |s|
-  s.name = "seed_dump"
+  s.name = "seed_dump".freeze
   s.version = "3.2.4"
 
-  s.required_rubygems_version = Gem::Requirement.new(">= 0") if s.respond_to? :required_rubygems_version=
-  s.require_paths = ["lib"]
-  s.authors = ["Rob Halff", "Ryan Oblak"]
-  s.date = "2015-12-25"
-  s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
-  s.email = "rroblak@gmail.com"
+  s.required_rubygems_version = Gem::Requirement.new(">= 0".freeze) if s.respond_to? :required_rubygems_version=
+  s.require_paths = ["lib".freeze]
+  s.authors = ["Rob Halff".freeze, "Ryan Oblak".freeze]
+  s.date = "2017-12-19"
+  s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file".freeze
+  s.email = "rroblak@gmail.com".freeze
   s.extra_rdoc_files = [
     "README.md"
   ]
@@ -39,36 +39,39 @@ Gem::Specification.new do |s|
     "spec/helpers.rb",
     "spec/spec_helper.rb"
   ]
-  s.homepage = "https://github.com/rroblak/seed_dump"
-  s.licenses = ["MIT"]
-  s.rubygems_version = "2.4.5"
-  s.summary = "{Seed Dumper for Rails}"
+  s.homepage = "https://github.com/rroblak/seed_dump".freeze
+  s.licenses = ["MIT".freeze]
+  s.rubygems_version = "2.6.13".freeze
+  s.summary = "{Seed Dumper for Rails}".freeze
 
   if s.respond_to? :specification_version then
     s.specification_version = 4
 
     if Gem::Version.new(Gem::VERSION) >= Gem::Version.new('1.2.0') then
-      s.add_runtime_dependency(%q<activesupport>, [">= 4"])
-      s.add_runtime_dependency(%q<activerecord>, [">= 4"])
-      s.add_development_dependency(%q<byebug>, ["~> 2.0"])
-      s.add_development_dependency(%q<factory_girl>, ["~> 4.0"])
-      s.add_development_dependency(%q<activerecord-import>, ["~> 0.4"])
-      s.add_development_dependency(%q<jeweler>, ["~> 2.0"])
+      s.add_runtime_dependency(%q<activesupport>.freeze, [">= 4"])
+      s.add_runtime_dependency(%q<activerecord>.freeze, [">= 4"])
+      s.add_runtime_dependency(%q<activerecord-grapher>.freeze, ["~> 0"])
+      s.add_development_dependency(%q<byebug>.freeze, ["~> 2.0"])
+      s.add_development_dependency(%q<factory_bot>.freeze, ["~> 4.8.2"])
+      s.add_development_dependency(%q<activerecord-import>.freeze, ["~> 0.4"])
+      s.add_development_dependency(%q<jeweler>.freeze, ["~> 2.0"])
     else
-      s.add_dependency(%q<activesupport>, [">= 4"])
-      s.add_dependency(%q<activerecord>, [">= 4"])
-      s.add_dependency(%q<byebug>, ["~> 2.0"])
-      s.add_dependency(%q<factory_girl>, ["~> 4.0"])
-      s.add_dependency(%q<activerecord-import>, ["~> 0.4"])
-      s.add_dependency(%q<jeweler>, ["~> 2.0"])
+      s.add_dependency(%q<activesupport>.freeze, [">= 4"])
+      s.add_dependency(%q<activerecord>.freeze, [">= 4"])
+      s.add_dependency(%q<activerecord-grapher>.freeze, ["~> 0"])
+      s.add_dependency(%q<byebug>.freeze, ["~> 2.0"])
+      s.add_dependency(%q<factory_bot>.freeze, ["~> 4.8.2"])
+      s.add_dependency(%q<activerecord-import>.freeze, ["~> 0.4"])
+      s.add_dependency(%q<jeweler>.freeze, ["~> 2.0"])
     end
   else
-    s.add_dependency(%q<activesupport>, [">= 4"])
-    s.add_dependency(%q<activerecord>, [">= 4"])
-    s.add_dependency(%q<byebug>, ["~> 2.0"])
-    s.add_dependency(%q<factory_girl>, ["~> 4.0"])
-    s.add_dependency(%q<activerecord-import>, ["~> 0.4"])
-    s.add_dependency(%q<jeweler>, ["~> 2.0"])
+    s.add_dependency(%q<activesupport>.freeze, [">= 4"])
+    s.add_dependency(%q<activerecord>.freeze, [">= 4"])
+    s.add_dependency(%q<activerecord-grapher>.freeze, ["~> 0"])
+    s.add_dependency(%q<byebug>.freeze, ["~> 2.0"])
+    s.add_dependency(%q<factory_bot>.freeze, ["~> 4.8.2"])
+    s.add_dependency(%q<activerecord-import>.freeze, ["~> 0.4"])
+    s.add_dependency(%q<jeweler>.freeze, ["~> 2.0"])
   end
 end
 

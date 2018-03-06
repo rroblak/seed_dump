@@ -2,7 +2,7 @@ source 'https://rubygems.org'
 
 gem 'activesupport', '>= 4'
 gem 'activerecord', '>= 4'
-
+gem 'activerecord-grapher', path: '../activerecord-grapher'
 group :development, :test do
   gem 'byebug', '~> 2.0'
   gem 'factory_bot', '~> 4.8.2'

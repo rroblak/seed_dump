@@ -25,6 +25,7 @@ class SeedDump
     end
 
     private
+
     # Internal: Array of Strings corresponding to Active Record model class names
     # that should be excluded from the dump.
     ACTIVE_RECORD_INTERNAL_MODELS = ['ActiveRecord::SchemaMigration',
@@ -58,24 +59,31 @@ class SeedDump
       # If a models environment variable was not given, use descendants of
       # ActiveRecord::Base as the target set of models. This should be all
       # model classes in the project.
-      models = if models_env
-                 models_env.split(',')
-                           .collect {|x| x.strip.underscore.singularize.camelize.constantize }
-               else
-                 ActiveRecord::Base.descendants
-               end
+      models_from_env = if models_env
+                          models_env.split(',')
+                                    .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                        else
+                          ActiveRecord::Base.descendants
+                        end
 
+      ordered_models = ActiveRecord::Grapher.build_graph(no_sets: true)
+                         .topsort_iterator
+                         .to_a
+                         .reverse
+                         .select {|m| models_from_env.include?(m)}
 
       # Filter the set of models to exclude:
-      #   - The ActiveRecord::SchemaMigration model which is internal to Rails
-      #     and should not be part of the dumped data.
+      #   - The models that are internal to Rails and should not be part of the
+      #     dumped data.
       #   - Models that don't have a corresponding table in the database.
       #   - Models whose corresponding database tables are empty.
-      filtered_models = models.select do |model|
+      filtered_models = ordered_models.select do |model|
                           !ACTIVE_RECORD_INTERNAL_MODELS.include?(model.to_s) && \
                           model.table_exists? && \
                           model.exists?
                         end
+
+      filtered_models
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "APPEND"

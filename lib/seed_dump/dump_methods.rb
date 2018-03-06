@@ -117,7 +117,16 @@ class SeedDump
 
     def model_for(records)
       if records.is_a?(Class)
-        records
+        begin
+          # Try to eval the string representation of `records`.
+          # If it fails `records` is a private constant and needs 
+          # to be referenced via reflection (which is hacky,
+          # but seems to be the only way to do it).
+          eval(records.to_s)
+          records
+        rescue NameError
+          "Object.const_get('#{records.to_s}')"
+        end
       elsif records.respond_to?(:model)
         records.model
       else
