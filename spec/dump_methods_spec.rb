@@ -147,6 +147,18 @@ Sample.import([:string, :text, :integer, :float, :decimal, :datetime, :time, :da
 ])
 RUBY
       end
+
+      context 'should add the params to the output if they are specified' do
+        it 'should dump in the activerecord-import format when import is true' do
+          SeedDump.dump(Sample, import: { validate: false }, exclude: []).should eq <<-RUBY
+Sample.import([:id, :string, :text, :integer, :float, :decimal, :datetime, :time, :date, :binary, :boolean, :created_at, :updated_at], [
+  [1, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false, "1969-07-20 20:18:00", "1989-11-10 04:20:00"],
+  [2, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false, "1969-07-20 20:18:00", "1989-11-10 04:20:00"],
+  [3, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false, "1969-07-20 20:18:00", "1989-11-10 04:20:00"]
+], validate: false)
+          RUBY
+        end
+      end
     end
   end
 end
