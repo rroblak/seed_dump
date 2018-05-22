@@ -30,7 +30,7 @@ describe SeedDump do
 
     context 'with file option' do
       before do
-        @filename = Tempfile.new(File.join(Dir.tmpdir, 'foo'), nil)
+        @filename = Tempfile.new('foo', nil)
       end
 
       after do
