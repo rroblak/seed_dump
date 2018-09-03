@@ -129,3 +129,5 @@ Options are common to both the Rake task and the console, except where noted.
 `model[s]`: Restrict the dump to the specified comma-separated list of models. Default: all models. If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only. Example: `rake db:seed:dump MODELS="User, Position, Function"`
 
 `models_exclude`: Exclude the specified comma-separated list of models from the dump. Default: no models excluded. Rake task only. Example: `rake db:seed:dump MODELS_EXCLUDE="User"`
+
+`after_each_batch`: Accepts a lambda that is called after each batch of records is processed.

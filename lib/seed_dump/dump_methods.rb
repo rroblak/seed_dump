@@ -86,6 +86,8 @@ class SeedDump
       send(enumeration_method, records, io, options) do |record_strings, last_batch|
         io.write(record_strings.join(",\n  "))
 
+        options[:after_each_batch].call if options.include? :after_each_batch
+
         io.write(",\n  ") unless last_batch
       end
 
