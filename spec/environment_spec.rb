@@ -13,12 +13,6 @@ describe SeedDump do
     end
 
     describe 'APPEND' do
-      it "should specify append as true if the APPEND env var is 'true'" do
-        SeedDump.should_receive(:dump).with(anything, include(append: true))
-
-        SeedDump.dump_using_environment('APPEND' => 'true')
-      end
-
       it "should specify append as true if the APPEND env var is 'TRUE'" do
         SeedDump.should_receive(:dump).with(anything, include(append: true))
 
