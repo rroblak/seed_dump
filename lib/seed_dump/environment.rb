@@ -5,7 +5,7 @@ class SeedDump
       Rails.application.eager_load!
       # depending on the outcome of https://github.com/rails/rails/issues/37006 this may not need to stay - until then
       # this is needed to support the change in eager_load! not working the same in Zeitwerk (default rails 6 mode)
-      Zeitwerk::Loader.eager_load_all if proc { Rails::VERSION::MAJOR >= 6 && Rails.autoloaders.zeitwerk_enabled? }
+      Zeitwerk::Loader.eager_load_all if Rails::VERSION::MAJOR >= 6 && Rails.autoloaders.zeitwerk_enabled?
 
       models = retrieve_models(env) - retrieve_models_exclude(env)
 
