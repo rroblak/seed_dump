@@ -26,6 +26,18 @@ class Rails
   def self.env
     'test'
   end
+
+  module VERSION
+    MAJOR = 6
+  end
+
+  def self.autoloaders
+    self
+  end
+
+  def self.zeitwerk_enabled?
+    true
+  end
 end
 
 module Helpers
@@ -88,5 +100,13 @@ module Helpers
     Sample.create!
 
     ChildSample.create!
+  end
+end
+
+module Zeitwerk
+  class Loader
+    def self.eager_load_all
+      nil
+    end
   end
 end
