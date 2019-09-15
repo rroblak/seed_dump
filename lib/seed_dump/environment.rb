@@ -76,6 +76,7 @@ class SeedDump
       #   - Models whose corresponding database tables are empty.
       filtered_models = models.select do |model|
                           !ACTIVE_RECORD_INTERNAL_MODELS.include?(model.to_s) && \
+                          model.name != "primary::SchemaMigration" && \
                           model.table_exists? && \
                           model.exists?
                         end
