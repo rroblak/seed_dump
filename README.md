@@ -68,6 +68,11 @@ Exclude `name` and `age` from the dump:
 rake db:seed:dump EXCLUDE=name,age
 ```
 
+Include `id` on the dump (Default exclude is `id,created_at,updated_at`):
+```sh
+rake db:seed:dump EXCLUDE=created_at,updated_at
+```
+
 There are more options that can be set— see below for all of them.
 
 ### Console
@@ -94,6 +99,11 @@ irb(main):003:0> SeedDump.dump(User, file: 'db/seeds.rb', append: true)
 Exclude `name` and `age` from the dump:
 ```ruby
 irb(main):004:0> SeedDump.dump(User, exclude: [:name, :age])
+```
+
+Include `id` on the dump (Default exclude is `[:id, :created_at, :updated_at]`):
+```sh
+irb(main):004:0> SeedDump.dump(User, exclude: [:created_at, :updated_at])
 ```
 
 Options are specified as a Hash for the second argument.
