@@ -13,39 +13,54 @@ describe SeedDump do
     end
 
     describe 'APPEND' do
-      it "should specify append as true if the APPEND env var is 'true'" do
-        SeedDump.should_receive(:dump).with(anything, include(append: true))
+      subject { described_class.dump_using_environment('APPEND' => append) }
 
-        SeedDump.dump_using_environment('APPEND' => 'true')
+      context 'env var is true' do
+        let(:append) { 'true' }
+
+        it "should specify append as true" do
+          expect(SeedDump).to receive(:dump).with(anything, include(append: true))
+          subject
+        end
       end
 
-      it "should specify append as false the first time if the APPEND env var is not 'true' (and true after that)" do
-        FactoryGirl.create(:another_sample)
+      context 'env var is false' do
+        let(:append) { 'false' }
 
-        SeedDump.should_receive(:dump).with(anything, include(append: false)).ordered
-        SeedDump.should_receive(:dump).with(anything, include(append: true)).ordered
+        before do
+          FactoryGirl.create(:another_sample)
+        end
 
-        SeedDump.dump_using_environment('APPEND' => 'false')
+        it "should specify append as false the first time if the APPEND env var is not 'true' (and true after that)" do
+          expect(SeedDump).to receive(:dump).with(anything, include(append: false)).ordered
+          expect(SeedDump).to receive(:dump).with(anything, include(append: true)).ordered
+          subject
+        end
       end
     end
 
     describe 'BATCH_SIZE' do
-      it 'should pass along the specified batch size' do
-        SeedDump.should_receive(:dump).with(anything, include(batch_size: 17))
+      let(:batch_size) { 17 }
 
-        SeedDump.dump_using_environment('BATCH_SIZE' => '17')
+      subject { described_class.dump_using_environment('BATCH_SIZE' => batch_size) }
+
+      it 'should pass along the specified batch size' do
+        expect(SeedDump).to receive(:dump).with(anything, include(batch_size: batch_size))
+        subject
       end
 
-      it 'should pass along a nil batch size if BATCH_SIZE is not specified' do
-        SeedDump.should_receive(:dump).with(anything, include(batch_size: nil))
+      context 'not specified' do
+        it 'should pass along a nil batch size ' do
+          expect(SeedDump).to receive(:dump).with(anything, include(batch_size: nil))
 
-        SeedDump.dump_using_environment
+          SeedDump.dump_using_environment
+        end
       end
     end
 
     describe 'EXCLUDE' do
       it 'should pass along any attributes to be excluded' do
-        SeedDump.should_receive(:dump).with(anything, include(exclude: [:baggins, :saggins]))
+        expect(SeedDump).to receive(:dump).with(anything, include(exclude: [:baggins, :saggins]))
 
         SeedDump.dump_using_environment('EXCLUDE' => 'baggins,saggins')
       end
@@ -53,13 +68,13 @@ describe SeedDump do
 
     describe 'FILE' do
       it 'should pass the FILE parameter to the dump method correctly' do
-        SeedDump.should_receive(:dump).with(anything, include(file: 'blargle'))
+        expect(SeedDump).to receive(:dump).with(anything, include(file: 'blargle'))
 
         SeedDump.dump_using_environment('FILE' => 'blargle')
       end
 
       it 'should pass db/seeds.rb as the file parameter if no FILE is specified' do
-        SeedDump.should_receive(:dump).with(anything, include(file: 'db/seeds.rb'))
+        expect(SeedDump).to receive(:dump).with(anything, include(file: 'db/seeds.rb'))
 
         SeedDump.dump_using_environment
       end
@@ -68,9 +83,8 @@ describe SeedDump do
     describe 'LIMIT' do
       it 'should apply the specified limit to the records' do
         relation_double = double('ActiveRecord relation double')
-        Sample.should_receive(:limit).with(5).and_return(relation_double)
-
-        SeedDump.should_receive(:dump).with(relation_double, anything)
+        expect(Sample).to receive(:limit).with(5).and_return(relation_double)
+        expect(SeedDump).to receive(:dump).with(relation_double, anything)
         SeedDump.stub(:dump)
 
         SeedDump.dump_using_environment('LIMIT' => '5')
@@ -82,7 +96,7 @@ describe SeedDump do
         FactoryGirl.create(:another_sample)
 
         [Sample, AnotherSample].each do |model|
-          SeedDump.should_receive(:dump).with(model, anything)
+          expect(SeedDump).to receive(:dump).with(model, anything)
         end
 
         SeedDump.dump_using_environment
