@@ -28,7 +28,8 @@ class SeedDump
     # Internal: Array of Strings corresponding to Active Record model class names
     # that should be excluded from the dump.
     ACTIVE_RECORD_INTERNAL_MODELS = ['ActiveRecord::SchemaMigration',
-                                     'ActiveRecord::InternalMetadata']
+                                     'ActiveRecord::InternalMetadata',
+                                     'primary::SchemaMigration']
 
     # Internal: Retrieves an Array of Active Record model class constants to be
     # dumped.
