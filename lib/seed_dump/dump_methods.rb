@@ -72,7 +72,7 @@ class SeedDump
     def write_records_to_io(records, io, options)
       options[:exclude] ||= %i[id created_at updated_at]
 
-      method = options[:import] ? 'import' : 'create!'
+      method = chosen_creation_method(options)
       io.write("#{model_for(records)}.#{method}(")
       if options[:import]
         io.write("[#{attribute_names(records, options).map { |name| name.to_sym.inspect }.join(', ')}], ")
@@ -98,6 +98,16 @@ class SeedDump
       else
         io.rewind
         io.read
+      end
+    end
+
+    def chosen_creation_method(options)
+      if options[:import]
+        'import'
+      elsif options[:insert_all]
+        'insert_all'
+      else
+        'create!'
       end
     end
 

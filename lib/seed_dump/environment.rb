@@ -9,13 +9,16 @@ class SeedDump
       append = retrieve_append_value(env)
       models.each do |model|
         model = model.limit(limit) if limit.present?
+        options = {
+          append: append,
+          batch_size: retrieve_batch_size_value(env),
+          exclude: retrieve_exclude_value(env),
+          insert_all: retrieve_insert_all_value(env),
+          file: retrieve_file_value(env),
+          import: retrieve_import_value(env)
+        }
 
-        SeedDump.dump(model,
-                      append: append,
-                      batch_size: retrieve_batch_size_value(env),
-                      exclude: retrieve_exclude_value(env),
-                      file: retrieve_file_value(env),
-                      import: retrieve_import_value(env))
+        SeedDump.dump(model, options)
 
         append = true # Always append for every model after the first
         # (append for the first model is determined by
@@ -89,6 +92,13 @@ class SeedDump
     # false if  no value exists.
     def retrieve_import_value(env)
       parse_boolean_value(env['IMPORT'])
+    end
+
+    # Internal: Returns a Boolean indicating whether the value for the "INSERT_ALL"
+    # key in the given Hash is equal to the String "true" (ignoring case),
+    # false if  no value exists.
+    def retrieve_insert_all_value(env)
+      parse_boolean_value(env['INSERT_ALL'])
     end
 
     # Internal: Retrieves an Array of Class constants parsed from the value for

@@ -1,8 +1,8 @@
 require 'spec_helper'
 
 describe SeedDump do
-  def expected_output(include_id = false, id_offset = 0)
-    output = "Sample.create!([\n  "
+  def expected_output(operation: 'create!', include_id: false, id_offset: 0)
+    output = "Sample.#{operation}([\n  "
 
     data = []
     ((1 + id_offset)..(3 + id_offset)).each do |i|
@@ -83,7 +83,10 @@ describe SeedDump do
           Sample.delete_all
           FactoryBot.create_list(:sample, 4)
 
-          described_class.dump(Sample.limit(3), batch_size: 2).should eq(expected_output(false, 3))
+          described_class.dump(Sample.limit(3), batch_size: 2).should eq(
+            expected_output(include_id: false,
+                            id_offset: 3)
+          )
         end
       end
     end
@@ -124,6 +127,12 @@ describe SeedDump do
         expected_output = "RangeSample.create!([\n  {range_with_end_included: \"[1,3]\", range_with_end_excluded: \"[1,3)\", positive_infinite_range: \"[1,]\", negative_infinite_range: \"[,1]\", infinite_range: \"[,]\"}\n])\n"
 
         described_class.dump([RangeSample.new]).should eq(expected_output)
+      end
+    end
+
+    context 'activerecord-insert-all' do
+      it 'dumps in the activerecord-insert-all format when insert-all is true' do
+        described_class.dump(Sample, insert_all: true).should eq(expected_output(operation: 'insert_all'))
       end
     end
 
