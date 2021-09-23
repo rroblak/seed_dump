@@ -3,14 +3,13 @@ class SeedDump
     include Enumeration
 
     def dump(records, options = {})
-      return nil if records.count == 0
+      return nil if records.count.zero?
 
       io = open_io(options)
 
       write_records_to_io(records, io, options)
-
-      ensure
-        io.close if io.present?
+    ensure
+      io.close if io.present?
     end
 
     private
@@ -21,13 +20,16 @@ class SeedDump
       # We select only string attribute names to avoid conflict
       # with the composite_primary_keys gem (it returns composite
       # primary key attribute names as hashes).
-      record.attributes.select {|key| key.is_a?(String) || key.is_a?(Symbol) }.each do |attribute, value|
-        attribute_strings << dump_attribute_new(attribute, value, options) unless options[:exclude].include?(attribute.to_sym)
+      record.attributes.select { |key| key.is_a?(String) || key.is_a?(Symbol) }.each do |attribute, value|
+        unless options[:exclude].include?(attribute.to_sym)
+          attribute_strings << dump_attribute_new(attribute, value,
+                                                  options)
+        end
       end
 
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
 
-      "#{open_character}#{attribute_strings.join(", ")}#{close_character}"
+      "#{open_character}#{attribute_strings.join(', ')}#{close_character}"
     end
 
     def dump_attribute_new(attribute, value, options)
@@ -68,12 +70,12 @@ class SeedDump
     end
 
     def write_records_to_io(records, io, options)
-      options[:exclude] ||= [:id, :created_at, :updated_at]
+      options[:exclude] ||= %i[id created_at updated_at]
 
       method = options[:import] ? 'import' : 'create!'
       io.write("#{model_for(records)}.#{method}(")
       if options[:import]
-        io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
+        io.write("[#{attribute_names(records, options).map { |name| name.to_sym.inspect }.join(', ')}], ")
       end
       io.write("[\n  ")
 
@@ -100,7 +102,7 @@ class SeedDump
     end
 
     def active_record_import_options(options)
-      return unless options[:import] && options[:import].is_a?(Hash)
+      return unless options[:import].is_a?(Hash)
 
       ', ' + options[:import].map { |key, value| "#{key}: #{value}" }.join(', ')
     end
@@ -112,7 +114,7 @@ class SeedDump
                           records[0].attribute_names
                         end
 
-      attribute_names.select {|name| !options[:exclude].include?(name.to_sym)}
+      attribute_names.reject { |name| options[:exclude].include?(name.to_sym) }
     end
 
     def model_for(records)
@@ -124,6 +126,5 @@ class SeedDump
         records[0].class
       end
     end
-
   end
 end

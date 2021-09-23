@@ -1,0 +1,99 @@
+inherit_from: .rubocop_todo.yml
+
+require:
+  - rubocop-performance
+  - rubocop-rspec
+
+Layout/LineLength:
+  Max: 120
+
+Lint/MissingSuper:
+  Enabled: false
+
+Style/FrozenStringLiteralComment:
+  Enabled: false
+
+Style/Documentation:
+  Enabled: false
+
+Style/MixinUsage:
+  Exclude:
+    - 'bin/setup'
+    - 'bin/update'
+    - 'db/seeds.rb'
+
+Style/NonNilCheck:
+  IncludeSemanticChanges: true
+
+Style/HashEachMethods:
+  Enabled: true
+
+Style/HashTransformKeys:
+  Enabled: true
+
+Style/HashTransformValues:
+  Enabled: true
+
+Style/HashAsLastArrayItem:
+  Enabled: false
+
+Metrics/BlockLength:
+  Exclude:
+    - 'spec/**/*.rb'
+    - 'config/environments/**/*.rb'
+    - 'config/routes.rb'
+    - 'db/seeds.rb'
+
+Metrics/MethodLength:
+  CountAsOne:
+    - array
+    - hash
+    - heredoc
+
+RSpec/MultipleMemoizedHelpers:
+  Enabled: false
+
+RSpec/MultipleExpectations:
+  Enabled: false
+
+RSpec/DescribeClass:
+  Exclude:
+    - 'spec/system/**/*'
+    - 'spec/views/**/*'
+
+RSpec/AnyInstance:
+  Enabled: false
+
+RSpec/DescribedClass:
+  SkipBlocks: true
+
+RSpec/ExampleLength:
+  Max: 20
+  Exclude:
+    - 'spec/system/**/*'
+    - 'spec/requests/**/*'
+    - 'spec/views/**/*'
+
+RSpec/InstanceVariable:
+  Exclude:
+    - 'spec/views/**/*'
+
+RSpec/NestedGroups:
+  Max: 5
+
+AllCops:
+  NewCops: enable
+  Exclude:
+    - 'bin/**/*'
+    - 'script/**/*'
+    - 'log/**/*'
+    - 'public/**/*'
+    - 'tmp/**/*'
+    - 'db/schema.rb'
+    - 'vendor/**/*'
+    - 'node_modules/**/*'
+    - 'config/initializers/simple_form_bootstrap.rb'
+
+inherit_mode:
+  merge:
+    - Exclude

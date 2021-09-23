@@ -1,6 +1,5 @@
 class SeedDump
   module Environment
-
     def dump_using_environment(env = {})
       Rails.application.eager_load!
 
@@ -19,16 +18,17 @@ class SeedDump
                       import: retrieve_import_value(env))
 
         append = true # Always append for every model after the first
-                      # (append for the first model is determined by
-                      # the APPEND environment variable).
+        # (append for the first model is determined by
+        # the APPEND environment variable).
       end
     end
 
     private
+
     # Internal: Array of Strings corresponding to Active Record model class names
     # that should be excluded from the dump.
     ACTIVE_RECORD_INTERNAL_MODELS = ['ActiveRecord::SchemaMigration',
-                                     'ActiveRecord::InternalMetadata']
+                                     'ActiveRecord::InternalMetadata'].freeze
 
     # Internal: Retrieves an Array of Active Record model class constants to be
     # dumped.
@@ -60,11 +60,10 @@ class SeedDump
       # model classes in the project.
       models = if models_env
                  models_env.split(',')
-                           .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                           .collect { |x| x.strip.underscore.singularize.camelize.constantize }
                else
                  ActiveRecord::Base.descendants
                end
-
 
       # Filter the set of models to exclude:
       #   - The ActiveRecord::SchemaMigration model which is internal to Rails
@@ -72,10 +71,10 @@ class SeedDump
       #   - Models that don't have a corresponding table in the database.
       #   - Models whose corresponding database tables are empty.
       filtered_models = models.select do |model|
-                          !ACTIVE_RECORD_INTERNAL_MODELS.include?(model.to_s) && \
-                          model.table_exists? && \
-                          model.exists?
-                        end
+        !ACTIVE_RECORD_INTERNAL_MODELS.include?(model.to_s) && \
+          model.table_exists? && \
+          model.exists?
+      end
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "APPEND"
@@ -110,7 +109,7 @@ class SeedDump
     # Internal: Retrieves an Array of Symbols from the value for the "EXCLUDE"
     # key from the given Hash, and nil if no such key exists.
     def retrieve_exclude_value(env)
-      env['EXCLUDE'] ? env['EXCLUDE'].split(',').map {|e| e.strip.to_sym} : nil
+      env['EXCLUDE'] ? env['EXCLUDE'].split(',').map { |e| e.strip.to_sym } : nil
     end
 
     # Internal: Retrieves the value for the "FILE" key from the given Hash, and
@@ -133,7 +132,7 @@ class SeedDump
 
     # Internal: Parses a Boolean from the given value.
     def parse_boolean_value(value)
-      value.to_s.downcase == 'true'
+      value.to_s.casecmp('true').zero?
     end
   end
 end

@@ -1,7 +1,7 @@
 class SeedDump
   module DumpMethods
     module Enumeration
-      def active_record_enumeration(records, io, options)
+      def active_record_enumeration(records, _io, options)
         # If the records don't already have an order,
         # order them by primary key ascending.
         if !records.respond_to?(:arel) || records.arel.orders.blank?
@@ -12,7 +12,6 @@ class SeedDump
 
         # Loop through each batch
         (1..num_of_batches).each do |batch_number|
-
           record_strings = []
 
           last_batch = (batch_number == num_of_batches)
@@ -32,7 +31,7 @@ class SeedDump
         end
       end
 
-      def enumerable_enumeration(records, io, options)
+      def enumerable_enumeration(records, _io, options)
         num_of_batches, batch_size = batch_params_from(records, options)
 
         record_strings = []
@@ -44,12 +43,12 @@ class SeedDump
 
           last_batch = (i == records.length - 1)
 
-          if (record_strings.length == batch_size) || last_batch
-            yield record_strings, last_batch
+          next unless (record_strings.length == batch_size) || last_batch
 
-            record_strings = []
-            batch_number += 1
-          end
+          yield record_strings, last_batch
+
+          record_strings = []
+          batch_number += 1
         end
       end
 
@@ -60,10 +59,10 @@ class SeedDump
 
         remainder = count % batch_size
 
-        [((count.to_f / batch_size).ceil), batch_size, (remainder == 0 ? batch_size : remainder)]
+        [(count.to_f / batch_size).ceil, batch_size, (remainder.zero? ? batch_size : remainder)]
       end
 
-      def batch_size_from(records, options)
+      def batch_size_from(_records, options)
         if options[:batch_size].present?
           options[:batch_size].to_i
         else

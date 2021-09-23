@@ -8,7 +8,7 @@ class Rails
   def self.eager_load!
     @already_called ||= false
 
-    if !@already_called
+    unless @already_called
       Object.const_set('Sample', Class.new(ActiveRecord::Base))
 
       Object.const_set('AnotherSample', Class.new(ActiveRecord::Base))
@@ -32,8 +32,8 @@ module Helpers
   def create_db
     ActiveRecord::Migration.verbose = false
 
-    ActiveRecord::Schema.define(:version => 1) do
-      create_table 'samples', :force => true do |t|
+    ActiveRecord::Schema.define(version: 1) do
+      create_table 'samples', force: true do |t|
         t.string   'string'
         t.text     'text'
         t.integer  'integer'
@@ -44,11 +44,11 @@ module Helpers
         t.date     'date'
         t.binary   'binary'
         t.boolean  'boolean'
-        t.datetime 'created_at', :null => false
-        t.datetime 'updated_at', :null => false
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
       end
 
-      create_table 'another_samples', :force => true do |t|
+      create_table 'another_samples', force: true do |t|
         t.string   'string'
         t.text     'text'
         t.integer  'integer'
@@ -59,11 +59,11 @@ module Helpers
         t.date     'date'
         t.binary   'binary'
         t.boolean  'boolean'
-        t.datetime 'created_at', :null => false
-        t.datetime 'updated_at', :null => false
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
       end
 
-      create_table 'yet_another_samples', :force => true do |t|
+      create_table 'yet_another_samples', force: true do |t|
         t.string   'string'
         t.text     'text'
         t.integer  'integer'
@@ -74,8 +74,8 @@ module Helpers
         t.date     'date'
         t.binary   'binary'
         t.boolean  'boolean'
-        t.datetime 'created_at', :null => false
-        t.datetime 'updated_at', :null => false
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
       end
 
       create_table 'empty_models', force: true

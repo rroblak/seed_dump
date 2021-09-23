@@ -12,7 +12,7 @@ require 'factory_bot'
 
 require './spec/helpers'
 
-ActiveRecord::Base.establish_connection(:adapter => 'sqlite3', :database => ':memory:')
+ActiveRecord::Base.establish_connection(adapter: 'sqlite3', database: ':memory:')
 
 FactoryBot.find_definitions
 
@@ -26,11 +26,11 @@ RSpec.configure do |config|
     DatabaseCleaner.clean_with(:truncation)
   end
 
-  config.before(:each) do
+  config.before do
     DatabaseCleaner.start
   end
 
-  config.after(:each) do
+  config.after do
     DatabaseCleaner.clean
   end
 end
