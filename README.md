@@ -7,19 +7,20 @@ It allows you to create seed data files from the existing data in your database.
 
 You can also use Seed Dump from the Rails console. See below for usage examples.
 
-Note: if you want to use Seed Dump with Rails 3 or earlier, use [version 0.5.3](http://rubygems.org/gems/seed_dump/versions/0.5.3).
-
 Installation
 ------------
 
 Add it to your Gemfile with:
 ```ruby
-gem 'seed_dump'
+gem 'seed_dump', git: 'git://github.com/renuo/seed_dump', branch: 'master'
 ```
-Or install it by hand:
-```sh
-$ gem install seed_dump
-```
+
+Documentation
+-------------
+
+This documentation is point to the develop branch of the repository.
+For the documentation of the current release head to: https://github.com/renuo/seed_dump/blob/master/README.md.
+
 Examples
 --------
 
@@ -110,11 +111,10 @@ User.create!([
 Options
 -------
 
-Options are common to both the Rake task and the console, except where noted.
-
-`append`: If set to `true`, append the data to the file instead of overwriting it. Default: `false`.
-
-`batch_size`: Controls the number of records that are written to file at a given time. Default: 1000. If you're running out of memory when dumping, try decreasing this. If things are dumping too slow, trying increasing this.
+| Option     | Values        | Usage                                                                                                          | Default |
+|------------|---------------|----------------------------------------------------------------------------------------------------------------|---------|
+| append     | [true, false] | Set if the data should be appended to the file or overwritten                                                  | false   |
+| batch_size | [Integer]     | Number of records written to the file at once. Decrease if you are running out of memory, Increase if too slow | 1000    |
 
 `exclude`: Attributes to be excluded from the dump. Pass a comma-separated list to the Rake task (i.e. `name,age`) and an array on the console (i.e. `[:name, :age]`). Default: `[:id, :created_at, :updated_at]`.
 
