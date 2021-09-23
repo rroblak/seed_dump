@@ -12,6 +12,14 @@ describe SeedDump do
       FactoryBot.create(:sample)
     end
 
+    describe 'INSERT_ALL' do
+      it "specifies append as true if the INSERT_ALL env var is 'true'" do
+        described_class.should_receive(:dump).with(anything, include(insert_all: true))
+
+        described_class.dump_using_environment('INSERT_ALL' => 'true')
+      end
+    end
+
     describe 'APPEND' do
       it "specifies append as true if the APPEND env var is 'true'" do
         described_class.should_receive(:dump).with(anything, include(append: true))
