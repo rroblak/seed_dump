@@ -111,21 +111,15 @@ User.create!([
 Options
 -------
 
-| Option     | Values        | Usage                                                                                                          | Default |
-|------------|---------------|----------------------------------------------------------------------------------------------------------------|---------|
-| append     | [true, false] | Set if the data should be appended to the file or overwritten                                                  | false   |
-| batch_size | [Integer]     | Number of records written to the file at once. Decrease if you are running out of memory, Increase if too slow | 1000    |
-
-`exclude`: Attributes to be excluded from the dump. Pass a comma-separated list to the Rake task (i.e. `name,age`) and an array on the console (i.e. `[:name, :age]`). Default: `[:id, :created_at, :updated_at]`.
-
-`file`: Write to the specified output file. The Rake task default is `db/seeds.rb`. The console returns the dump as a string by default.
-
-`import`: If `true`, output will be in the format needed by the [activerecord-import](https://github.com/zdennis/activerecord-import) gem, rather than the default format. Default: `false`.
-
-`limit`: Dump no more than this amount of data. Default: no limit. Rake task only. In the console just pass in an ActiveRecord::Relation with the appropriate limit (e.g. `SeedDump.dump(User.limit(5))`).
-
-`conditions`: Dump only specific records. In the console just pass in an ActiveRecord::Relation with the appropriate conditions (e.g. `SeedDump.dump(User.where(state: :active))`).
-
-`model[s]`: Restrict the dump to the specified comma-separated list of models. Default: all models. If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". Rake task only. Example: `rake db:seed:dump MODELS="User, Position, Function"`
-
-`models_exclude`: Exclude the specified comma-separated list of models from the dump. Default: no models excluded. Rake task only. Example: `rake db:seed:dump MODELS_EXCLUDE="User"`
+| Option          | Values        | Usage                                                                                                                      | Default                         |
+|-----------------|---------------|----------------------------------------------------------------------------------------------------------------------------|---------------------------------|
+| append          | [true, false] | Set if the data should be appended to the file or overwritten                                                              | false                           |
+| batch_size      | [Integer]     | Number of records written to the file at once. Decrease if you are running out of memory, Increase if too slow             | 1000                            |
+| limit           | [Integer]     | Limits the number of entries dumped into the seeds file                                                                    | no                              |
+| file            | [Path]        | Sets the file path for the output seeds file                                                                               | 'db/seeds.rb'                   |
+| exclude         | [Columns]     | Exclude multiple attributes from the dump                                                                                  | [:id, :created_at, :updated_at] |
+| import          | [true, false] | Use the format for the [activerecord-import](https://github.com/zdennis/activerecord-import) gem                           | false                           |
+| conditions      | []            | Dump only specific records to the seeds. Can be set in the console with (e.g. `SeedDump.dump(User.where(state: :active))`) | None                            |
+| models          | [Models]      | List of models that should be dumped to the seeds                                                                          | All Models                      |
+| models_excluded | [Models]      | List of modles that should be excluded from the seeds dump                                                                 | No Models excluded              |
+| insert_all      | [true, false] | Set if the data should use insert_all instead of create! in the dump                                                       | false                           |
