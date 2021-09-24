@@ -12,7 +12,7 @@ class SeedDump
         options = {
           append: append,
           batch_size: retrieve_batch_size_value(env),
-          exclude: retrieve_exclude_value(env),
+          exclude: retrieve_dump_all_value(env) ? [] : retrieve_exclude_value(env),
           insert_all: retrieve_insert_all_value(env),
           file: retrieve_file_value(env),
           import: retrieve_import_value(env)
@@ -99,6 +99,13 @@ class SeedDump
     # false if  no value exists.
     def retrieve_insert_all_value(env)
       parse_boolean_value(env['INSERT_ALL'])
+    end
+
+    # Internal: Returns a Boolean indicating whether the value for the "DUMP_ALL"
+    # key in the given Hash is equal to the String "true" (ignoring case),
+    # false if no value exists.
+    def retrieve_dump_all_value(env)
+      parse_boolean_value(env['DUMP_ALL'])
     end
 
     # Internal: Retrieves an Array of Class constants parsed from the value for
