@@ -27,8 +27,14 @@ class SeedDump
             record_strings << dump_record(record, options)
           end
 
-          yield record_strings, last_batch
+          yield record_strings, last_batch, split_file?(batch_number, options)
         end
+      end
+
+      def split_file?(batch_number, options)
+        return false if options[:file_split_limit].nil?
+
+        ((batch_number * options[:batch_size]) / options[:current_file_index]) >= options[:file_split_limit]
       end
 
       def enumerable_enumeration(records, _io, options)
@@ -63,11 +69,7 @@ class SeedDump
       end
 
       def batch_size_from(_records, options)
-        if options[:batch_size].present?
-          options[:batch_size].to_i
-        else
-          1000
-        end
+        options[:batch_size]&.to_i || 1000
       end
     end
   end

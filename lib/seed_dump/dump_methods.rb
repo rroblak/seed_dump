@@ -5,6 +5,8 @@ class SeedDump
     def dump(records, options = {})
       return nil if records.count.zero?
 
+      options.merge(current_file_index: 1)
+
       io = open_io(options)
 
       write_records_to_io(records, io, options)
@@ -72,12 +74,7 @@ class SeedDump
     def write_records_to_io(records, io, options)
       options[:exclude] ||= %i[id created_at updated_at]
 
-      method = chosen_creation_method(options)
-      io.write("#{model_for(records)}.#{method}(")
-      if options[:import]
-        io.write("[#{attribute_names(records, options).map { |name| name.to_sym.inspect }.join(', ')}], ")
-      end
-      io.write("[\n  ")
+      setup_io(io, options, records)
 
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
                              :active_record_enumeration
@@ -85,10 +82,17 @@ class SeedDump
                              :enumerable_enumeration
                            end
 
-      send(enumeration_method, records, io, options) do |record_strings, last_batch|
+      send(enumeration_method, records, io, options) do |record_strings, last_batch, file_split_required|
         io.write(record_strings.join(",\n  "))
 
         io.write(",\n  ") unless last_batch
+
+        if options[:file].present? && file_split_required
+          io.write("\n]#{active_record_import_options(options)})\n")
+          io = open_io(options)
+          setup_io(io, options, records)
+          options.merge(current_file_index: options[:current_file_index] + 1)
+        end
       end
 
       io.write("\n]#{active_record_import_options(options)})\n")
@@ -99,6 +103,15 @@ class SeedDump
         io.rewind
         io.read
       end
+    end
+
+    def setup_io(io, options, records)
+      method = chosen_creation_method(options)
+      io.write("#{model_for(records)}.#{method}(")
+      if options[:import]
+        io.write("[#{attribute_names(records, options).map { |name| name.to_sym.inspect }.join(', ')}], ")
+      end
+      io.write("[\n  ")
     end
 
     def chosen_creation_method(options)
