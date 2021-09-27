@@ -30,7 +30,10 @@ class SeedDump
             record_strings << dump_record(record, options)
           end
 
-          yield record_strings, last_batch, split_file?(processed_entities, options)
+          should_split_file = split_file?(processed_entities, options)
+          processed_entities -= options[:file_split_limit] if should_split_file
+
+          yield record_strings, last_batch, should_split_file
         end
       end
 

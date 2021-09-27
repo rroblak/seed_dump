@@ -69,25 +69,24 @@ class SeedDump
         file_path = if options[:file_split_limit]
                       file_path_with_file_index(options)
                     else
-                      Pathname.new(options[:file])
+                      options[:file]
                     end
-        File.open(file_path.to_s, mode)
+
+        File.open(file_path, mode)
       else
         StringIO.new('', OVERWRITE_FILE_MODE)
       end
     end
 
     def file_path_with_file_index(options)
-      base_path = Pathname.new(options[:file])
-      Pathname.new(
-        options[:file].reverse.sub(
-          base_path.basename.to_s.reverse,
-          [
-            base_path.basename.to_s,
-            (options[:current_file_index]&.to_i || 1)
-          ].join('_').reverse
-        ).reverse
-      )
+      base_name = File.basename(options[:file], '.*')
+      options[:file].reverse.sub(
+        base_name.reverse,
+        [
+          base_name,
+          (options[:current_file_index]&.to_i || 1)
+        ].join('_').reverse
+      ).reverse
     end
 
     def write_records_to_io(records, io, options)
@@ -107,10 +106,10 @@ class SeedDump
         io.write(",\n  ") unless last_batch
 
         if options[:file].present? && file_split_required
+          options[:current_file_index] = ((options[:current_file_index]&.to_i || 1) + 1)
           io.write("\n]#{active_record_import_options(options)})\n")
           io = open_io(options)
           setup_io(io, options, records)
-          options.merge(current_file_index: (options[:current_file_index]&.to_i || 1) + 1)
         end
       end
 
