@@ -5,6 +5,7 @@ class SeedDump
 
       models = retrieve_models(env) - retrieve_models_exclude(env)
 
+      current_file_index = 1
       limit = retrieve_limit_value(env)
       append = retrieve_append_value(env)
       models.each do |model|
@@ -16,7 +17,8 @@ class SeedDump
           insert_all: retrieve_insert_all_value(env),
           file_split_limit: retreive_file_split_limit_value(env),
           file: retrieve_file_value(env),
-          import: retrieve_import_value(env)
+          import: retrieve_import_value(env),
+          current_file_index: current_file_index
         }
 
         SeedDump.dump(model, options)
@@ -24,6 +26,7 @@ class SeedDump
         append = true # Always append for every model after the first
         # (append for the first model is determined by
         # the APPEND environment variable).
+        current_file_index = options[:current_file_index]
       end
     end
 

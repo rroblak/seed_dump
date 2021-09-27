@@ -1,11 +1,13 @@
+require 'pathname'
+
 class SeedDump
   module DumpMethods
+    APPEND_FILE_MODE = 'a+'.freeze
+    OVERWRITE_FILE_MODE = 'w+'.freeze
     include Enumeration
 
     def dump(records, options = {})
       return nil if records.count.zero?
-
-      options.merge(current_file_index: 1)
 
       io = open_io(options)
 
@@ -63,12 +65,29 @@ class SeedDump
 
     def open_io(options)
       if options[:file].present?
-        mode = options[:append] ? 'a+' : 'w+'
-
-        File.open(options[:file], mode)
+        mode = options[:append] ? APPEND_FILE_MODE : OVERWRITE_FILE_MODE
+        file_path = if options[:file_split_limit]
+                      file_path_with_file_index(options)
+                    else
+                      Pathname.new(options[:file])
+                    end
+        File.open(file_path.to_s, mode)
       else
-        StringIO.new('', 'w+')
+        StringIO.new('', OVERWRITE_FILE_MODE)
       end
+    end
+
+    def file_path_with_file_index(options)
+      base_path = Pathname.new(options[:file])
+      Pathname.new(
+        options[:file].reverse.sub(
+          base_path.basename.to_s.reverse,
+          [
+            base_path.basename.to_s,
+            (options[:current_file_index]&.to_i || 1)
+          ].join('_').reverse
+        ).reverse
+      )
     end
 
     def write_records_to_io(records, io, options)
@@ -91,7 +110,7 @@ class SeedDump
           io.write("\n]#{active_record_import_options(options)})\n")
           io = open_io(options)
           setup_io(io, options, records)
-          options.merge(current_file_index: options[:current_file_index] + 1)
+          options.merge(current_file_index: (options[:current_file_index]&.to_i || 1) + 1)
         end
       end
 
