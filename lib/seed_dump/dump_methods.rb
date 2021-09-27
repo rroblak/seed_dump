@@ -1,5 +1,3 @@
-require 'pathname'
-
 class SeedDump
   module DumpMethods
     APPEND_FILE_MODE = 'a+'.freeze
