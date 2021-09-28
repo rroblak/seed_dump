@@ -52,6 +52,21 @@ describe SeedDump do
       end
     end
 
+    context 'with file option and file split option' do
+      let(:file_path) { Tempfile.new('./foo').path }
+      let(:result_file_path) { [file_path, '1'].join('_') }
+
+      after do
+        File.unlink(result_file_path)
+      end
+
+      it 'stores the information in file_path with file index' do
+        described_class.dump(Sample, file: file_path, file_split_limit: 5)
+
+        File.open(result_file_path) { |file| expect(file.read).to eq(expected_output) }
+      end
+    end
+
     context 'ActiveRecord relation' do
       it 'returns nil if the count is 0' do
         described_class.dump(EmptyModel).should be(nil)

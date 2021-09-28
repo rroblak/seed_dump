@@ -5,6 +5,7 @@ class SeedDump
 
       models = retrieve_models(env) - retrieve_models_exclude(env)
 
+      current_file_index = 1
       limit = retrieve_limit_value(env)
       append = retrieve_append_value(env)
       models.each do |model|
@@ -14,8 +15,10 @@ class SeedDump
           batch_size: retrieve_batch_size_value(env),
           exclude: retrieve_dump_all_value(env) ? [] : retrieve_exclude_value(env),
           insert_all: retrieve_insert_all_value(env),
+          file_split_limit: retreive_file_split_limit_value(env),
           file: retrieve_file_value(env),
-          import: retrieve_import_value(env)
+          import: retrieve_import_value(env),
+          current_file_index: current_file_index
         }
 
         SeedDump.dump(model, options)
@@ -23,6 +26,7 @@ class SeedDump
         append = true # Always append for every model after the first
         # (append for the first model is determined by
         # the APPEND environment variable).
+        current_file_index = options[:current_file_index]
       end
     end
 
@@ -87,6 +91,13 @@ class SeedDump
       parse_boolean_value(env['APPEND'])
     end
 
+    # Internal: Returns a Boolean indicating whether the value for the "FILE_SPLIT_COUNT"
+    # key in the given Hash is equal to the String "true" (ignoring case),
+    # false if no value exists.
+    def retreive_file_split_limit_value(env)
+      retrieve_integer_value('FILE_SPLIT_LIMIT', env)
+    end
+
     # Internal: Returns a Boolean indicating whether the value for the "IMPORT"
     # key in the given Hash is equal to the String "true" (ignoring case),
     # false if  no value exists.
@@ -144,7 +155,7 @@ class SeedDump
     # Internal: Retrieves an Integer from the value for the given key in
     # the given Hash, and nil if no such key exists.
     def retrieve_integer_value(key, hash)
-      hash[key] ? hash[key].to_i : nil
+      hash[key]&.to_i
     end
 
     # Internal: Parses a Boolean from the given value.
