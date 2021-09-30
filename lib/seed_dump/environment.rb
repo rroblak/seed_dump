@@ -18,7 +18,8 @@ class SeedDump
           file_split_limit: retreive_file_split_limit_value(env),
           file: retrieve_file_value(env),
           import: retrieve_import_value(env),
-          current_file_index: current_file_index
+          current_file_index: current_file_index,
+          import_options: retrieve_import_options(env),
         }
 
         SeedDump.dump(model, options)
@@ -103,6 +104,10 @@ class SeedDump
     # false if  no value exists.
     def retrieve_import_value(env)
       parse_boolean_value(env['IMPORT'])
+    end
+
+    def retrieve_import_options(env)
+      env['IMPORT_OPTIONS']
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "INSERT_ALL"

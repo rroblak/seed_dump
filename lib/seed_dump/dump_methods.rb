@@ -141,9 +141,13 @@ class SeedDump
     end
 
     def active_record_import_options(options)
-      return unless options[:import].is_a?(Hash)
+      return unless options[:import].is_a?(Hash) || options[:import_options].present?
 
-      ', ' + options[:import].map { |key, value| "#{key}: #{value}" }.join(', ')
+      if options[:import].is_a?(Hash)
+        ', ' + options[:import].map { |key, value| "#{key}: #{value}" }.join(', ')
+      else
+        ', ' + options[:import_options]
+      end
     end
 
     def attribute_names(records, options)
