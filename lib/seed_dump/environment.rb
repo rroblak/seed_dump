@@ -78,6 +78,18 @@ class SeedDump
                         end
     end
 
+    # Internal: Retrieves an Array of Class constants parsed from the argument
+    # "model_names_env", and `nil` if the argument is nil
+    def parse_model_names(strict_model_name, model_names_env)
+      model_names = model_names_env.to_s.split(',')
+
+      if strict_model_name
+        model_names.collect {|x| x.strip.underscore.camelize.constantize }
+      else
+        model_names.collect {|x| x.strip.underscore.singularize.camelize.constantize }
+      end
+    end
+
     # Internal: Returns a Boolean indicating whether the value for the "APPEND"
     # key in the given Hash is equal to the String "true" (ignoring case),
     # false if no value exists.
