@@ -108,6 +108,12 @@ describe SeedDump do
             SeedDump.dump_using_environment(model_env => 'Sample')
           end
 
+          it "should singularize the models and dump them" do
+            SeedDump.should_receive(:dump).with(Sample, anything)
+
+            SeedDump.dump_using_environment(model_env => 'samples')
+          end
+
           it "should not dump empty models" do
             SeedDump.should_not_receive(:dump).with(EmptyModel, anything)
 
