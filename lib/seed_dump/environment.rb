@@ -49,7 +49,9 @@ class SeedDump
     def retrieve_models(env)
       # Parse either the "MODEL" environment variable or the "MODELS"
       # environment variable, with "MODEL" taking precedence.
-      models_env = env['MODEL'] || env['MODELS']
+      strict_model_name_parsed_env = parse_boolean_value(env['STRICT_MODEL_NAME'])
+      model_names_env = env['MODEL'] || env['MODELS']
+      model_names = parse_model_names(strict_model_name_parsed_env, model_names_env)
 
       # If there was a use models environment variable, split it and
       # convert the given model string (e.g. "User") to an actual
@@ -58,13 +60,7 @@ class SeedDump
       # If a models environment variable was not given, use descendants of
       # ActiveRecord::Base as the target set of models. This should be all
       # model classes in the project.
-      models = if models_env
-                 models_env.split(',')
-                           .collect {|x| x.strip.underscore.singularize.camelize.constantize }
-               else
-                 ActiveRecord::Base.descendants
-               end
-
+      models = model_names.blank? ? ActiveRecord::Base.descendants : model_names
 
       # Filter the set of models to exclude:
       #   - The ActiveRecord::SchemaMigration model which is internal to Rails
@@ -108,9 +104,10 @@ class SeedDump
     # the "MODELS_EXCLUDE" key in the given Hash, and an empty Array if such
     # key exists.
     def retrieve_models_exclude(env)
-      env['MODELS_EXCLUDE'].to_s
-                           .split(',')
-                           .collect { |x| x.strip.underscore.singularize.camelize.constantize }
+      strict_model_name_parsed_env = parse_boolean_value(env['STRICT_MODEL_NAME'])
+      exclude_model_names_env = env['MODELS_EXCLUDE'].to_s
+
+      parse_model_names(strict_model_name_parsed_env, exclude_model_names_env)
     end
 
     # Internal: Retrieves an Integer from the value for the "LIMIT" key in the
