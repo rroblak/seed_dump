@@ -108,6 +108,12 @@ describe SeedDump do
             SeedDump.dump_using_environment(model_env => 'Sample')
           end
 
+          it "should singularize the models and dump them" do
+            SeedDump.should_receive(:dump).with(Sample, anything)
+
+            SeedDump.dump_using_environment(model_env => 'samples')
+          end
+
           it "should not dump empty models" do
             SeedDump.should_not_receive(:dump).with(EmptyModel, anything)
 
@@ -124,6 +130,38 @@ describe SeedDump do
         SeedDump.should_receive(:dump).with(Sample, anything)
 
         SeedDump.dump_using_environment('MODELS_EXCLUDE' => 'AnotherSample')
+      end
+    end
+
+    describe "STRICT_MODEL_NAME" do
+      context "if STRICT_MODEL_NAME is specified without MODEL or MODELS env" do
+        it "should dump all non-empty models" do
+          FactoryBot.create(:another_sample)
+
+          [Sample, AnotherSample].each do |model|
+            SeedDump.should_receive(:dump).with(model, anything)
+          end
+
+          SeedDump.dump_using_environment('STRICT_MODEL_NAME' => 'true')
+        end
+      end
+
+      context "if STRICT_MODEL_NAME is specified with MODEL or MODELS env" do
+        context "when STRICT_MODEL_NAME is true" do
+          it "should not singularize and raise a NameError" do
+            expect do
+              SeedDump.dump_using_environment('MODELS' => 'samples', 'STRICT_MODEL_NAME' => 'true')
+            end.to raise_error NameError
+          end
+        end
+
+        context "when STRICT_MODEL_NAME is false" do
+          it "should singularize the models and dump them" do
+            SeedDump.should_receive(:dump).with(Sample, anything)
+
+            SeedDump.dump_using_environment('MODELS' => 'samples', 'STRICT_MODEL_NAME' => 'false')
+          end
+        end
       end
     end
 
