@@ -39,7 +39,7 @@ class SeedDump
               when BigDecimal, IPAddr
                 value.to_s
               when Date, Time, DateTime
-                value.to_s(:db)
+                value.to_fs(:db)
               when Range
                 range_to_string(value)
               when ->(v) { v.class.ancestors.map(&:to_s).include?('RGeo::Feature::Instance') }
@@ -70,7 +70,7 @@ class SeedDump
     def write_records_to_io(records, io, options)
       options[:exclude] ||= [:id, :created_at, :updated_at]
 
-      method = options[:import] ? 'import' : 'create!'
+      method = options[:import] ? 'import_without_validations_or_callbacks' : 'create!'
       io.write("#{model_for(records)}.#{method}(")
       if options[:import]
         io.write("[#{attribute_names(records, options).map {|name| name.to_sym.inspect}.join(', ')}], ")
