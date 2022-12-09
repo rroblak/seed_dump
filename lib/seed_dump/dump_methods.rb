@@ -39,7 +39,7 @@ class SeedDump
               when BigDecimal, IPAddr
                 value.to_s
               when Date, Time, DateTime
-                value.to_s(:db)
+                value.respond_to?(:to_fs) ? value.to_fs(:db) : value.to_s(:db)
               when Range
                 range_to_string(value)
               when ->(v) { v.class.ancestors.map(&:to_s).include?('RGeo::Feature::Instance') }
