@@ -26,6 +26,12 @@ appraise 'rails-7.1' do
   gem 'sqlite3', '>= 1.3', '< 2.0' # Broadly compatible range
 end
 
+# Appraisal for Rails 7.2.x
+appraise 'rails-7.2' do
+  gem 'activerecord', '~> 7.2.0'
+  gem 'activesupport', '~> 7.2.0'
+  gem 'sqlite3', '>= 1.3', '< 2.0'
+end
 
 # Appraisal for Rails 8.0.x (Edge/Main)
 appraise 'rails-8.0' do

@@ -16,6 +16,7 @@ class Rails
       Object.const_set('YetAnotherSample', Class.new(ActiveRecord::Base)) unless defined?(YetAnotherSample)
       Object.const_set('NoTableModel', Class.new(ActiveRecord::Base)) unless defined?(NoTableModel)
       Object.const_set('EmptyModel', Class.new(ActiveRecord::Base)) unless defined?(EmptyModel)
+      Object.const_set('CampaignsManager', Class.new(ActiveRecord::Base)) unless defined?(CampaignsManager)
       @already_called = true
     end
   end
@@ -87,6 +88,13 @@ module Helpers
 
       drop_table :empty_models, if_exists: true
       create_table 'empty_models', force: true
+
+      # Join table without primary key (for issue #167 - HABTM tables)
+      drop_table :campaigns_managers, if_exists: true
+      create_table 'campaigns_managers', id: false, force: true do |t|
+        t.integer :campaign_id
+        t.integer :manager_id
+      end
     end
   end
 

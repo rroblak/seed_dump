@@ -204,6 +204,24 @@ describe SeedDump do
       end
     end
 
+    context 'table without primary key (issue #167)' do
+      before(:each) do
+        CampaignsManager.create!(campaign_id: 1, manager_id: 1)
+        CampaignsManager.create!(campaign_id: 2, manager_id: 2)
+      end
+
+      it 'should dump records without raising an error' do
+        expect { SeedDump.dump(CampaignsManager) }.not_to raise_error
+      end
+
+      it 'should return the dump of the models' do
+        result = SeedDump.dump(CampaignsManager, exclude: [])
+        expect(result).to include('CampaignsManager.create!')
+        expect(result).to include('campaign_id: 1')
+        expect(result).to include('campaign_id: 2')
+      end
+    end
+
     context 'activerecord-import' do
        before(:each) { FactoryBot.create_list(:sample, 3) } # Create 3 standard samples
       it 'should dump in the activerecord-import format when import is true' do

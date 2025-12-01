@@ -19,7 +19,7 @@ end
 
 group :test do
   # Test-only dependencies (common across all appraisals)
-  gem 'rspec', '~> 3.7.0'
+  gem 'rspec', '~> 3.13.0'
   gem 'database_cleaner-active_record', '~> 2.0'
   gem 'appraisal', '~> 2.4'
 
