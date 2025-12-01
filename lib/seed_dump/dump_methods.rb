@@ -23,7 +23,17 @@ class SeedDump
     # @return [String, nil] The dump string if :file is nil, otherwise nil.
     def dump(records, options = {})
       # Handle potential empty input gracefully
-      record_count = records.respond_to?(:count) ? records.count : (records.respond_to?(:empty?) ? (records.empty? ? 0 : 1) : records.size)
+      # Use unscope(:select) for AR relations to avoid issues with default_scope
+      # that selects specific columns, which would cause COUNT(col1, col2, ...) errors
+      record_count = if records.respond_to?(:unscope)
+                       records.unscope(:select).count
+                     elsif records.respond_to?(:count)
+                       records.count
+                     elsif records.respond_to?(:empty?)
+                       records.empty? ? 0 : 1
+                     else
+                       records.size
+                     end
       return nil if record_count == 0
 
       io = nil

@@ -17,6 +17,16 @@ class Rails
       Object.const_set('NoTableModel', Class.new(ActiveRecord::Base)) unless defined?(NoTableModel)
       Object.const_set('EmptyModel', Class.new(ActiveRecord::Base)) unless defined?(EmptyModel)
       Object.const_set('CampaignsManager', Class.new(ActiveRecord::Base)) unless defined?(CampaignsManager)
+
+      # Model with default_scope selecting specific columns (issue #165)
+      unless defined?(ScopedSelectSample)
+        scoped_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'scoped_select_samples'
+          default_scope { select(:id, :name) }
+        end
+        Object.const_set('ScopedSelectSample', scoped_class)
+      end
+
       @already_called = true
     end
   end
@@ -94,6 +104,15 @@ module Helpers
       create_table 'campaigns_managers', id: false, force: true do |t|
         t.integer :campaign_id
         t.integer :manager_id
+      end
+
+      # Table for testing default_scope with select (issue #165)
+      drop_table :scoped_select_samples, if_exists: true
+      create_table 'scoped_select_samples', force: true do |t|
+        t.string :name
+        t.string :description
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
       end
     end
   end

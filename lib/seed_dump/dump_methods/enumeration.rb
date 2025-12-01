@@ -58,7 +58,13 @@ class SeedDump
       def batch_params_from(records, options)
         batch_size = batch_size_from(records, options)
 
-        count = records.count
+        # Use unscope(:select) to avoid issues with default_scope that selects
+        # specific columns, which would cause COUNT(col1, col2, ...) errors
+        count = if records.respond_to?(:unscope)
+                  records.unscope(:select).count
+                else
+                  records.count
+                end
 
         remainder = count % batch_size
 

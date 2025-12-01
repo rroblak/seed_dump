@@ -222,6 +222,24 @@ describe SeedDump do
       end
     end
 
+    context 'model with default_scope using select (issue #165)' do
+      before(:each) do
+        ScopedSelectSample.unscoped.create!(name: 'test1', description: 'desc1')
+        ScopedSelectSample.unscoped.create!(name: 'test2', description: 'desc2')
+      end
+
+      it 'should dump records without raising a COUNT error' do
+        expect { SeedDump.dump(ScopedSelectSample) }.not_to raise_error
+      end
+
+      it 'should return the dump of the models' do
+        result = SeedDump.dump(ScopedSelectSample)
+        expect(result).to include('ScopedSelectSample.create!')
+        expect(result).to include('name: "test1"')
+        expect(result).to include('name: "test2"')
+      end
+    end
+
     context 'activerecord-import' do
        before(:each) { FactoryBot.create_list(:sample, 3) } # Create 3 standard samples
       it 'should dump in the activerecord-import format when import is true' do
