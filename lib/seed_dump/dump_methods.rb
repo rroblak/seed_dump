@@ -202,8 +202,11 @@ class SeedDump
     # @return [IO] The opened IO object (File or StringIO).
     def open_io(options)
       if options[:file].present?
-        # Open file in append ('a+') or write ('w+') mode
-        mode = options[:append] ? 'a+' : 'w+'
+        # Open file in append ('a') or write ('w') mode
+        # Note: We use write-only modes (not 'a+' or 'w+') because read capability
+        # requires the file to be seekable, which fails for pipes like /dev/stdout
+        # when output is redirected (issue #150)
+        mode = options[:append] ? 'a' : 'w'
         File.open(options[:file], mode)
       else
         # Use StringIO for in-memory operations with a mutable string

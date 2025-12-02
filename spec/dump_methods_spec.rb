@@ -105,6 +105,22 @@ describe SeedDump do
           expect(File.read(filename)).to eq(expected_output + expected_output) # Expects 2 sets of 3 standard samples
         end
       end
+
+      context 'with non-seekable files like /dev/stdout (issue #150)' do
+        # Issue #150: Using w+ mode fails when writing to pipes because
+        # pipes are not seekable. We should use w mode (write-only) instead.
+        it 'should open files in write-only mode (w) not read+write mode (w+)' do
+          # Verify File.open is called with 'w' mode, not 'w+'
+          expect(File).to receive(:open).with(filename, 'w').and_call_original
+          SeedDump.dump(Sample, file: filename)
+        end
+
+        it 'should open files in append mode (a) not read+append mode (a+)' do
+          # Verify File.open is called with 'a' mode, not 'a+'
+          expect(File).to receive(:open).with(filename, 'a').and_call_original
+          SeedDump.dump(Sample, file: filename, append: true)
+        end
+      end
     end
 
     context 'ActiveRecord relation' do
