@@ -64,6 +64,34 @@ describe SeedDump do
         allow(SeedDump).to receive(:dump).with(YetAnotherSample, anything) if defined?(YetAnotherSample)
         SeedDump.dump_using_environment('EXCLUDE' => 'baggins,saggins')
       end
+
+      it 'should pass an empty array when EXCLUDE is set to empty string (issue #147)' do
+        expect(SeedDump).to receive(:dump).with(anything, include(exclude: []))
+        allow(SeedDump).to receive(:dump).with(AnotherSample, anything) if defined?(AnotherSample)
+        allow(SeedDump).to receive(:dump).with(YetAnotherSample, anything) if defined?(YetAnotherSample)
+        SeedDump.dump_using_environment('EXCLUDE' => '')
+      end
+
+      it 'should pass nil when EXCLUDE is not set (to use default excludes)' do
+        expect(SeedDump).to receive(:dump).with(anything, include(exclude: nil))
+        allow(SeedDump).to receive(:dump).with(AnotherSample, anything) if defined?(AnotherSample)
+        allow(SeedDump).to receive(:dump).with(YetAnotherSample, anything) if defined?(YetAnotherSample)
+        SeedDump.dump_using_environment
+      end
+
+      it 'should pass an empty array when INCLUDE_ALL is true (issue #147)' do
+        expect(SeedDump).to receive(:dump).with(anything, include(exclude: []))
+        allow(SeedDump).to receive(:dump).with(AnotherSample, anything) if defined?(AnotherSample)
+        allow(SeedDump).to receive(:dump).with(YetAnotherSample, anything) if defined?(YetAnotherSample)
+        SeedDump.dump_using_environment('INCLUDE_ALL' => 'true')
+      end
+
+      it 'should let explicit EXCLUDE override INCLUDE_ALL' do
+        expect(SeedDump).to receive(:dump).with(anything, include(exclude: [:some_field]))
+        allow(SeedDump).to receive(:dump).with(AnotherSample, anything) if defined?(AnotherSample)
+        allow(SeedDump).to receive(:dump).with(YetAnotherSample, anything) if defined?(YetAnotherSample)
+        SeedDump.dump_using_environment('INCLUDE_ALL' => 'true', 'EXCLUDE' => 'some_field')
+      end
     end
 
     describe 'FILE' do

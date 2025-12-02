@@ -146,8 +146,20 @@ class SeedDump
 
     # Internal: Retrieves an Array of Symbols from the value for the "EXCLUDE"
     # key from the given Hash, and nil if no such key exists.
+    #
+    # If INCLUDE_ALL is set to 'true', returns an empty array to disable
+    # the default exclusion of id, created_at, updated_at columns. This provides
+    # a cleaner alternative to EXCLUDE="" (issue #147).
+    #
+    # Note that explicit EXCLUDE values take precedence over INCLUDE_ALL.
     def retrieve_exclude_value(env)
-      env['EXCLUDE'] ? env['EXCLUDE'].split(',').map {|e| e.strip.to_sym} : nil
+      if env['EXCLUDE']
+        env['EXCLUDE'].split(',').map { |e| e.strip.to_sym }
+      elsif parse_boolean_value(env['INCLUDE_ALL'])
+        []
+      else
+        nil
+      end
     end
 
     # Internal: Retrieves the value for the "FILE" key from the given Hash, and
