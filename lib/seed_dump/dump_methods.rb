@@ -216,6 +216,9 @@ class SeedDump
 
     # Writes the records to the given IO object, handling batching and formatting.
     #
+    # Each batch is written as a separate method call (create!, import, or insert_all).
+    # This addresses issue #127 where BATCH_SIZE was not producing separate calls.
+    #
     # @param records [ActiveRecord::Relation, Class, Array<ActiveRecord::Base>] The records to write.
     # @param io [IO] The IO object to write to (File or StringIO).
     # @param options [Hash] Dumping options.
@@ -233,7 +236,6 @@ class SeedDump
           raise ArgumentError, "Could not determine model class from records."
       end
 
-
       # Determine the method call ('import', 'insert_all', or 'create!')
       method = if options[:import]
                  'import'
@@ -242,16 +244,14 @@ class SeedDump
                else
                  'create!'
                end
-      io.write("#{model_name_for_output(model_klass)}.#{method}(")
 
-      # If using import, write the attribute names header
-      if options[:import]
-        column_names = attribute_names(records, options).map { |name| name.to_sym.inspect }
-        io.write("[#{column_names.join(', ')}], ")
-      end
-
-      # Start the array of records
-      io.write("[\n  ")
+      # Prepare import column header if using activerecord-import
+      import_header = if options[:import]
+                        column_names = attribute_names(records, options).map { |name| name.to_sym.inspect }
+                        "[#{column_names.join(', ')}], "
+                      else
+                        ''
+                      end
 
       # Choose the appropriate enumeration method based on record type
       enumeration_method = if records.is_a?(ActiveRecord::Relation) || records.is_a?(Class)
@@ -260,21 +260,13 @@ class SeedDump
                              :enumerable_enumeration
                            end
 
-      # Process records in batches
+      # Process records in batches, writing each batch as a separate method call
       send(enumeration_method, records, io, options) do |record_strings, last_batch|
-        # Join the record strings for the current batch and write them
+        # Write complete method call for this batch
+        io.write("#{model_name_for_output(model_klass)}.#{method}(#{import_header}[\n  ")
         io.write(record_strings.join(",\n  "))
-        # Add a comma and newline if this isn't the last batch
-        io.write(",\n  ") unless last_batch
+        io.write("\n]#{active_record_import_options(options)})\n")
       end
-
-      # Close the array of records and the method call, adding import options if necessary
-      io.write("\n]#{active_record_import_options(options)})\n")
-
-      # Flushing might be needed for some IO types, but generally not StringIO
-      # io.flush if io.respond_to?(:flush)
-
-      # Reading the content now happens in the main #dump method
     end
 
     # Generates the string for activerecord-import options, if provided.

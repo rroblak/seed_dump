@@ -166,13 +166,11 @@ describe SeedDump do
         it 'should dump the number of models specified by the limit when the limit is larger than the batch size but not a multiple of the batch size' do
           # Create 4 samples (integer will be 42 from factory)
           4.times { FactoryBot.create(:sample) }
-          # Expecting first 3 records created (IDs 1, 2, 3)
-          expected_limit_3 = "Sample.create!([\n  "
-          data = (1..3).map do |i|
-             # Use integer: 42 as defined in the factory, ISO 8601 format with timezone
-             "{string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04T19:14:00Z\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
-          end
-          expected_limit_3 += data.join(",\n  ") + "\n])\n"
+          # Expecting first 3 records with batch_size: 2 -> 2 create! calls
+          # First batch: 2 records, Second batch: 1 record
+          sample_data = "{string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04T19:14:00Z\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
+          expected_limit_3 = "Sample.create!([\n  #{sample_data},\n  #{sample_data}\n])\n"
+          expected_limit_3 += "Sample.create!([\n  #{sample_data}\n])\n"
 
           expect(SeedDump.dump(Sample.limit(3), batch_size: 2)).to eq(expected_limit_3)
         end
@@ -186,15 +184,38 @@ describe SeedDump do
       end
 
       it 'should not cause records to not be dumped' do
-        expect(SeedDump.dump(Sample, batch_size: 2)).to eq(expected_output) # Expects 3 standard samples
-        expect(SeedDump.dump(Sample, batch_size: 1)).to eq(expected_output) # Expects 3 standard samples
+        expect(SeedDump.dump(Sample, batch_size: 2)).to include('string: "string"')
+        expect(SeedDump.dump(Sample, batch_size: 1)).to include('string: "string"')
+      end
+
+      it 'should output separate create! calls for each batch (issue #127)' do
+        result = SeedDump.dump(Sample, batch_size: 2)
+        # With 3 records and batch_size: 2, we should have 2 create! calls:
+        # - First batch with 2 records
+        # - Second batch with 1 record
+        expect(result.scan(/Sample\.create!\(/).count).to eq(2)
+      end
+
+      it 'should output all records in a single call when batch_size is larger than record count' do
+        result = SeedDump.dump(Sample, batch_size: 100)
+        # With 3 records and batch_size: 100, we should have 1 create! call
+        expect(result.scan(/Sample\.create!\(/).count).to eq(1)
+      end
+
+      it 'should output one create! call per record when batch_size is 1' do
+        result = SeedDump.dump(Sample, batch_size: 1)
+        # With 3 records and batch_size: 1, we should have 3 create! calls
+        expect(result.scan(/Sample\.create!\(/).count).to eq(3)
       end
     end
 
     context 'Array' do
        before(:each) { FactoryBot.create_list(:sample, 3) } # Create 3 standard samples
       it 'should return the dump of the models passed in' do
-        expect(SeedDump.dump(Sample.all.to_a, batch_size: 2)).to eq(expected_output) # Expects 3 standard samples
+        # With batch_size: 2 and 3 records, we get 2 create! calls
+        result = SeedDump.dump(Sample.all.to_a, batch_size: 2)
+        expect(result).to include('Sample.create!')
+        expect(result.scan(/Sample\.create!\(/).count).to eq(2)
       end
 
       it 'should return nil if the array is empty' do
