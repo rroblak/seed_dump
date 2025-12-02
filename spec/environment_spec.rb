@@ -179,5 +179,72 @@ describe SeedDump do
         ActiveRecord.const_set(:SchemaMigration, schema_migration) if schema_migration_defined && !defined?(ActiveRecord::SchemaMigration)
       end
     end
+
+    describe 'HABTM deduplication (issues #26, #114)' do
+      # When using has_and_belongs_to_many, Rails creates two auto-generated models
+      # that point to the same join table (e.g., User::HABTM_Roles and Role::HABTM_Users).
+      # We should only dump one of them to avoid duplicate seed data.
+
+      it 'should deduplicate HABTM models that share the same table' do
+        # Create mock HABTM classes that share the same table_name
+        habtm_class_1 = Class.new(ActiveRecord::Base) do
+          self.table_name = 'roles_users'
+          def self.name; 'User::HABTM_Roles'; end
+          def self.to_s; name; end
+        end
+
+        habtm_class_2 = Class.new(ActiveRecord::Base) do
+          self.table_name = 'roles_users'
+          def self.name; 'Role::HABTM_Users'; end
+          def self.to_s; name; end
+        end
+
+        # Temporarily add these to AR descendants by setting constants
+        User = Class.new unless defined?(User)
+        Role = Class.new unless defined?(Role)
+        User.const_set('HABTM_Roles', habtm_class_1)
+        Role.const_set('HABTM_Users', habtm_class_2)
+
+        begin
+          # Stub exists? and table_exists? to return true
+          allow(habtm_class_1).to receive(:table_exists?).and_return(true)
+          allow(habtm_class_1).to receive(:exists?).and_return(true)
+          allow(habtm_class_2).to receive(:table_exists?).and_return(true)
+          allow(habtm_class_2).to receive(:exists?).and_return(true)
+
+          # Track which models get dumped
+          dumped_models = []
+          allow(SeedDump).to receive(:dump) do |model, _options|
+            dumped_models << model.to_s
+          end
+
+          SeedDump.dump_using_environment
+
+          # Only one of the HABTM models should be dumped, not both
+          habtm_dumps = dumped_models.select { |m| m.include?('HABTM_') }
+          habtm_tables = habtm_dumps.map { |m| m.include?('HABTM_Roles') ? 'roles_users' : 'roles_users' }
+
+          expect(habtm_dumps.size).to eq(1), "Expected 1 HABTM model to be dumped, got #{habtm_dumps.size}: #{habtm_dumps}"
+        ensure
+          User.send(:remove_const, 'HABTM_Roles') if defined?(User::HABTM_Roles)
+          Role.send(:remove_const, 'HABTM_Users') if defined?(Role::HABTM_Users)
+          Object.send(:remove_const, 'User') if defined?(User) && User.is_a?(Class) && User.superclass == Object
+          Object.send(:remove_const, 'Role') if defined?(Role) && Role.is_a?(Class) && Role.superclass == Object
+        end
+      end
+
+      it 'should not deduplicate non-HABTM models with same table (e.g., STI)' do
+        # Non-HABTM models sharing a table (like STI) should both be kept
+        # This test ensures we only dedupe HABTM_ prefixed models
+        allow(SeedDump).to receive(:dump)
+
+        # Sample and AnotherSample are different tables, so both should dump
+        FactoryBot.create(:another_sample)
+        expect(SeedDump).to receive(:dump).with(Sample, anything)
+        expect(SeedDump).to receive(:dump).with(AnotherSample, anything)
+
+        SeedDump.dump_using_environment
+      end
+    end
   end
 end

@@ -84,6 +84,26 @@ class SeedDump
                             false
                           end
                         end
+
+      # Deduplicate HABTM models that share the same table (issues #26, #114).
+      # Rails creates two auto-generated models for each HABTM association
+      # (e.g., User::HABTM_Roles and Role::HABTM_Users) that both point to
+      # the same join table. We only want to dump one of them.
+      deduplicate_habtm_models(filtered_models)
+    end
+
+    # Internal: Deduplicates HABTM models that share the same table.
+    #
+    # When using has_and_belongs_to_many, Rails creates auto-generated models
+    # like User::HABTM_Roles and Role::HABTM_Users that both reference the same
+    # join table. Without deduplication, the join table data would be dumped twice.
+    #
+    # models - Array of ActiveRecord model classes.
+    #
+    # Returns the Array with duplicate HABTM models removed.
+    def deduplicate_habtm_models(models)
+      habtm, non_habtm = models.partition { |m| m.to_s.include?('HABTM_') }
+      non_habtm + habtm.uniq(&:table_name)
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "APPEND"
