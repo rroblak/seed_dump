@@ -63,6 +63,33 @@ class Rails
         Object.const_set('TimestampOnSample', timestamp_on_class)
       end
 
+      # Models with foreign key relationships for testing dependency ordering (issues #78, #83)
+      # Author -> Book -> Review (Review depends on Book, Book depends on Author)
+      unless defined?(Author)
+        author_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'authors'
+          has_many :books
+        end
+        Object.const_set('Author', author_class)
+      end
+
+      unless defined?(Book)
+        book_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'books'
+          belongs_to :author
+          has_many :reviews
+        end
+        Object.const_set('Book', book_class)
+      end
+
+      unless defined?(Review)
+        review_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'reviews'
+          belongs_to :book
+        end
+        Object.const_set('Review', review_class)
+      end
+
       @already_called = true
     end
   end
@@ -182,6 +209,33 @@ module Helpers
         t.string :type  # STI type column
         t.string :name
         t.string :email
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
+      end
+
+      # Tables for testing foreign key dependency ordering (issues #78, #83)
+      # Author -> Book -> Review dependency chain
+      drop_table :reviews, if_exists: true
+      drop_table :books, if_exists: true
+      drop_table :authors, if_exists: true
+
+      create_table 'authors', force: true do |t|
+        t.string :name
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
+      end
+
+      create_table 'books', force: true do |t|
+        t.string :title
+        t.references :author, foreign_key: true
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
+      end
+
+      create_table 'reviews', force: true do |t|
+        t.text :content
+        t.integer :rating
+        t.references :book, foreign_key: true
         t.datetime 'created_at', null: false
         t.datetime 'updated_at', null: false
       end

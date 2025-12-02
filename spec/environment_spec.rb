@@ -416,6 +416,107 @@ describe SeedDump do
       end
     end
 
+    describe 'foreign key dependency ordering (issues #78, #83)' do
+      # Models with foreign key dependencies should be dumped in the correct order
+      # so that seeds can be imported without foreign key violations.
+      # For example: Author -> Book -> Review means Author should be dumped first,
+      # then Book, then Review.
+
+      it 'should order models by foreign key dependencies' do
+        # Create records with dependencies
+        author = FactoryBot.create(:author)
+        book = FactoryBot.create(:book, author: author)
+        FactoryBot.create(:review, book: book)
+
+        # Track which models get dumped and in what order
+        dumped_models = []
+        allow(SeedDump).to receive(:dump) do |model, _options|
+          dumped_models << model.to_s
+        end
+
+        SeedDump.dump_using_environment('MODELS' => 'Review,Book,Author')
+
+        # Verify the order: Author must come before Book, Book must come before Review
+        author_index = dumped_models.index('Author')
+        book_index = dumped_models.index('Book')
+        review_index = dumped_models.index('Review')
+
+        expect(author_index).not_to be_nil, "Author should be in the dump"
+        expect(book_index).not_to be_nil, "Book should be in the dump"
+        expect(review_index).not_to be_nil, "Review should be in the dump"
+
+        expect(author_index).to be < book_index,
+          "Author (index #{author_index}) should be dumped before Book (index #{book_index})"
+        expect(book_index).to be < review_index,
+          "Book (index #{book_index}) should be dumped before Review (index #{review_index})"
+      end
+
+      it 'should handle models without foreign key dependencies' do
+        # Sample has no foreign keys, should still be dumped normally
+        FactoryBot.create(:author)
+
+        dumped_models = []
+        allow(SeedDump).to receive(:dump) do |model, _options|
+          dumped_models << model.to_s
+        end
+
+        SeedDump.dump_using_environment('MODELS' => 'Sample,Author')
+
+        expect(dumped_models).to include('Sample')
+        expect(dumped_models).to include('Author')
+      end
+
+      it 'should handle circular dependencies gracefully' do
+        # Create models with circular dependency for testing
+        # PersonA belongs_to PersonB, PersonB belongs_to PersonA
+        person_a_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'person_as'
+        end
+        person_b_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'person_bs'
+        end
+        Object.const_set('PersonA', person_a_class)
+        Object.const_set('PersonB', person_b_class)
+
+        # Add circular associations after both classes exist
+        PersonA.belongs_to :person_b, optional: true
+        PersonB.belongs_to :person_a, optional: true
+
+        # Create tables
+        ActiveRecord::Schema.define do
+          create_table 'person_as', force: true do |t|
+            t.references :person_b
+          end
+          create_table 'person_bs', force: true do |t|
+            t.references :person_a
+          end
+        end
+
+        # Create records
+        PersonA.create!
+        PersonB.create!
+
+        begin
+          dumped_models = []
+          allow(SeedDump).to receive(:dump) do |model, _options|
+            dumped_models << model.to_s
+          end
+
+          # Should not raise an error despite circular dependency
+          expect {
+            SeedDump.dump_using_environment('MODELS' => 'PersonA,PersonB')
+          }.not_to raise_error
+
+          # Both models should be dumped
+          expect(dumped_models).to include('PersonA')
+          expect(dumped_models).to include('PersonB')
+        ensure
+          Object.send(:remove_const, :PersonA)
+          Object.send(:remove_const, :PersonB)
+        end
+      end
+    end
+
     describe 'STI deduplication (issue #120)' do
       # When using STI (Single Table Inheritance), multiple model classes share
       # the same database table. For example, AdminUser < BaseUser and

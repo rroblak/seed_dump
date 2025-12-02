@@ -6,6 +6,11 @@ class SeedDump
 
       models = retrieve_models(env) - retrieve_models_exclude(env)
 
+      # Sort models by foreign key dependencies (issues #78, #83)
+      # This ensures models are dumped in the correct order so that
+      # seeds can be imported without foreign key violations.
+      models = sort_models_by_dependencies(models)
+
       global_limit = retrieve_limit_value(env)
       model_limits = retrieve_model_limits_value(env)
       append = retrieve_append_value(env)
@@ -138,6 +143,109 @@ class SeedDump
         # For non-STI models, base_class returns self
         model.base_class == model
       end
+    end
+
+    # Internal: Sorts models by foreign key dependencies using topological sort.
+    #
+    # Models with foreign keys (belongs_to associations) depend on the models
+    # they reference. This method ensures that referenced models are dumped
+    # before the models that depend on them, preventing foreign key violations
+    # when importing seeds (issues #78, #83).
+    #
+    # For example, if Book belongs_to Author, Author will be sorted before Book.
+    #
+    # Uses Kahn's algorithm for topological sorting. If there are circular
+    # dependencies, the remaining models are appended in their original order.
+    #
+    # models - Array of ActiveRecord model classes to sort.
+    #
+    # Returns a new Array with models sorted by dependencies (dependencies first).
+    def sort_models_by_dependencies(models)
+      return models if models.empty?
+
+      # Build a lookup for models by table name for faster dependency resolution
+      model_by_table = models.each_with_object({}) do |model, hash|
+        hash[model.table_name] = model
+      end
+
+      # Build dependency graph: model -> models it depends on (via belongs_to)
+      dependencies = {}
+      models.each do |model|
+        dependencies[model] = find_model_dependencies(model, model_by_table)
+      end
+
+      # Topological sort using Kahn's algorithm
+      topological_sort(models, dependencies)
+    end
+
+    # Internal: Finds the models that a given model depends on via belongs_to.
+    #
+    # model - The ActiveRecord model class to find dependencies for.
+    # model_by_table - Hash mapping table names to model classes.
+    #
+    # Returns an Array of model classes that this model depends on.
+    def find_model_dependencies(model, model_by_table)
+      deps = []
+
+      # Check belongs_to associations for foreign key dependencies
+      model.reflect_on_all_associations(:belongs_to).each do |assoc|
+        # Get the table name this association points to
+        # Use the association's class_name if available, otherwise infer from name
+        begin
+          referenced_class = assoc.klass
+          referenced_table = referenced_class.table_name
+
+          # Only add as dependency if it's in our set of models to dump
+          if model_by_table.key?(referenced_table)
+            dep_model = model_by_table[referenced_table]
+            deps << dep_model unless dep_model == model
+          end
+        rescue NameError, ArgumentError
+          # Skip if we can't resolve the class (e.g., polymorphic without type)
+          next
+        end
+      end
+
+      deps.uniq
+    end
+
+    # Internal: Performs topological sort on models based on their dependencies.
+    #
+    # Uses Kahn's algorithm:
+    # 1. Find all models with no dependencies (no incoming edges)
+    # 2. Add them to the result and remove them from the graph
+    # 3. Repeat until all models are sorted or a cycle is detected
+    #
+    # models - Array of model classes.
+    # dependencies - Hash mapping each model to its dependencies.
+    #
+    # Returns an Array of models in topologically sorted order.
+    def topological_sort(models, dependencies)
+      result = []
+      remaining = models.dup
+
+      # Calculate in-degree (number of models depending on each model)
+      # We need to track which models are "ready" (all their dependencies satisfied)
+      while remaining.any?
+        # Find models whose dependencies have all been processed
+        ready = remaining.select do |model|
+          dependencies[model].all? { |dep| result.include?(dep) }
+        end
+
+        if ready.empty?
+          # Circular dependency detected - add remaining in original order
+          result.concat(remaining)
+          break
+        end
+
+        # Add ready models to result (maintain relative order for stability)
+        ready.each do |model|
+          result << model
+          remaining.delete(model)
+        end
+      end
+
+      result
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "APPEND"
