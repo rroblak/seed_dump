@@ -17,6 +17,7 @@ class Rails
       Object.const_set('NoTableModel', Class.new(ActiveRecord::Base)) unless defined?(NoTableModel)
       Object.const_set('EmptyModel', Class.new(ActiveRecord::Base)) unless defined?(EmptyModel)
       Object.const_set('CampaignsManager', Class.new(ActiveRecord::Base)) unless defined?(CampaignsManager)
+      Object.const_set('Boss', Class.new(ActiveRecord::Base)) unless defined?(Boss)
 
       # Model with serialized Hash field (issue #105) - JSON serialization
       unless defined?(SerializedSample)
@@ -147,6 +148,14 @@ module Helpers
         t.string :name
         t.datetime 'created_on', null: false
         t.datetime 'updated_on', null: false
+      end
+
+      # Table for testing model names ending in 's' (issue #121)
+      drop_table :bosses, if_exists: true
+      create_table 'bosses', force: true do |t|
+        t.string :name
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
       end
 
     end

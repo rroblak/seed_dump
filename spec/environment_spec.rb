@@ -249,6 +249,43 @@ describe SeedDump do
       end
     end
 
+    describe 'model names ending in s (issue #121)' do
+      # Model names like "Boss" are incorrectly singularized to "Bos" when
+      # processing MODELS=Boss, causing NameError: uninitialized constant Bos.
+      # The fix should use the exact model name if it resolves to a valid constant.
+
+      it 'should handle model name "Boss" without extra s' do
+        FactoryBot.create(:boss)
+        expect(SeedDump).to receive(:dump).with(Boss, anything)
+        SeedDump.dump_using_environment('MODELS' => 'Boss')
+      end
+
+      it 'should handle model name "boss" (lowercase) without extra s' do
+        FactoryBot.create(:boss)
+        expect(SeedDump).to receive(:dump).with(Boss, anything)
+        SeedDump.dump_using_environment('MODELS' => 'boss')
+      end
+
+      it 'should handle MODELS_EXCLUDE with model names ending in s' do
+        FactoryBot.create(:boss)
+        expect(SeedDump).to receive(:dump).with(Sample, anything)
+        expect(SeedDump).not_to receive(:dump).with(Boss, anything)
+        SeedDump.dump_using_environment('MODELS_EXCLUDE' => 'Boss')
+      end
+
+      it 'should still handle plural model names (e.g., "samples" -> Sample)' do
+        expect(SeedDump).to receive(:dump).with(Sample, anything)
+        SeedDump.dump_using_environment('MODELS' => 'samples')
+      end
+
+      it 'should still handle plural model names in MODELS_EXCLUDE' do
+        FactoryBot.create(:another_sample)
+        expect(SeedDump).to receive(:dump).with(AnotherSample, anything)
+        expect(SeedDump).not_to receive(:dump).with(Sample, anything)
+        SeedDump.dump_using_environment('MODELS_EXCLUDE' => 'samples')
+      end
+    end
+
     describe 'INSERT_ALL (issue #153)' do
       it "should specify insert_all as true if the INSERT_ALL env var is 'true'" do
         expect(SeedDump).to receive(:dump).with(anything, include(insert_all: true))

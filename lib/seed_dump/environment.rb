@@ -67,7 +67,7 @@ class SeedDump
       # model classes in the project.
       models = if models_env
                  models_env.split(',')
-                           .collect {|x| x.strip.underscore.singularize.camelize.constantize }
+                           .collect {|x| model_name_to_constant(x.strip) }
                else
                  ActiveRecord::Base.descendants
                end
@@ -141,7 +141,35 @@ class SeedDump
     def retrieve_models_exclude(env)
       env['MODELS_EXCLUDE'].to_s
                            .split(',')
-                           .collect { |x| x.strip.underscore.singularize.camelize.constantize }
+                           .collect { |x| model_name_to_constant(x.strip) }
+    end
+
+    # Internal: Converts a model name string to a constant.
+    #
+    # This method handles the issue where model names ending in 's' (like "Boss")
+    # were incorrectly singularized to "Bos" by older Rails versions (issue #121).
+    #
+    # The strategy is:
+    # 1. Try camelized form first (handles "Boss", "boss", "user_profile")
+    # 2. Fall back to underscore.singularize.camelize for plural table names
+    #
+    # model_name - String name of the model (e.g., "Boss", "boss", "users")
+    #
+    # Returns the Class constant for the model.
+    # Raises NameError if the model cannot be found.
+    def model_name_to_constant(model_name)
+      # First, try the camelized version directly
+      # This handles: "Boss" -> Boss, "boss" -> Boss, "user_profile" -> UserProfile
+      camelized = model_name.camelize
+      begin
+        return camelized.constantize
+      rescue NameError
+        # Fall through to try singularized version
+      end
+
+      # Fall back to traditional approach for plural names
+      # This handles: "users" -> User, "bosses" -> Boss
+      model_name.underscore.singularize.camelize.constantize
     end
 
     # Internal: Retrieves an Integer from the value for the "LIMIT" key in the
