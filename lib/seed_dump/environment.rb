@@ -69,12 +69,20 @@ class SeedDump
       # Filter the set of models to exclude:
       #   - The ActiveRecord::SchemaMigration model which is internal to Rails
       #     and should not be part of the dumped data.
+      #   - Classes that don't respond to table_exists? or exists? (e.g., abstract
+      #     classes or non-model descendants of ActiveRecord::Base).
       #   - Models that don't have a corresponding table in the database.
       #   - Models whose corresponding database tables are empty.
       filtered_models = models.select do |model|
-                          !ACTIVE_RECORD_INTERNAL_MODELS.include?(model.to_s) && \
-                          model.table_exists? && \
-                          model.exists?
+                          begin
+                            !ACTIVE_RECORD_INTERNAL_MODELS.include?(model.to_s) && \
+                            model.table_exists? && \
+                            model.exists?
+                          rescue NoMethodError
+                            # Skip classes that don't properly respond to table_exists? or exists?
+                            # This can happen with abstract classes or other non-model descendants
+                            false
+                          end
                         end
     end
 

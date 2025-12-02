@@ -137,6 +137,29 @@ describe SeedDump do
       end
     end
 
+    it 'should handle non-model classes in ActiveRecord::Base.descendants (issue #112)' do
+      # Create a class that inherits from ActiveRecord::Base but doesn't respond to exists?
+      # This simulates edge cases like abstract classes or improperly configured models
+      non_model_class = Class.new(ActiveRecord::Base) do
+        def self.exists?
+          raise NoMethodError, "undefined method `exists?' for #{self}"
+        end
+
+        def self.table_exists?
+          raise NoMethodError, "undefined method `table_exists?' for #{self}"
+        end
+      end
+      Object.const_set('NonModelClass', non_model_class)
+
+      allow(SeedDump).to receive(:dump)
+
+      begin
+        expect { SeedDump.dump_using_environment }.not_to raise_error
+      ensure
+        Object.send(:remove_const, :NonModelClass)
+      end
+    end
+
     it 'should run ok without ActiveRecord::SchemaMigration being set (needed for Rails Engines)' do
       # Ensure Sample model exists before trying to remove SchemaMigration
       expect(defined?(Sample)).to be_truthy
