@@ -18,6 +18,15 @@ class Rails
       Object.const_set('EmptyModel', Class.new(ActiveRecord::Base)) unless defined?(EmptyModel)
       Object.const_set('CampaignsManager', Class.new(ActiveRecord::Base)) unless defined?(CampaignsManager)
 
+      # Model with serialized Hash field (issue #105) - JSON serialization
+      unless defined?(SerializedSample)
+        serialized_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'serialized_samples'
+          serialize :metadata, coder: JSON
+        end
+        Object.const_set('SerializedSample', serialized_class)
+      end
+
       # Model with default_scope selecting specific columns (issue #165)
       unless defined?(ScopedSelectSample)
         scoped_class = Class.new(ActiveRecord::Base) do
@@ -114,6 +123,16 @@ module Helpers
         t.datetime 'created_at', null: false
         t.datetime 'updated_at', null: false
       end
+
+      # Table for testing serialized Hash fields (issue #105) - JSON
+      drop_table :serialized_samples, if_exists: true
+      create_table 'serialized_samples', force: true do |t|
+        t.string :name
+        t.text :metadata
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
+      end
+
     end
   end
 

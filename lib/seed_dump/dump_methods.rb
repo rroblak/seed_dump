@@ -99,6 +99,7 @@ class SeedDump
 
     # Converts a value to its string representation suitable for seeding.
     # Handles various data types like BigDecimal, IPAddr, Date/Time, Range, and RGeo.
+    # Also recursively processes Hash and Array values to handle nested types (issue #105).
     #
     # @param value [Object] The value to convert.
     # @return [String] The inspected string representation of the value.
@@ -121,6 +122,13 @@ class SeedDump
                           when ->(v) { defined?(RGeo::Feature::Instance) && v.is_a?(RGeo::Feature::Instance) }
                             # Handle RGeo geometry types if RGeo is loaded
                             value.to_s # RGeo objects often have a suitable WKT representation via to_s
+                          when Hash
+                            # Recursively process Hash values to handle nested types (issue #105)
+                            # This ensures Time objects inside Hashes are converted to ISO 8601
+                            normalize_hash_for_dump(value)
+                          when Array
+                            # Recursively process Array elements to handle nested types (issue #105)
+                            normalize_array_for_dump(value)
                           else
                             # For other types, use the value directly (inspect will handle basic types)
                             value
@@ -145,6 +153,46 @@ class SeedDump
       bracket = object.exclude_end? ? ')' : ']'
 
       "[#{from},#{to}#{bracket}"
+    end
+
+    # Recursively normalizes a Hash for dumping, converting any embedded
+    # Time/DateTime/Date/BigDecimal values to strings that produce valid Ruby.
+    # This fixes issue #105 where serialized Hashes containing Time objects
+    # would produce invalid Ruby like: {"changed_at" => 2016-05-25 17:00:00 UTC}
+    #
+    # @param hash [Hash] The hash to normalize.
+    # @return [Hash] A new hash with normalized values.
+    def normalize_hash_for_dump(hash)
+      hash.transform_values { |v| normalize_value_for_dump(v) }
+    end
+
+    # Recursively normalizes an Array for dumping, converting any embedded
+    # Time/DateTime/Date/BigDecimal values to strings that produce valid Ruby.
+    #
+    # @param array [Array] The array to normalize.
+    # @return [Array] A new array with normalized values.
+    def normalize_array_for_dump(array)
+      array.map { |v| normalize_value_for_dump(v) }
+    end
+
+    # Normalizes a single value for embedding in a Hash or Array dump.
+    # Converts types that don't have valid .inspect output to strings.
+    #
+    # @param value [Object] The value to normalize.
+    # @return [Object] The normalized value.
+    def normalize_value_for_dump(value)
+      case value
+      when BigDecimal, IPAddr
+        value.to_s
+      when Date, Time, DateTime
+        value.iso8601
+      when Hash
+        normalize_hash_for_dump(value)
+      when Array
+        normalize_array_for_dump(value)
+      else
+        value
+      end
     end
 
     # Opens an IO object for writing (either a File or StringIO).

@@ -420,6 +420,208 @@ describe SeedDump do
       end
     end
 
+    context 'serialized Hash in text field (issue #105)' do
+      it 'should dump serialized fields as valid Ruby that can be loaded' do
+        SerializedSample.create!(
+          name: 'test',
+          metadata: { 'key' => 'value', 'number' => 42, 'nested' => { 'a' => 1 } }
+        )
+        result = SeedDump.dump(SerializedSample)
+        expect(result).to include('SerializedSample.create!')
+        expect(result).to include('name: "test"')
+
+        # The metadata field should be dumped as a valid Ruby Hash literal
+        # Not as the raw JSON string or malformed output
+        # Ruby's Hash#inspect uses ' => ' with spaces
+        expect(result).to include('metadata: {"key" => "value"')
+        expect(result).to include('"number" => 42')
+        expect(result).to include('"nested" => {"a" => 1}')
+      end
+
+      it 'should produce output that can be evaluated as valid Ruby' do
+        SerializedSample.create!(
+          name: 'test',
+          metadata: { 'key' => 'value', 'number' => 42, 'nested' => { 'a' => 1 } }
+        )
+        result = SeedDump.dump(SerializedSample)
+        # The dump should produce valid Ruby syntax
+        expect { eval(result) rescue NameError }.not_to raise_error
+      end
+
+      it 'should handle DateTime objects in serialized Hashes as ISO 8601 strings' do
+        # The original issue #105 was about DateTime objects inside serialized Hashes
+        # being output as unquoted datetime objects like: 2016-05-25 17:00:00 UTC
+        # which isn't valid Ruby syntax. With JSON serialization, Rails stores these
+        # as ISO 8601 strings in the database, which should be dumped correctly.
+        SerializedSample.create!(
+          name: 'audit_log',
+          metadata: {
+            'event' => 'update',
+            'changed_at' => Time.utc(2016, 5, 25, 17, 0, 0).iso8601,
+            'changes' => { 'status' => ['pending', 'completed'] }
+          }
+        )
+        result = SeedDump.dump(SerializedSample)
+
+        # Should include the datetime as a quoted string
+        expect(result).to include('"changed_at" => "2016-05-25T17:00:00Z"')
+        # The output should be valid Ruby
+        expect { eval(result) rescue NameError }.not_to raise_error
+      end
+
+      context 'with Time objects nested in Hashes' do
+        # This tests the core issue #105: Time objects inside Hashes produce
+        # invalid Ruby when .inspect is called on the Hash.
+        # e.g. {"changed_at" => 2016-05-25 17:00:00 UTC} is not valid Ruby
+        let(:hash_with_time_mock) do
+          mock_class = Class.new do
+            def self.name; "HashWithTimeSample"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def is_a?(klass)
+              return true if klass == ActiveRecord::Base
+              super
+            end
+            def class
+              HashWithTimeSample
+            end
+            def attributes
+              {
+                "name" => "audit_log",
+                # This Hash contains actual Time objects, which would be
+                # the case with YAML-serialized fields in older Rails
+                "metadata" => {
+                  "event" => "update",
+                  "changed_at" => Time.utc(2016, 5, 25, 17, 0, 0),
+                  "changes" => { "status" => ["pending", "completed"] }
+                }
+              }
+            end
+            def attribute_names; attributes.keys; end
+          end
+          Object.const_set("HashWithTimeSample", mock_class) unless defined?(HashWithTimeSample)
+          HashWithTimeSample.new
+        end
+
+        it 'should produce valid Ruby when Hash contains Time objects' do
+          result = SeedDump.dump([hash_with_time_mock], exclude: [])
+
+          # The output should be valid Ruby syntax - this is the core bug
+          # Without the fix, this produces: metadata: {"changed_at" => 2016-05-25 17:00:00 UTC}
+          # which is a SyntaxError
+          expect { eval(result) rescue NameError }.not_to raise_error
+        end
+
+        it 'should convert Time objects inside Hashes to ISO 8601 format' do
+          result = SeedDump.dump([hash_with_time_mock], exclude: [])
+
+          # Time objects should be converted to ISO 8601 strings
+          expect(result).to match(/"changed_at" => "2016-05-25T17:00:00(\+00:00|Z)"/)
+        end
+      end
+
+      context 'with BigDecimal objects nested in Hashes' do
+        let(:hash_with_bigdecimal_mock) do
+          mock_class = Class.new do
+            def self.name; "HashWithBigDecimalSample"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def is_a?(klass)
+              return true if klass == ActiveRecord::Base
+              super
+            end
+            def class
+              HashWithBigDecimalSample
+            end
+            def attributes
+              {
+                "name" => "pricing",
+                "data" => {
+                  "price" => BigDecimal("19.99"),
+                  "tax_rate" => BigDecimal("0.08"),
+                  "nested" => { "discount" => BigDecimal("5.00") }
+                }
+              }
+            end
+            def attribute_names; attributes.keys; end
+          end
+          Object.const_set("HashWithBigDecimalSample", mock_class) unless defined?(HashWithBigDecimalSample)
+          HashWithBigDecimalSample.new
+        end
+
+        it 'should produce valid Ruby when Hash contains BigDecimal objects' do
+          result = SeedDump.dump([hash_with_bigdecimal_mock], exclude: [])
+
+          # The output should be valid Ruby syntax
+          expect { eval(result) rescue NameError }.not_to raise_error
+        end
+
+        it 'should convert BigDecimal objects inside Hashes to string format' do
+          result = SeedDump.dump([hash_with_bigdecimal_mock], exclude: [])
+
+          # BigDecimal objects should be converted to strings
+          expect(result).to include('"price" => "19.99"')
+          expect(result).to include('"tax_rate" => "0.08"')
+          expect(result).to include('"discount" => "5.0"')
+        end
+      end
+
+      context 'with mixed types nested in Arrays' do
+        let(:array_with_mixed_types_mock) do
+          mock_class = Class.new do
+            def self.name; "ArrayWithMixedTypesSample"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def is_a?(klass)
+              return true if klass == ActiveRecord::Base
+              super
+            end
+            def class
+              ArrayWithMixedTypesSample
+            end
+            def attributes
+              {
+                "name" => "events",
+                "timestamps" => [
+                  Time.utc(2016, 1, 1, 0, 0, 0),
+                  Time.utc(2016, 6, 15, 12, 30, 0),
+                  Time.utc(2016, 12, 31, 23, 59, 59)
+                ],
+                "prices" => [
+                  BigDecimal("10.00"),
+                  BigDecimal("20.50"),
+                  BigDecimal("30.99")
+                ]
+              }
+            end
+            def attribute_names; attributes.keys; end
+          end
+          Object.const_set("ArrayWithMixedTypesSample", mock_class) unless defined?(ArrayWithMixedTypesSample)
+          ArrayWithMixedTypesSample.new
+        end
+
+        it 'should produce valid Ruby when Array contains Time/BigDecimal objects' do
+          result = SeedDump.dump([array_with_mixed_types_mock], exclude: [])
+
+          # The output should be valid Ruby syntax
+          expect { eval(result) rescue NameError }.not_to raise_error
+        end
+
+        it 'should convert Time objects inside Arrays to ISO 8601 format' do
+          result = SeedDump.dump([array_with_mixed_types_mock], exclude: [])
+
+          expect(result).to include('"2016-01-01T00:00:00Z"')
+          expect(result).to include('"2016-06-15T12:30:00Z"')
+          expect(result).to include('"2016-12-31T23:59:59Z"')
+        end
+
+        it 'should convert BigDecimal objects inside Arrays to string format' do
+          result = SeedDump.dump([array_with_mixed_types_mock], exclude: [])
+
+          expect(result).to include('"10.0"')
+          expect(result).to include('"20.5"')
+          expect(result).to include('"30.99"')
+        end
+      end
+    end
+
     context 'DateTime timezone preservation (issue #111)' do
       let(:datetime_sample_mock) do
         mock_class = Class.new do
