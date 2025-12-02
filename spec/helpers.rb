@@ -36,6 +36,14 @@ class Rails
         Object.const_set('ScopedSelectSample', scoped_class)
       end
 
+      # Model with created_on/updated_on columns (issue #128)
+      unless defined?(TimestampOnSample)
+        timestamp_on_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'timestamp_on_samples'
+        end
+        Object.const_set('TimestampOnSample', timestamp_on_class)
+      end
+
       @already_called = true
     end
   end
@@ -131,6 +139,14 @@ module Helpers
         t.text :metadata
         t.datetime 'created_at', null: false
         t.datetime 'updated_at', null: false
+      end
+
+      # Table for testing created_on/updated_on exclusion (issue #128)
+      drop_table :timestamp_on_samples, if_exists: true
+      create_table 'timestamp_on_samples', force: true do |t|
+        t.string :name
+        t.datetime 'created_on', null: false
+        t.datetime 'updated_on', null: false
       end
 
     end

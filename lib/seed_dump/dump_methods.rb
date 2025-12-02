@@ -18,7 +18,7 @@ class SeedDump
     # @option options [String] :file Path to the output file. If nil, returns a string.
     # @option options [Boolean] :append Append to the file instead of overwriting. Default: false.
     # @option options [Integer] :batch_size Number of records per batch. Default: 1000.
-    # @option options [Array<Symbol>] :exclude Attributes to exclude. Default: [:id, :created_at, :updated_at].
+    # @option options [Array<Symbol>] :exclude Attributes to exclude. Default: [:id, :created_at, :updated_at, :created_on, :updated_on].
     # @option options [Boolean, Hash] :import Use activerecord-import format. If Hash, passed as options to import. Default: false.
     # @option options [Boolean] :insert_all Use Rails 6+ insert_all format for faster bulk inserts. Default: false.
     # @return [String, nil] The dump string if :file is nil, otherwise nil.
@@ -222,7 +222,7 @@ class SeedDump
     # @return [void] This method now only writes to the IO. Reading happens in #dump.
     def write_records_to_io(records, io, options)
       # Set default excluded attributes if not provided
-      options[:exclude] ||= [:id, :created_at, :updated_at]
+      options[:exclude] ||= [:id, :created_at, :updated_at, :created_on, :updated_on]
       # Ensure exclude is an array of symbols
       options[:exclude] = options[:exclude].map(&:to_sym)
 
