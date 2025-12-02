@@ -20,6 +20,7 @@ class SeedDump
     # @option options [Integer] :batch_size Number of records per batch. Default: 1000.
     # @option options [Array<Symbol>] :exclude Attributes to exclude. Default: [:id, :created_at, :updated_at].
     # @option options [Boolean, Hash] :import Use activerecord-import format. If Hash, passed as options to import. Default: false.
+    # @option options [Boolean] :insert_all Use Rails 6+ insert_all format for faster bulk inserts. Default: false.
     # @return [String, nil] The dump string if :file is nil, otherwise nil.
     def dump(records, options = {})
       # Handle potential empty input gracefully
@@ -230,8 +231,14 @@ class SeedDump
       end
 
 
-      # Determine the method call ('import' or 'create!')
-      method = options[:import] ? 'import' : 'create!'
+      # Determine the method call ('import', 'insert_all', or 'create!')
+      method = if options[:import]
+                 'import'
+               elsif options[:insert_all]
+                 'insert_all'
+               else
+                 'create!'
+               end
       io.write("#{model_name_for_output(model_klass)}.#{method}(")
 
       # If using import, write the attribute names header

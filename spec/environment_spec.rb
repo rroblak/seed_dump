@@ -137,6 +137,28 @@ describe SeedDump do
       end
     end
 
+    describe 'INSERT_ALL (issue #153)' do
+      it "should specify insert_all as true if the INSERT_ALL env var is 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(insert_all: true))
+        SeedDump.dump_using_environment('INSERT_ALL' => 'true')
+      end
+
+      it "should specify insert_all as true if the INSERT_ALL env var is 'TRUE'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(insert_all: true))
+        SeedDump.dump_using_environment('INSERT_ALL' => 'TRUE')
+      end
+
+      it "should specify insert_all as false if the INSERT_ALL env var is not 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(insert_all: false))
+        SeedDump.dump_using_environment('INSERT_ALL' => 'false')
+      end
+
+      it "should specify insert_all as false if the INSERT_ALL env var is not set" do
+        expect(SeedDump).to receive(:dump).with(anything, include(insert_all: false))
+        SeedDump.dump_using_environment
+      end
+    end
+
     it 'should handle non-model classes in ActiveRecord::Base.descendants (issue #112)' do
       # Create a class that inherits from ActiveRecord::Base but doesn't respond to exists?
       # This simulates edge cases like abstract classes or improperly configured models

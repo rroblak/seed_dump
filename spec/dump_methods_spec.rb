@@ -53,6 +53,23 @@ describe SeedDump do
     output + data.join(",\n  ") + "\n], validate: false)\n"
   end
 
+  # Helper for insert_all output based on default factory values (issue #153)
+  # Uses ISO 8601 format with timezone suffix (issue #111)
+  def expected_insert_all_output(exclude_id_timestamps = true)
+    output = "Sample.insert_all([\n  "
+    data = []
+    (1..3).each do |i|
+      row = if exclude_id_timestamps
+              # Expect integer: 42, ISO 8601 format with timezone
+              { string: "string", text: "text", integer: 42, float: 3.14, decimal: "2.72", datetime: "1776-07-04T19:14:00Z", time: "2000-01-01T03:15:00Z", date: "1863-11-19", binary: "binary", boolean: false }
+            else
+              { id: i, string: "string", text: "text", integer: 42, float: 3.14, decimal: "2.72", datetime: "1776-07-04T19:14:00Z", time: "2000-01-01T03:15:00Z", date: "1863-11-19", binary: "binary", boolean: false, created_at: "1969-07-20T20:18:00Z", updated_at: "1989-11-10T04:20:00Z" }
+            end
+      data << "{#{row.map { |k, v| "#{k}: #{v.inspect}" }.join(', ')}}"
+    end
+    output + data.join(",\n  ") + "\n])\n"
+  end
+
 
   describe '.dump' do
 
@@ -306,6 +323,32 @@ describe SeedDump do
         it 'should dump in the activerecord-import format when import is true' do
           expect(SeedDump.dump(Sample, import: { validate: false }, exclude: [])).to eq(expected_import_output_with_options)
         end
+      end
+    end
+
+    context 'insert_all (issue #153)' do
+      before(:each) { FactoryBot.create_list(:sample, 3) } # Create 3 standard samples
+
+      it 'should dump in the insert_all format when insert_all option is true' do
+        expect(SeedDump.dump(Sample, insert_all: true)).to eq(expected_insert_all_output(true))
+      end
+
+      it 'should include all columns when exclude is empty' do
+        expect(SeedDump.dump(Sample, insert_all: true, exclude: [])).to eq(expected_insert_all_output(false))
+      end
+
+      it 'should use Hash syntax (not Array syntax like activerecord-import)' do
+        result = SeedDump.dump(Sample, insert_all: true)
+        # insert_all uses Hash format: {key: value, ...}
+        expect(result).to include('string: "string"')
+        expect(result).not_to include('[:string')  # Not array format
+      end
+
+      it 'should not include column names header like activerecord-import does' do
+        result = SeedDump.dump(Sample, insert_all: true)
+        # activerecord-import format includes: Model.import([:col1, :col2], [...])
+        # insert_all format is just: Model.insert_all([{...}, {...}])
+        expect(result).not_to match(/insert_all\(\[:\w+/)
       end
     end
 
