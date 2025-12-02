@@ -184,7 +184,7 @@ class SeedDump
 
       # Determine the method call ('import' or 'create!')
       method = options[:import] ? 'import' : 'create!'
-      io.write("#{model_klass}.#{method}(")
+      io.write("#{model_name_for_output(model_klass)}.#{method}(")
 
       # If using import, write the attribute names header
       if options[:import]
@@ -251,6 +251,29 @@ class SeedDump
 
       # Filter out excluded attribute names
       base_names.select { |name| !options[:exclude].include?(name.to_sym) }
+    end
+
+    # Formats the model name for output in the generated seed file.
+    # For HABTM join models (which are private constants), uses const_get syntax
+    # to avoid NameError when the seeds file is loaded.
+    #
+    # @param model_klass [Class] The model class.
+    # @return [String] The formatted model name for use in seeds.rb.
+    def model_name_for_output(model_klass)
+      model_name = model_klass.to_s
+
+      # Check if this is an HABTM join model (contains ::HABTM_)
+      # e.g., "Dealer::HABTM_UStations" -> "Dealer.const_get('HABTM_UStations')"
+      if model_name.include?('::HABTM_')
+        # Split on the last ::HABTM_ to handle nested namespaces
+        # e.g., "Foo::Bar::HABTM_Bazs" -> parent="Foo::Bar", habtm_name="HABTM_Bazs"
+        parts = model_name.rpartition('::')
+        parent = parts[0]      # Everything before the last ::
+        habtm_name = parts[2]  # The HABTM_* part
+        "#{parent}.const_get('#{habtm_name}')"
+      else
+        model_name
+      end
     end
 
     # Determines the ActiveRecord model class from the given records source.

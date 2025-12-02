@@ -309,6 +309,117 @@ describe SeedDump do
       end
     end
 
+    context 'HABTM join models (issue #130)' do
+      # Rails creates private constants like `Model::HABTM_OtherModels` for
+      # has_and_belongs_to_many associations. These cannot be referenced directly
+      # in seeds.rb because they're private. We need to use const_get instead.
+      #
+      # Instead of: Dealer::HABTM_UStations.create!([...])
+      # We output:  Dealer.const_get('HABTM_UStations').create!([...])
+
+      let(:habtm_mock_class) do
+        Class.new do
+          def self.name; "Dealer::HABTM_UStations"; end
+          def self.<(other); other == ActiveRecord::Base; end
+          def self.to_s; name; end
+        end
+      end
+
+      let(:habtm_mock) do
+        klass = habtm_mock_class
+        mock_instance = Object.new
+        mock_instance.define_singleton_method(:class) { klass }
+        mock_instance.define_singleton_method(:is_a?) do |other|
+          other == ActiveRecord::Base || super(other)
+        end
+        mock_instance.define_singleton_method(:attributes) do
+          { "dealer_id" => 1, "ustation_id" => 2 }
+        end
+        mock_instance.define_singleton_method(:attribute_names) do
+          ["dealer_id", "ustation_id"]
+        end
+        mock_instance
+      end
+
+      it 'should output const_get format for HABTM models' do
+        result = SeedDump.dump([habtm_mock], exclude: [])
+        # Should use const_get to access the private constant
+        expect(result).to include("Dealer.const_get('HABTM_UStations').create!")
+        expect(result).not_to include("Dealer::HABTM_UStations.create!")
+      end
+
+      it 'should include the record data' do
+        result = SeedDump.dump([habtm_mock], exclude: [])
+        expect(result).to include("dealer_id: 1")
+        expect(result).to include("ustation_id: 2")
+      end
+
+      it 'should produce output that can be evaluated without NameError' do
+        # Create a class structure with private constant to test const_get works
+        # Use a plain Ruby class (not ActiveRecord) to avoid polluting AR.descendants
+        test_parent = Class.new
+        Object.const_set('TestDealerParent', test_parent)
+
+        habtm_class = Class.new
+        TestDealerParent.const_set('HABTM_Stations', habtm_class)
+        TestDealerParent.send(:private_constant, 'HABTM_Stations')
+
+        begin
+          # Verify that const_get can access the private constant
+          resolved_class = TestDealerParent.const_get('HABTM_Stations')
+          expect(resolved_class).to eq(habtm_class)
+
+          # Verify that direct reference WOULD fail (proving we need const_get)
+          # Error message varies by Ruby/Rails version:
+          # - "private constant" in newer versions
+          # - "uninitialized constant" in older versions (private constants appear uninitialized)
+          expect { eval("TestDealerParent::HABTM_Stations") }.to raise_error(NameError)
+
+          # Now test that our dump output format works with the mock
+          result = SeedDump.dump([habtm_mock], exclude: [])
+          expect(result).to include("Dealer.const_get('HABTM_UStations').create!")
+
+          # Verify the generated model reference pattern is syntactically valid Ruby
+          # that would resolve correctly (we can't actually eval it without Dealer existing)
+          expect(result).to match(/\w+\.const_get\('\w+'\)\.create!/)
+        ensure
+          TestDealerParent.send(:remove_const, 'HABTM_Stations') if TestDealerParent.const_defined?('HABTM_Stations', false)
+          Object.send(:remove_const, 'TestDealerParent') if defined?(TestDealerParent)
+        end
+      end
+
+      context 'with nested namespace' do
+        let(:nested_habtm_mock_class) do
+          Class.new do
+            def self.name; "Admin::Dealers::Dealer::HABTM_UStations"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def self.to_s; name; end
+          end
+        end
+
+        let(:nested_habtm_mock) do
+          klass = nested_habtm_mock_class
+          mock_instance = Object.new
+          mock_instance.define_singleton_method(:class) { klass }
+          mock_instance.define_singleton_method(:is_a?) do |other|
+            other == ActiveRecord::Base || super(other)
+          end
+          mock_instance.define_singleton_method(:attributes) do
+            { "dealer_id" => 1, "ustation_id" => 2 }
+          end
+          mock_instance.define_singleton_method(:attribute_names) do
+            ["dealer_id", "ustation_id"]
+          end
+          mock_instance
+        end
+
+        it 'should handle deeply nested namespaces' do
+          result = SeedDump.dump([nested_habtm_mock], exclude: [])
+          expect(result).to include("Admin::Dealers::Dealer.const_get('HABTM_UStations').create!")
+        end
+      end
+    end
+
     context 'DateTime timezone preservation (issue #111)' do
       let(:datetime_sample_mock) do
         mock_class = Class.new do
