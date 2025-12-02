@@ -118,7 +118,13 @@ Options are common to both the Rake task and the console, except where noted.
 
 `import`: If `true`, output will be in the format needed by the [activerecord-import](https://github.com/zdennis/activerecord-import) gem, rather than the default format. You can also pass a Hash of options which will be passed through to the `import` call (e.g., `IMPORT='{ "validate": false }'` for Rake, or `import: { validate: false }` for console). Default: `false`.
 
+`include_all`: If set to `true`, include all columns in the dump (including `id`, `created_at`, and `updated_at`). Equivalent to `EXCLUDE=""`. Default: `false`. **Rake task only.** Example: `rake db:seed:dump INCLUDE_ALL=true`
+
+`insert_all`: If `true`, output will use Rails 6+ [`insert_all`](https://api.rubyonrails.org/classes/ActiveRecord/Persistence/ClassMethods.html#method-i-insert_all) for faster bulk inserts that bypass validations and callbacks. Default: `false`. Example: `rake db:seed:dump INSERT_ALL=true` or `SeedDump.dump(User, insert_all: true)`.
+
 `limit`: Dump no more than this amount of data *per model*. Default: no limit. **Rake task only.** In the console, just pass in an ActiveRecord::Relation with the appropriate limit (e.g., `SeedDump.dump(User.limit(5))`).
+
+`model_limits`: Set different limits for specific models. Format: `Model1:limit1,Model2:limit2`. Use `0` to mean "no limit" for a specific model. This is useful when `LIMIT` would break foreign key relationships. **Rake task only.** Example: `rake db:seed:dump LIMIT=10 MODEL_LIMITS="Teacher:0,Student:50"` dumps all Teachers, 50 Students, and 10 of everything else.
 
 `model[s]`: Restrict the dump to the specified comma-separated list of models. Default: all models that have data. If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". **Rake task only.** Example: `rake db:seed:dump MODELS="User, Position, Function"`
 
