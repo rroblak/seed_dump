@@ -107,6 +107,9 @@ class SeedDump
                           when BigDecimal, IPAddr
                             # Use standard to_s for these types
                             value.to_s
+                          when ->(v) { defined?(ActionText::Content) && v.is_a?(ActionText::Content) }
+                            # ActionText::Content should be dumped as its HTML string (issue #154)
+                            value.to_s
                           when Date, Time, DateTime
                             # Use to_fs(:db) if available (preferred method in newer Rails)
                             if value.respond_to?(:to_fs)

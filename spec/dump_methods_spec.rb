@@ -204,6 +204,58 @@ describe SeedDump do
       end
     end
 
+    context 'ActionText::Content (issue #154)' do
+      # Mock ActionText::Content class to simulate ActionText behavior
+      before(:all) do
+        unless defined?(ActionText::Content)
+          module ActionText
+            class Content
+              def initialize(html)
+                @html = html
+              end
+
+              def to_s
+                @html
+              end
+
+              def inspect
+                "#<ActionText::Content \"#{@html[0..20]}...\">"
+              end
+            end
+          end
+        end
+      end
+
+      let(:action_text_sample_mock) do
+        mock_class = Class.new do
+          def self.name; "ActionTextSample"; end
+          def self.<(other); other == ActiveRecord::Base; end
+          def is_a?(klass)
+            return true if klass == ActiveRecord::Base
+            super
+          end
+          def class
+            ActionTextSample
+          end
+          def attributes
+            {
+              "name" => "article",
+              "body" => ActionText::Content.new("<div>Hello <strong>World</strong></div>")
+            }
+          end
+          def attribute_names; attributes.keys; end
+        end
+        Object.const_set("ActionTextSample", mock_class) unless defined?(ActionTextSample)
+        ActionTextSample.new
+      end
+
+      it 'should dump ActionText::Content as its HTML string representation' do
+        result = SeedDump.dump([action_text_sample_mock], exclude: [])
+        expect(result).to include('body: "<div>Hello <strong>World</strong></div>"')
+        expect(result).not_to include('#<ActionText::Content')
+      end
+    end
+
     context 'table without primary key (issue #167)' do
       before(:each) do
         CampaignsManager.create!(campaign_id: 1, manager_id: 1)
