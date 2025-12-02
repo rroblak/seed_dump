@@ -6,9 +6,15 @@ class SeedDump
 
       models = retrieve_models(env) - retrieve_models_exclude(env)
 
-      limit = retrieve_limit_value(env)
+      global_limit = retrieve_limit_value(env)
+      model_limits = retrieve_model_limits_value(env)
       append = retrieve_append_value(env)
       models.each do |model|
+        # Determine the limit to apply for this model:
+        # 1. Check MODEL_LIMITS for a per-model override
+        # 2. Fall back to global LIMIT
+        # 3. If neither, no limit is applied
+        limit = limit_for_model(model, model_limits, global_limit)
         model = model.limit(limit) if limit.present?
 
         SeedDump.dump(model,
@@ -142,6 +148,55 @@ class SeedDump
     # given Hash, and nil if no such key exists.
     def retrieve_limit_value(env)
       retrieve_integer_value('LIMIT', env)
+    end
+
+    # Internal: Parses the MODEL_LIMITS environment variable into a Hash.
+    #
+    # MODEL_LIMITS allows per-model limit overrides to prevent LIMIT from
+    # breaking associations (issue #142). Format: "Model1:limit1,Model2:limit2"
+    #
+    # A limit of 0 means "unlimited" (dump all records for that model).
+    #
+    # Example: MODEL_LIMITS="Teacher:0,Student:50"
+    #   - Teacher: dumps all records (0 = unlimited)
+    #   - Student: dumps 50 records
+    #   - Other models: fall back to global LIMIT or dump all if no LIMIT set
+    #
+    # env - Hash of environment variables.
+    #
+    # Returns a Hash mapping model names (String) to limits (Integer), or
+    # empty Hash if MODEL_LIMITS is not set.
+    def retrieve_model_limits_value(env)
+      return {} unless env['MODEL_LIMITS']
+
+      env['MODEL_LIMITS'].split(',').each_with_object({}) do |pair, hash|
+        model_name, limit = pair.split(':').map(&:strip)
+        hash[model_name] = limit.to_i if model_name && limit
+      end
+    end
+
+    # Internal: Determines the limit to apply for a given model.
+    #
+    # Precedence:
+    # 1. Per-model limit from MODEL_LIMITS (0 means unlimited)
+    # 2. Global LIMIT
+    # 3. nil (no limit, dump all records)
+    #
+    # model - The ActiveRecord model class.
+    # model_limits - Hash of per-model limits from MODEL_LIMITS.
+    # global_limit - The global LIMIT value (Integer or nil).
+    #
+    # Returns an Integer limit or nil if no limit should be applied.
+    def limit_for_model(model, model_limits, global_limit)
+      model_name = model.to_s
+
+      if model_limits.key?(model_name)
+        limit = model_limits[model_name]
+        # 0 means unlimited - return nil to skip applying limit
+        limit == 0 ? nil : limit
+      else
+        global_limit
+      end
     end
 
     # Internal: Retrieves an Array of Symbols from the value for the "EXCLUDE"

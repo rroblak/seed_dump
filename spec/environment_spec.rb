@@ -123,6 +123,90 @@ describe SeedDump do
       end
     end
 
+    describe 'MODEL_LIMITS (issue #142)' do
+      # MODEL_LIMITS allows per-model limit overrides to prevent LIMIT from breaking
+      # associations. For example, if Teacher has_many Students, you can set
+      # MODEL_LIMITS=Teacher:0 to dump all teachers while limiting other models.
+
+      it 'should apply per-model limit when specified' do
+        FactoryBot.create(:another_sample)
+
+        sample_relation = double('Sample relation')
+        another_sample_relation = double('AnotherSample relation')
+
+        allow(Sample).to receive(:limit).with(5).and_return(sample_relation)
+        allow(AnotherSample).to receive(:limit).with(20).and_return(another_sample_relation)
+
+        expect(SeedDump).to receive(:dump).with(sample_relation, anything)
+        expect(SeedDump).to receive(:dump).with(another_sample_relation, anything)
+
+        SeedDump.dump_using_environment(
+          'MODELS' => 'Sample,AnotherSample',
+          'MODEL_LIMITS' => 'Sample:5,AnotherSample:20'
+        )
+      end
+
+      it 'should interpret 0 as unlimited (dump all records)' do
+        # When MODEL_LIMITS=Sample:0, Sample should not have limit applied
+        expect(Sample).not_to receive(:limit)
+        expect(SeedDump).to receive(:dump).with(Sample, anything)
+
+        SeedDump.dump_using_environment(
+          'MODELS' => 'Sample',
+          'MODEL_LIMITS' => 'Sample:0'
+        )
+      end
+
+      it 'should fall back to global LIMIT for models not in MODEL_LIMITS' do
+        FactoryBot.create(:another_sample)
+
+        # Sample has specific limit of 5, AnotherSample falls back to global LIMIT of 10
+        sample_relation = double('Sample relation')
+        another_sample_relation = double('AnotherSample relation')
+
+        allow(Sample).to receive(:limit).with(5).and_return(sample_relation)
+        allow(AnotherSample).to receive(:limit).with(10).and_return(another_sample_relation)
+
+        expect(SeedDump).to receive(:dump).with(sample_relation, anything)
+        expect(SeedDump).to receive(:dump).with(another_sample_relation, anything)
+
+        SeedDump.dump_using_environment(
+          'MODELS' => 'Sample,AnotherSample',
+          'LIMIT' => '10',
+          'MODEL_LIMITS' => 'Sample:5'
+        )
+      end
+
+      it 'should work with MODEL_LIMITS alone (no global LIMIT)' do
+        FactoryBot.create(:another_sample)
+
+        # Sample has limit of 5, AnotherSample has no limit (dumps all)
+        sample_relation = double('Sample relation')
+
+        allow(Sample).to receive(:limit).with(5).and_return(sample_relation)
+        expect(AnotherSample).not_to receive(:limit)
+
+        expect(SeedDump).to receive(:dump).with(sample_relation, anything)
+        expect(SeedDump).to receive(:dump).with(AnotherSample, anything)
+
+        SeedDump.dump_using_environment(
+          'MODELS' => 'Sample,AnotherSample',
+          'MODEL_LIMITS' => 'Sample:5'
+        )
+      end
+
+      it 'should handle whitespace in MODEL_LIMITS' do
+        sample_relation = double('Sample relation')
+        allow(Sample).to receive(:limit).with(5).and_return(sample_relation)
+        expect(SeedDump).to receive(:dump).with(sample_relation, anything)
+
+        SeedDump.dump_using_environment(
+          'MODELS' => 'Sample',
+          'MODEL_LIMITS' => ' Sample : 5 '
+        )
+      end
+    end
+
     ['', 'S'].each do |model_suffix|
       model_env = 'MODEL' + model_suffix
 
