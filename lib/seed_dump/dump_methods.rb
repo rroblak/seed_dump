@@ -111,16 +111,10 @@ class SeedDump
                             # ActionText::Content should be dumped as its HTML string (issue #154)
                             value.to_s
                           when Date, Time, DateTime
-                            # Use to_fs(:db) if available (preferred method in newer Rails)
-                            if value.respond_to?(:to_fs)
-                              value.to_fs(:db)
-                            # Fallback for Date: use standard ISO 8601 format
-                            elsif value.is_a?(Date)
-                               value.strftime('%Y-%m-%d')
-                            # Fallback for Time/DateTime: use strftime with classic DB format
-                            else
-                              value.strftime('%Y-%m-%d %H:%M:%S')
-                            end
+                            # Use ISO 8601 format to preserve timezone information (issue #111)
+                            # This prevents timestamp shifts when reimporting seeds on machines
+                            # with different timezones
+                            value.iso8601
                           when Range
                             # Convert range to a specific string format
                             range_to_string(value)

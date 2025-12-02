@@ -3,21 +3,21 @@ require 'spec_helper'
 describe SeedDump do
 
   # Helper for expected output based on default factory values (integer: 42)
-  # Expect format WITHOUT UTC suffix, matching strftime and Rails 7+ to_fs(:db)
+  # Uses ISO 8601 format with timezone suffix (issue #111)
   def expected_output(include_id = false, id_offset = 0, count = 3)
       output = "Sample.create!([\n  "
       data = []
       start_id = 1 + id_offset
       end_id = count + id_offset # Adjust end based on count
       (start_id..end_id).each do |i|
-        # Expect integer: 42, no UTC suffix
-        data << "{#{include_id ? "id: #{i}, " : ''}string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
+        # Expect integer: 42, ISO 8601 format with timezone
+        data << "{#{include_id ? "id: #{i}, " : ''}string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04T19:14:00Z\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
       end
       output + data.join(",\n  ") + "\n])\n"
   end
 
   # Helper for activerecord-import output based on default factory values
-  # Expect format WITHOUT UTC suffix
+  # Uses ISO 8601 format with timezone suffix (issue #111)
   def expected_import_output(exclude_id_timestamps = true)
     columns = if exclude_id_timestamps
                 [:string, :text, :integer, :float, :decimal, :datetime, :time, :date, :binary, :boolean]
@@ -28,11 +28,11 @@ describe SeedDump do
     data = []
     (1..3).each do |i|
        row = if exclude_id_timestamps
-               # Expect integer: 42, no UTC suffix
-               ["string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false]
+               # Expect integer: 42, ISO 8601 format with timezone
+               ["string", "text", 42, 3.14, "2.72", "1776-07-04T19:14:00Z", "2000-01-01T03:15:00Z", "1863-11-19", "binary", false]
              else
-               # Expect integer: 42, no UTC suffix
-               [i, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false, "1969-07-20 20:18:00", "1989-11-10 04:20:00"]
+               # Expect integer: 42, ISO 8601 format with timezone
+               [i, "string", "text", 42, 3.14, "2.72", "1776-07-04T19:14:00Z", "2000-01-01T03:15:00Z", "1863-11-19", "binary", false, "1969-07-20T20:18:00Z", "1989-11-10T04:20:00Z"]
              end
        data << "[#{row.map(&:inspect).join(', ')}]"
     end
@@ -40,14 +40,14 @@ describe SeedDump do
   end
 
   # Helper for activerecord-import output with options
-  # Expect format WITHOUT UTC suffix
+  # Uses ISO 8601 format with timezone suffix (issue #111)
   def expected_import_output_with_options
     columns = [:id, :string, :text, :integer, :float, :decimal, :datetime, :time, :date, :binary, :boolean, :created_at, :updated_at]
     output = "Sample.import([#{columns.map(&:inspect).join(', ')}], [\n  "
     data = []
     (1..3).each do |i|
-       # Expect integer: 42, no UTC suffix
-       row = [i, "string", "text", 42, 3.14, "2.72", "1776-07-04 19:14:00", "2000-01-01 03:15:00", "1863-11-19", "binary", false, "1969-07-20 20:18:00", "1989-11-10 04:20:00"]
+       # Expect integer: 42, ISO 8601 format with timezone
+       row = [i, "string", "text", 42, 3.14, "2.72", "1776-07-04T19:14:00Z", "2000-01-01T03:15:00Z", "1863-11-19", "binary", false, "1969-07-20T20:18:00Z", "1989-11-10T04:20:00Z"]
        data << "[#{row.map(&:inspect).join(', ')}]"
     end
     output + data.join(",\n  ") + "\n], validate: false)\n"
@@ -103,10 +103,10 @@ describe SeedDump do
 
         it 'should dump the models in the specified order' do
           # Define expected output based on descending integer order (2, 1, 0)
-          # Expect format WITHOUT UTC suffix
+          # Uses ISO 8601 format with timezone suffix (issue #111)
           expected_desc_output = "Sample.create!([\n  "
           data = 2.downto(0).map do |i|
-            "{string: \"string\", text: \"text\", integer: #{i}, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
+            "{string: \"string\", text: \"text\", integer: #{i}, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04T19:14:00Z\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
           end
           expected_desc_output += data.join(",\n  ") + "\n])\n"
 
@@ -125,8 +125,8 @@ describe SeedDump do
         it 'should dump the number of models specified by the limit when the limit is smaller than the batch size' do
           # Create one sample record (integer will be 42 from factory)
           FactoryBot.create(:sample)
-          # Expected output for a single record, no UTC suffix
-          expected_limit_1 = "Sample.create!([\n  {string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
+          # Expected output for a single record, ISO 8601 format with timezone
+          expected_limit_1 = "Sample.create!([\n  {string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04T19:14:00Z\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
           expect(SeedDump.dump(Sample.limit(1))).to eq(expected_limit_1)
         end
 
@@ -136,8 +136,8 @@ describe SeedDump do
           # Expecting first 3 records created (IDs 1, 2, 3)
           expected_limit_3 = "Sample.create!([\n  "
           data = (1..3).map do |i|
-             # Use integer: 42 as defined in the factory, no UTC suffix
-             "{string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04 19:14:00\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
+             # Use integer: 42 as defined in the factory, ISO 8601 format with timezone
+             "{string: \"string\", text: \"text\", integer: 42, float: 3.14, decimal: \"2.72\", datetime: \"1776-07-04T19:14:00Z\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}"
           end
           expected_limit_3 += data.join(",\n  ") + "\n])\n"
 
@@ -172,8 +172,8 @@ describe SeedDump do
     context 'with an exclude parameter' do
        before(:each) { FactoryBot.create_list(:sample, 3) } # Create 3 standard samples
       it 'should exclude the specified attributes from the dump' do
-        # Expect format WITHOUT UTC suffix
-        expected_excluded_output = "Sample.create!([\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01 03:15:00\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
+        # Uses ISO 8601 format with timezone suffix (issue #111)
+        expected_excluded_output = "Sample.create!([\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false},\n  {text: \"text\", integer: 42, decimal: \"2.72\", time: \"2000-01-01T03:15:00Z\", date: \"1863-11-19\", binary: \"binary\", boolean: false}\n])\n"
         expect(SeedDump.dump(Sample, exclude: [:id, :created_at, :updated_at, :string, :float, :datetime])).to eq(expected_excluded_output)
       end
     end
@@ -306,6 +306,68 @@ describe SeedDump do
         it 'should dump in the activerecord-import format when import is true' do
           expect(SeedDump.dump(Sample, import: { validate: false }, exclude: [])).to eq(expected_import_output_with_options)
         end
+      end
+    end
+
+    context 'DateTime timezone preservation (issue #111)' do
+      let(:datetime_sample_mock) do
+        mock_class = Class.new do
+          def self.name; "DateTimeSample"; end
+          def self.<(other); other == ActiveRecord::Base; end
+          def is_a?(klass)
+            return true if klass == ActiveRecord::Base
+            super
+          end
+          def class
+            DateTimeSample
+          end
+          def attributes
+            {
+              "name" => "test",
+              # UTC datetime - should preserve timezone info in dump
+              "scheduled_at" => Time.utc(2016, 8, 12, 2, 20, 20)
+            }
+          end
+          def attribute_names; attributes.keys; end
+        end
+        Object.const_set("DateTimeSample", mock_class) unless defined?(DateTimeSample)
+        DateTimeSample.new
+      end
+
+      it 'should include timezone information in datetime dumps' do
+        result = SeedDump.dump([datetime_sample_mock], exclude: [])
+        # The datetime should include timezone info (UTC) so it can be reimported correctly
+        # Format should be ISO 8601: "2016-08-12T02:20:20Z" or similar with timezone
+        expect(result).to match(/scheduled_at: "2016-08-12T02:20:20(\+00:00|Z)"/)
+      end
+
+      it 'should preserve non-UTC timezone information' do
+        # Create a mock with a non-UTC timezone
+        non_utc_mock_class = Class.new do
+          def self.name; "NonUtcSample"; end
+          def self.<(other); other == ActiveRecord::Base; end
+          def is_a?(klass)
+            return true if klass == ActiveRecord::Base
+            super
+          end
+          def class
+            NonUtcSample
+          end
+          def attributes
+            {
+              "name" => "test",
+              # Pacific time (-08:00)
+              "scheduled_at" => Time.new(2016, 8, 12, 2, 20, 20, "-08:00")
+            }
+          end
+          def attribute_names; attributes.keys; end
+        end
+        Object.const_set("NonUtcSample", non_utc_mock_class) unless defined?(NonUtcSample)
+        non_utc_sample = NonUtcSample.new
+
+        result = SeedDump.dump([non_utc_sample], exclude: [])
+        # Should include the timezone offset
+        expect(result).to match(/scheduled_at: "2016-08-12T02:20:20-08:00"/)
       end
     end
   end
