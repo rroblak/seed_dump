@@ -19,6 +19,24 @@ class Rails
       Object.const_set('CampaignsManager', Class.new(ActiveRecord::Base)) unless defined?(CampaignsManager)
       Object.const_set('Boss', Class.new(ActiveRecord::Base)) unless defined?(Boss)
 
+      # STI models for testing issue #120
+      unless defined?(BaseUser)
+        base_user_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'base_users'
+        end
+        Object.const_set('BaseUser', base_user_class)
+      end
+
+      unless defined?(AdminUser)
+        admin_user_class = Class.new(BaseUser)
+        Object.const_set('AdminUser', admin_user_class)
+      end
+
+      unless defined?(GuestUser)
+        guest_user_class = Class.new(BaseUser)
+        Object.const_set('GuestUser', guest_user_class)
+      end
+
       # Model with serialized Hash field (issue #105) - JSON serialization
       unless defined?(SerializedSample)
         serialized_class = Class.new(ActiveRecord::Base) do
@@ -154,6 +172,16 @@ module Helpers
       drop_table :bosses, if_exists: true
       create_table 'bosses', force: true do |t|
         t.string :name
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
+      end
+
+      # Table for testing STI deduplication (issue #120)
+      drop_table :base_users, if_exists: true
+      create_table 'base_users', force: true do |t|
+        t.string :type  # STI type column
+        t.string :name
+        t.string :email
         t.datetime 'created_at', null: false
         t.datetime 'updated_at', null: false
       end

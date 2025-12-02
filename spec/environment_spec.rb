@@ -404,17 +404,57 @@ describe SeedDump do
         end
       end
 
-      it 'should not deduplicate non-HABTM models with same table (e.g., STI)' do
-        # Non-HABTM models sharing a table (like STI) should both be kept
-        # This test ensures we only dedupe HABTM_ prefixed models
+      it 'should not affect non-HABTM models with different tables' do
+        # Sample and AnotherSample have different tables, so both should dump
         allow(SeedDump).to receive(:dump)
 
-        # Sample and AnotherSample are different tables, so both should dump
         FactoryBot.create(:another_sample)
         expect(SeedDump).to receive(:dump).with(Sample, anything)
         expect(SeedDump).to receive(:dump).with(AnotherSample, anything)
 
         SeedDump.dump_using_environment
+      end
+    end
+
+    describe 'STI deduplication (issue #120)' do
+      # When using STI (Single Table Inheritance), multiple model classes share
+      # the same database table. For example, AdminUser < BaseUser and
+      # GuestUser < BaseUser all use the 'base_users' table.
+      # Without deduplication, each STI subclass would be dumped separately,
+      # creating duplicate records in the seeds file.
+
+      it 'should deduplicate STI models by keeping only the base class' do
+        # Create records of different STI types
+        FactoryBot.create(:admin_user)
+        FactoryBot.create(:guest_user)
+
+        # Track which models get dumped
+        dumped_models = []
+        allow(SeedDump).to receive(:dump) do |model, _options|
+          dumped_models << model.to_s
+        end
+
+        SeedDump.dump_using_environment
+
+        # Only BaseUser should be dumped, not AdminUser or GuestUser
+        expect(dumped_models).to include('BaseUser')
+        expect(dumped_models).not_to include('AdminUser')
+        expect(dumped_models).not_to include('GuestUser')
+      end
+
+      it 'should dump all records through the base class' do
+        # Create records of different STI types
+        FactoryBot.create(:admin_user)
+        FactoryBot.create(:guest_user)
+        FactoryBot.create(:base_user)
+
+        # The base class should have access to all records
+        result = SeedDump.dump(BaseUser)
+
+        # All three records should be in the output
+        expect(result).to include('AdminUser')
+        expect(result).to include('GuestUser')
+        expect(result).to include('BaseUser')
       end
     end
   end

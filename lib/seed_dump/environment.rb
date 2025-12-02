@@ -96,7 +96,13 @@ class SeedDump
       # Rails creates two auto-generated models for each HABTM association
       # (e.g., User::HABTM_Roles and Role::HABTM_Users) that both point to
       # the same join table. We only want to dump one of them.
-      deduplicate_habtm_models(filtered_models)
+      deduped_habtm = deduplicate_habtm_models(filtered_models)
+
+      # Deduplicate STI models that share the same table (issue #120).
+      # With STI, subclasses (e.g., AdminUser < User) share the same table as
+      # their parent. We only want to dump the base class, which will include
+      # all records including subclass records with proper type discrimination.
+      deduplicate_sti_models(deduped_habtm)
     end
 
     # Internal: Deduplicates HABTM models that share the same table.
@@ -111,6 +117,27 @@ class SeedDump
     def deduplicate_habtm_models(models)
       habtm, non_habtm = models.partition { |m| m.to_s.include?('HABTM_') }
       non_habtm + habtm.uniq(&:table_name)
+    end
+
+    # Internal: Deduplicates STI models that share the same table.
+    #
+    # With Single Table Inheritance, subclasses like AdminUser < User share the
+    # same database table as their parent. Without deduplication, each STI class
+    # would be dumped separately, creating duplicate records.
+    #
+    # The solution is to keep only the base class for each STI hierarchy, which
+    # will include all records (base and subclass) with proper type discrimination.
+    #
+    # models - Array of ActiveRecord model classes.
+    #
+    # Returns the Array with STI subclasses removed (only base classes kept).
+    def deduplicate_sti_models(models)
+      models.select do |model|
+        # Keep the model only if it IS its own base class
+        # For STI subclasses, base_class returns the parent (e.g., AdminUser.base_class => User)
+        # For non-STI models, base_class returns self
+        model.base_class == model
+      end
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "APPEND"
