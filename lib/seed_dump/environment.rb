@@ -27,6 +27,7 @@ class SeedDump
                       batch_size: retrieve_batch_size_value(env),
                       exclude: retrieve_exclude_value(env),
                       file: retrieve_file_value(env),
+                      header: retrieve_header_value(env),
                       import: retrieve_import_value(env),
                       insert_all: retrieve_insert_all_value(env),
                       upsert_all: retrieve_upsert_all_value(env))
@@ -278,6 +279,14 @@ class SeedDump
     # records have been deleted (issue #104).
     def retrieve_upsert_all_value(env)
       parse_boolean_value(env['UPSERT_ALL'])
+    end
+
+    # Internal: Returns a Boolean indicating whether the value for the "HEADER"
+    # key in the given Hash is equal to the String "true" (ignoring case),
+    # false if no value exists. HEADER adds a comment at the top of the seed file
+    # showing when and how it was generated for traceability (issue #126).
+    def retrieve_header_value(env)
+      parse_boolean_value(env['HEADER'])
     end
 
     # Internal: Retrieves an Array of Class constants parsed from the value for

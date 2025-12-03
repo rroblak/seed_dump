@@ -308,6 +308,31 @@ describe SeedDump do
       end
     end
 
+    describe 'HEADER (issue #126 - comment header in seed file)' do
+      # HEADER adds a comment at the top of the seed file showing that seed_dump
+      # was used and what options were specified for traceability.
+
+      it "should specify header as true if the HEADER env var is 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(header: true))
+        SeedDump.dump_using_environment('HEADER' => 'true')
+      end
+
+      it "should specify header as true if the HEADER env var is 'TRUE'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(header: true))
+        SeedDump.dump_using_environment('HEADER' => 'TRUE')
+      end
+
+      it "should specify header as false if the HEADER env var is not 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(header: false))
+        SeedDump.dump_using_environment('HEADER' => 'false')
+      end
+
+      it "should specify header as false if the HEADER env var is not set" do
+        expect(SeedDump).to receive(:dump).with(anything, include(header: false))
+        SeedDump.dump_using_environment
+      end
+    end
+
     describe 'UPSERT_ALL (issue #104 - non-continuous IDs / foreign key preservation)' do
       # UPSERT_ALL solves the problem where deleted rows cause foreign key
       # references to become invalid after reimporting seeds. When IDs are

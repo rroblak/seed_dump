@@ -21,4 +21,5 @@ pkg
 ## PROJECT::SPECIFIC
 Gemfile.lock
 CLAUDE.md
+ISSUES.md
 .claude/settings.local.json
