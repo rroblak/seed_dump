@@ -77,13 +77,50 @@ class SeedDump
         # Exclude attributes specified in the options
         next if options[:exclude].include?(attr_sym)
 
-        attribute_strings << dump_attribute(attribute, value, options)
+        # Handle CarrierWave uploader columns (issue #117)
+        # record.attributes may return nil for uploader columns even when a file exists,
+        # because CarrierWave overrides the getter method but attributes bypasses it.
+        # Check if the attribute has a CarrierWave uploader and use its identifier instead.
+        actual_value = carrierwave_value(record, attribute, value)
+
+        attribute_strings << dump_attribute(attribute, actual_value, options)
       end
 
       # Determine the appropriate characters based on import option
       open_character, close_character = options[:import] ? ['[', ']'] : ['{', '}']
 
       "#{open_character}#{attribute_strings.join(', ')}#{close_character}"
+    end
+
+    # Extracts the correct value for CarrierWave uploader columns (issue #117).
+    # CarrierWave overrides attribute getters, but record.attributes bypasses them,
+    # potentially returning nil even when a file exists. This method checks if the
+    # attribute has a CarrierWave uploader and returns the identifier (filename) instead.
+    #
+    # @param record [ActiveRecord::Base] The record being dumped.
+    # @param attribute [String] The attribute name.
+    # @param value [Object] The value from record.attributes.
+    # @return [Object] The identifier string if CarrierWave uploader, otherwise original value.
+    def carrierwave_value(record, attribute, value)
+      # If CarrierWave is not loaded, return the original value
+      return value unless defined?(CarrierWave::Uploader::Base)
+
+      # Check if calling the attribute getter returns a CarrierWave uploader
+      # This handles the case where record.attributes returns nil but the uploader has a file
+      if record.respond_to?(attribute)
+        getter_value = record.public_send(attribute)
+        if getter_value.is_a?(CarrierWave::Uploader::Base)
+          return getter_value.identifier
+        end
+      end
+
+      # If the value itself is an uploader object (e.g., from a custom attributes method),
+      # extract the identifier
+      if value.is_a?(CarrierWave::Uploader::Base)
+        return value.identifier
+      end
+
+      value
     end
 
     # Formats a single attribute key-value pair or just the value for dumping.

@@ -764,6 +764,153 @@ describe SeedDump do
       end
     end
 
+    context 'CarrierWave uploader columns (issue #117)' do
+      # CarrierWave mounts uploaders on models which override the attribute getter.
+      # When record.attributes is called, it may return nil or an uploader object
+      # instead of the raw filename string. We need to detect this and extract the identifier.
+      #
+      # The issue reports that CarrierWave columns "always dump to 'nil'" - this happens
+      # because record.attributes bypasses the CarrierWave getter and returns the raw
+      # @attributes value, which may be nil even when the uploader has a file.
+
+      before(:all) do
+        # Mock CarrierWave::Uploader::Base if not already defined
+        unless defined?(CarrierWave::Uploader::Base)
+          module CarrierWave
+            module Uploader
+              class Base
+                attr_reader :identifier
+
+                def initialize(identifier)
+                  @identifier = identifier
+                end
+
+                def inspect
+                  "#<CarrierWave::Uploader::Base identifier=#{@identifier.inspect}>"
+                end
+
+                def to_s
+                  # CarrierWave's to_s returns the URL, not the identifier
+                  "/uploads/#{@identifier}"
+                end
+              end
+            end
+          end
+        end
+      end
+
+      context 'when record.attributes returns nil but getter returns uploader (the reported bug)' do
+        # This is the actual bug reported in issue #117:
+        # record.attributes['avatar'] returns nil, but record.avatar returns an uploader
+        # with an identifier. We need to call the getter to get the real value.
+        let(:nil_attributes_mock) do
+          uploader = CarrierWave::Uploader::Base.new("avatar123.jpg")
+          mock_class = Class.new do
+            def self.name; "NilAttributesSample"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def is_a?(klass)
+              return true if klass == ActiveRecord::Base
+              super
+            end
+            def class
+              NilAttributesSample
+            end
+          end
+
+          Object.const_set("NilAttributesSample", mock_class) unless defined?(NilAttributesSample)
+          instance = NilAttributesSample.new
+
+          # record.attributes returns nil for the avatar column
+          instance.define_singleton_method(:attributes) do
+            { "name" => "user1", "avatar" => nil }
+          end
+          instance.define_singleton_method(:attribute_names) { ["name", "avatar"] }
+
+          # But record.avatar returns the uploader with the actual filename
+          instance.define_singleton_method(:avatar) { uploader }
+
+          instance
+        end
+
+        it 'should dump the uploader identifier even when attributes returns nil' do
+          result = SeedDump.dump([nil_attributes_mock], exclude: [])
+          # Should include the filename from the uploader, not nil
+          expect(result).to include('avatar: "avatar123.jpg"')
+          expect(result).not_to include('avatar: nil')
+        end
+
+        it 'should produce valid Ruby' do
+          result = SeedDump.dump([nil_attributes_mock], exclude: [])
+          expect { eval(result) rescue NameError }.not_to raise_error
+        end
+      end
+
+      context 'when record.attributes returns an uploader object directly' do
+        let(:uploader_in_attributes_mock) do
+          mock_class = Class.new do
+            def self.name; "UploaderInAttributesSample"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def is_a?(klass)
+              return true if klass == ActiveRecord::Base
+              super
+            end
+            def class
+              UploaderInAttributesSample
+            end
+            def attributes
+              {
+                "name" => "user1",
+                # CarrierWave uploader object in the attributes hash
+                "avatar" => CarrierWave::Uploader::Base.new("avatar456.jpg")
+              }
+            end
+            def attribute_names; attributes.keys; end
+          end
+          Object.const_set("UploaderInAttributesSample", mock_class) unless defined?(UploaderInAttributesSample)
+          UploaderInAttributesSample.new
+        end
+
+        it 'should dump CarrierWave uploader columns as the identifier string' do
+          result = SeedDump.dump([uploader_in_attributes_mock], exclude: [])
+          # Should include the filename, not the uploader object's inspect output
+          expect(result).to include('avatar: "avatar456.jpg"')
+          expect(result).not_to include('#<CarrierWave')
+          expect(result).not_to include('/uploads/')
+        end
+      end
+
+      context 'with no file uploaded (nil identifier)' do
+        let(:no_file_mock) do
+          uploader = CarrierWave::Uploader::Base.new(nil)
+          mock_class = Class.new do
+            def self.name; "NoFileSample"; end
+            def self.<(other); other == ActiveRecord::Base; end
+            def is_a?(klass)
+              return true if klass == ActiveRecord::Base
+              super
+            end
+            def class
+              NoFileSample
+            end
+          end
+          Object.const_set("NoFileSample", mock_class) unless defined?(NoFileSample)
+          instance = NoFileSample.new
+          instance.define_singleton_method(:attributes) do
+            { "name" => "user2", "avatar" => nil }
+          end
+          instance.define_singleton_method(:attribute_names) { ["name", "avatar"] }
+          instance.define_singleton_method(:avatar) { uploader }
+          instance
+        end
+
+        it 'should handle CarrierWave uploaders with nil identifier' do
+          result = SeedDump.dump([no_file_mock], exclude: [])
+          expect(result).to include('avatar: nil')
+          expect(result).not_to include('#<CarrierWave')
+        end
+      end
+    end
+
     context 'created_on/updated_on columns (issue #128)' do
       # Rails supports both created_at/updated_at AND created_on/updated_on as
       # timestamp columns. Both should be excluded by default since they're
