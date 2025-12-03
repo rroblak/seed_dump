@@ -23,8 +23,14 @@ jobs:
           ruby-version: '3.3'
           bundler-cache: true
 
-      - name: Publish to RubyGems
-        uses: rubygems/release-gem@v1
+      - name: Configure RubyGems credentials
+        uses: rubygems/configure-rubygems-credentials@v1.0.0
+
+      - name: Build gem
+        run: gem build seed_dump.gemspec
+
+      - name: Push to RubyGems
+        run: gem push seed_dump-*.gem
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
