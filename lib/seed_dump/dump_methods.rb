@@ -21,6 +21,7 @@ class SeedDump
     # @option options [Array<Symbol>] :exclude Attributes to exclude. Default: [:id, :created_at, :updated_at, :created_on, :updated_on].
     # @option options [Boolean, Hash] :import Use activerecord-import format. If Hash, passed as options to import. Default: false.
     # @option options [Boolean] :insert_all Use Rails 6+ insert_all format for faster bulk inserts. Default: false.
+    # @option options [Boolean] :upsert_all Use Rails 6+ upsert_all format to preserve IDs and fix foreign key issues (issue #104). Default: false.
     # @return [String, nil] The dump string if :file is nil, otherwise nil.
     def dump(records, options = {})
       # Handle potential empty input gracefully
@@ -253,7 +254,7 @@ class SeedDump
 
     # Writes the records to the given IO object, handling batching and formatting.
     #
-    # Each batch is written as a separate method call (create!, import, or insert_all).
+    # Each batch is written as a separate method call (create!, import, insert_all, or upsert_all).
     # This addresses issue #127 where BATCH_SIZE was not producing separate calls.
     #
     # @param records [ActiveRecord::Relation, Class, Array<ActiveRecord::Base>] The records to write.
@@ -262,7 +263,13 @@ class SeedDump
     # @return [void] This method now only writes to the IO. Reading happens in #dump.
     def write_records_to_io(records, io, options)
       # Set default excluded attributes if not provided
-      options[:exclude] ||= [:id, :created_at, :updated_at, :created_on, :updated_on]
+      # For upsert_all, we need to include :id by default to preserve foreign key relationships
+      # (issue #104), so we use a different default exclude list
+      if options[:upsert_all] && !options.key?(:exclude)
+        options[:exclude] = [:created_at, :updated_at, :created_on, :updated_on]
+      else
+        options[:exclude] ||= [:id, :created_at, :updated_at, :created_on, :updated_on]
+      end
       # Ensure exclude is an array of symbols
       options[:exclude] = options[:exclude].map(&:to_sym)
 
@@ -273,11 +280,13 @@ class SeedDump
           raise ArgumentError, "Could not determine model class from records."
       end
 
-      # Determine the method call ('import', 'insert_all', or 'create!')
+      # Determine the method call ('import', 'insert_all', 'upsert_all', or 'create!')
       method = if options[:import]
                  'import'
                elsif options[:insert_all]
                  'insert_all'
+               elsif options[:upsert_all]
+                 'upsert_all'
                else
                  'create!'
                end

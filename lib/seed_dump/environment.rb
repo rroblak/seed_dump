@@ -28,7 +28,8 @@ class SeedDump
                       exclude: retrieve_exclude_value(env),
                       file: retrieve_file_value(env),
                       import: retrieve_import_value(env),
-                      insert_all: retrieve_insert_all_value(env))
+                      insert_all: retrieve_insert_all_value(env),
+                      upsert_all: retrieve_upsert_all_value(env))
 
         append = true # Always append for every model after the first
                       # (append for the first model is determined by
@@ -268,6 +269,15 @@ class SeedDump
     # bulk inserts that bypass validations and callbacks.
     def retrieve_insert_all_value(env)
       parse_boolean_value(env['INSERT_ALL'])
+    end
+
+    # Internal: Returns a Boolean indicating whether the value for the "UPSERT_ALL"
+    # key in the given Hash is equal to the String "true" (ignoring case),
+    # false if no value exists. UPSERT_ALL uses Rails 6+ upsert_all to preserve
+    # original record IDs, which fixes foreign key reference issues when parent
+    # records have been deleted (issue #104).
+    def retrieve_upsert_all_value(env)
+      parse_boolean_value(env['UPSERT_ALL'])
     end
 
     # Internal: Retrieves an Array of Class constants parsed from the value for

@@ -389,6 +389,82 @@ describe SeedDump do
       end
     end
 
+    context 'upsert_all (issue #104 - non-continuous IDs / foreign key preservation)' do
+      # Issue #104: When rows are deleted from a parent table, re-importing seeds
+      # can result in foreign key references pointing to wrong records because
+      # auto-increment IDs change. upsert_all solves this by preserving original IDs.
+      #
+      # upsert_all uses Rails 6+ upsert_all which can set specific IDs, so foreign
+      # key references remain valid after reimport.
+      before(:each) { FactoryBot.create_list(:sample, 3) }
+
+      it 'should dump in the upsert_all format when upsert_all option is true' do
+        result = SeedDump.dump(Sample, upsert_all: true)
+        expect(result).to include('Sample.upsert_all(')
+        expect(result).to include('id: 1')
+        expect(result).to include('id: 2')
+        expect(result).to include('id: 3')
+      end
+
+      it 'should include id column by default (unlike other dump modes)' do
+        # upsert_all needs IDs to preserve foreign key relationships
+        result = SeedDump.dump(Sample, upsert_all: true)
+        expect(result).to include('id: 1')
+      end
+
+      it 'should still exclude created_at and updated_at by default' do
+        result = SeedDump.dump(Sample, upsert_all: true)
+        expect(result).not_to include('created_at')
+        expect(result).not_to include('updated_at')
+      end
+
+      it 'should use Hash syntax like insert_all' do
+        result = SeedDump.dump(Sample, upsert_all: true)
+        expect(result).to include('string: "string"')
+        expect(result).not_to include('[:string')
+      end
+
+      it 'should handle custom exclude that includes :id' do
+        # If user explicitly excludes :id, respect that
+        result = SeedDump.dump(Sample, upsert_all: true, exclude: [:id, :created_at, :updated_at])
+        expect(result).not_to include('id:')
+      end
+
+      it 'should output separate upsert_all calls for each batch' do
+        result = SeedDump.dump(Sample, upsert_all: true, batch_size: 2)
+        expect(result.scan(/Sample\.upsert_all\(/).count).to eq(2)
+      end
+
+      context 'with foreign key relationships' do
+        # The main use case: preserving foreign key relationships across reimports
+        before(:each) do
+          # Clear the automatically created samples from the outer before block
+          Sample.delete_all
+
+          # Create authors with specific IDs that might have gaps
+          author1 = Author.create!(name: 'First Author')
+          author2 = Author.create!(name: 'Second Author')
+
+          # Create books referencing these authors
+          Book.create!(title: 'Book by First', author: author1)
+          Book.create!(title: 'Book by Second', author: author2)
+        end
+
+        it 'should preserve author IDs so book foreign keys remain valid' do
+          result = SeedDump.dump(Author, upsert_all: true)
+          expect(result).to include('id: 1')
+          expect(result).to include('id: 2')
+          expect(result).to include('upsert_all')
+        end
+
+        it 'should preserve foreign key references in child records' do
+          result = SeedDump.dump(Book, upsert_all: true)
+          expect(result).to include('author_id: 1')
+          expect(result).to include('author_id: 2')
+        end
+      end
+    end
+
     context 'HABTM join models (issue #130)' do
       # Rails creates private constants like `Model::HABTM_OtherModels` for
       # has_and_belongs_to_many associations. These cannot be referenced directly

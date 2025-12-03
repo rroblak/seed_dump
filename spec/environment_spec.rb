@@ -308,6 +308,32 @@ describe SeedDump do
       end
     end
 
+    describe 'UPSERT_ALL (issue #104 - non-continuous IDs / foreign key preservation)' do
+      # UPSERT_ALL solves the problem where deleted rows cause foreign key
+      # references to become invalid after reimporting seeds. When IDs are
+      # preserved via upsert_all, foreign key references remain correct.
+
+      it "should specify upsert_all as true if the UPSERT_ALL env var is 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(upsert_all: true))
+        SeedDump.dump_using_environment('UPSERT_ALL' => 'true')
+      end
+
+      it "should specify upsert_all as true if the UPSERT_ALL env var is 'TRUE'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(upsert_all: true))
+        SeedDump.dump_using_environment('UPSERT_ALL' => 'TRUE')
+      end
+
+      it "should specify upsert_all as false if the UPSERT_ALL env var is not 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(upsert_all: false))
+        SeedDump.dump_using_environment('UPSERT_ALL' => 'false')
+      end
+
+      it "should specify upsert_all as false if the UPSERT_ALL env var is not set" do
+        expect(SeedDump).to receive(:dump).with(anything, include(upsert_all: false))
+        SeedDump.dump_using_environment
+      end
+    end
+
     it 'should handle non-model classes in ActiveRecord::Base.descendants (issue #112)' do
       # Create a class that inherits from ActiveRecord::Base but doesn't respond to exists?
       # This simulates edge cases like abstract classes or improperly configured models
