@@ -1,7 +1,7 @@
 PATH
   remote: ..
   specs:
-    seed_dump (3.3.1)
+    seed_dump (3.4.0)
       activerecord (>= 4)
       activesupport (>= 4)
 
@@ -21,88 +21,28 @@ GEM
       minitest (>= 5.1)
       tzinfo (~> 2.0)
       zeitwerk (~> 2.3)
-    addressable (2.4.0)
     appraisal (2.5.0)
       bundler
       rake
       thor (>= 0.14.0)
-    base64 (0.2.0)
+    base64 (0.3.0)
     benchmark (0.4.0)
-    bigdecimal (3.1.9)
-    builder (3.3.0)
     byebug (11.1.3)
     concurrent-ruby (1.3.5)
     database_cleaner-active_record (2.2.0)
       activerecord (>= 5.a)
       database_cleaner-core (~> 2.0.0)
     database_cleaner-core (2.0.1)
-    date (3.4.1)
-    descendants_tracker (0.0.4)
-      thread_safe (~> 0.3, >= 0.3.1)
     diff-lcs (1.6.1)
     factory_bot (6.5.1)
       activesupport (>= 6.1.0)
-    faraday (0.9.2)
-      multipart-post (>= 1.2, < 3)
-    git (1.11.0)
-      rchardet (~> 1.8)
-    github_api (0.16.0)
-      addressable (~> 2.4.0)
-      descendants_tracker (~> 0.0.4)
-      faraday (~> 0.8, < 0.10)
-      hashie (>= 3.4)
-      mime-types (>= 1.16, < 3.0)
-      oauth2 (~> 1.0)
-    hashie (5.0.0)
-    highline (3.1.2)
-      reline
     i18n (1.14.7)
       concurrent-ruby (~> 1.0)
-    io-console (0.8.0)
-    jeweler (2.3.9)
-      builder
-      bundler
-      git (>= 1.2.5)
-      github_api (~> 0.16.0)
-      highline (>= 1.6.15)
-      nokogiri (>= 1.5.10)
-      psych
-      rake
-      rdoc
-      semver2
-    jwt (2.10.1)
-      base64
     logger (1.7.0)
-    mime-types (2.99.3)
     mini_portile2 (2.8.8)
     minitest (5.25.5)
-    multi_json (1.15.0)
-    multi_xml (0.7.1)
-      bigdecimal (~> 3.1)
-    multipart-post (2.4.1)
     mutex_m (0.3.0)
-    nokogiri (1.18.8)
-      mini_portile2 (~> 2.8.2)
-      racc (~> 1.4)
-    nokogiri (1.18.8-arm64-darwin)
-      racc (~> 1.4)
-    oauth2 (1.4.8)
-      faraday (>= 0.8, < 3.0)
-      jwt (>= 1.0, < 3.0)
-      multi_json (~> 1.3)
-      multi_xml (~> 0.5)
-      rack (>= 1.2, < 3)
-    psych (5.2.3)
-      date
-      stringio
-    racc (1.8.1)
-    rack (2.2.13)
     rake (13.2.1)
-    rchardet (1.9.0)
-    rdoc (6.13.1)
-      psych (>= 4.0.0)
-    reline (0.6.1)
-      io-console (~> 0.5)
     rspec (3.13.2)
       rspec-core (~> 3.13.0)
       rspec-expectations (~> 3.13.0)
@@ -116,12 +56,9 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.6)
-    semver2 (3.4.2)
     sqlite3 (1.7.3)
       mini_portile2 (~> 2.8.0)
-    stringio (3.1.7)
     thor (1.3.2)
-    thread_safe (0.3.6)
     tzinfo (2.0.6)
       concurrent-ruby (~> 1.0)
     zeitwerk (2.7.2)
@@ -135,14 +72,15 @@ DEPENDENCIES
   activerecord-import (~> 0.28)
   activesupport (~> 6.1.0)
   appraisal (~> 2.4)
+  base64
   benchmark
   byebug (~> 11.1)
   database_cleaner-active_record (~> 2.0)
   factory_bot (~> 6.1)
-  jeweler (~> 2.3)
   logger
   mutex_m
-  rspec (~> 3.13.0)
+  rake
+  rspec (~> 3.13)
   seed_dump!
   sqlite3 (>= 1.3, < 2.0)
 

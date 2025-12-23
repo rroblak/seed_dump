@@ -1,21 +1,6 @@
 require 'rubygems'
 require 'rake'
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = "seed_dump"
-    gem.summary = "{Seed Dumper for Rails}"
-    gem.description = %Q{Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file}
-    gem.email = 'rroblak@gmail.com'
-    gem.homepage = 'https://github.com/rroblak/seed_dump'
-    gem.authors = ['Rob Halff', 'Ryan Oblak']
-    gem.license = 'MIT'
-  end
-  Jeweler::GemcutterTasks.new
-rescue LoadError
-  puts "Jeweler (or a dependency) not available. Install it with: gem install jeweler"
-end
+require 'bundler/gem_tasks'
 
 require 'rdoc/task'
 Rake::RDocTask.new do |rdoc|
