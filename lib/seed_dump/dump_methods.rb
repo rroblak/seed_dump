@@ -22,6 +22,7 @@ class SeedDump
     # @option options [Boolean, Hash] :import Use activerecord-import format. If Hash, passed as options to import. Default: false.
     # @option options [Boolean] :insert_all Use Rails 6+ insert_all format for faster bulk inserts. Default: false.
     # @option options [Boolean] :upsert_all Use Rails 6+ upsert_all format to preserve IDs and fix foreign key issues (issue #104). Default: false.
+    # @option options [Boolean] :group_sti_by_class Group STI records by their actual class instead of base_class (issue #170). Default: false.
     # @return [String, nil] The dump string if :file is nil, otherwise nil.
     def dump(records, options = {})
       # Handle potential empty input gracefully
@@ -367,6 +368,24 @@ class SeedDump
           raise ArgumentError, "Could not determine model class from records."
       end
 
+      # Check if we should group STI models by their actual class (issue #170)
+      # This fixes the issue where STI models with different enum definitions
+      # lose data when dumped via the base class
+      if options[:group_sti_by_class] && model_klass.respond_to?(:base_class)
+        write_sti_records_grouped_by_class(records, io, options, model_klass)
+      else
+        write_records_for_single_model(records, io, options, model_klass)
+      end
+    end
+
+    # Writes records for a single model class.
+    #
+    # @param records [ActiveRecord::Relation, Class, Array<ActiveRecord::Base>] The records to write.
+    # @param io [IO] The IO object to write to.
+    # @param options [Hash] Dumping options.
+    # @param model_klass [Class] The model class to use for output.
+    # @return [void]
+    def write_records_for_single_model(records, io, options, model_klass)
       # Determine the method call ('import', 'insert_all', 'upsert_all', or 'create!')
       method = if options[:import]
                  'import'
@@ -399,6 +418,39 @@ class SeedDump
         io.write("#{model_name_for_output(model_klass)}.#{method}(#{import_header}[\n  ")
         io.write(record_strings.join(",\n  "))
         io.write("\n]#{active_record_import_options(options)})\n")
+      end
+    end
+
+    # Writes STI records grouped by their actual class (issue #170).
+    #
+    # When STI models have different enum definitions, dumping via the base class
+    # causes enum values to be lost. This method groups records by their actual
+    # class and dumps each group separately.
+    #
+    # @param records [ActiveRecord::Relation, Class] The records to write.
+    # @param io [IO] The IO object to write to.
+    # @param options [Hash] Dumping options.
+    # @param model_klass [Class] The base model class.
+    # @return [void]
+    def write_sti_records_grouped_by_class(records, io, options, model_klass)
+      # We need to fetch all records and group them by class
+      # This is necessary because we can't efficiently group via SQL
+      all_records = if records.is_a?(Class)
+                      records.all.to_a
+                    elsif records.is_a?(ActiveRecord::Relation)
+                      records.to_a
+                    else
+                      records
+                    end
+
+      # Group records by their actual class
+      records_by_class = all_records.group_by(&:class)
+
+      # Sort classes by name for consistent output
+      records_by_class.keys.sort_by(&:name).each do |klass|
+        class_records = records_by_class[klass]
+        # Write records for this specific class
+        write_records_for_single_model(class_records, io, options, klass)
       end
     end
 

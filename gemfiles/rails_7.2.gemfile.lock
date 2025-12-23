@@ -85,6 +85,7 @@ DEPENDENCIES
   appraisal (~> 2.4)
   base64
   benchmark
+  bigdecimal
   byebug (~> 11.1)
   database_cleaner-active_record (~> 2.0)
   factory_bot (~> 6.1)

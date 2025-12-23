@@ -37,6 +37,40 @@ class Rails
         Object.const_set('GuestUser', guest_user_class)
       end
 
+      # STI models with enums for testing issue #170
+      unless defined?(Animal)
+        animal_class = Class.new(ActiveRecord::Base) do
+          self.table_name = 'animals'
+        end
+        Object.const_set('Animal', animal_class)
+      end
+
+      unless defined?(Dog)
+        dog_class = Class.new(Animal) do
+          # Rails 8.0+ requires positional arguments: enum(:breed, { ... })
+          # Rails 6.1-7.x use keyword arguments: enum breed: { ... }
+          if ActiveRecord.version >= Gem::Version.new('8.0.0')
+            enum(:breed, { husky: 1, poodle: 2, beagle: 3 })
+          else
+            enum breed: { husky: 1, poodle: 2, beagle: 3 }
+          end
+        end
+        Object.const_set('Dog', dog_class)
+      end
+
+      unless defined?(Cat)
+        cat_class = Class.new(Animal) do
+          # Rails 8.0+ requires positional arguments: enum(:breed, { ... })
+          # Rails 6.1-7.x use keyword arguments: enum breed: { ... }
+          if ActiveRecord.version >= Gem::Version.new('8.0.0')
+            enum(:breed, { persian: 1, siamese: 2, maine_coon: 3 })
+          else
+            enum breed: { persian: 1, siamese: 2, maine_coon: 3 }
+          end
+        end
+        Object.const_set('Cat', cat_class)
+      end
+
       # Model with serialized Hash field (issue #105) - JSON serialization
       unless defined?(SerializedSample)
         serialized_class = Class.new(ActiveRecord::Base) do
@@ -236,6 +270,16 @@ module Helpers
         t.text :content
         t.integer :rating
         t.references :book, foreign_key: true
+        t.datetime 'created_at', null: false
+        t.datetime 'updated_at', null: false
+      end
+
+      # Table for testing STI models with enums (issue #170)
+      drop_table :animals, if_exists: true
+      create_table 'animals', force: true do |t|
+        t.string :type  # STI type column
+        t.string :name
+        t.integer :breed  # Enum column with different meanings per subclass
         t.datetime 'created_at', null: false
         t.datetime 'updated_at', null: false
       end

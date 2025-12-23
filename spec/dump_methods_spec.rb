@@ -1110,5 +1110,179 @@ describe SeedDump do
         expect(result).to include('updated_on')
       end
     end
+
+    context 'STI models with enums (issue #170)' do
+      # Issue #170: STI models with different enum definitions lose data when dumped
+      # via the base class because the base class doesn't have the enum definitions.
+      # For example, Dog and Cat both have a :breed enum with different values.
+      # When dumped as Animal.upsert_all([{breed: 'husky'}, {breed: 'persian'}]),
+      # the breed values become nil because Animal doesn't know about these enums.
+
+      before(:each) do
+        Dog.create!(name: 'Buddy', breed: :husky)
+        Dog.create!(name: 'Max', breed: :poodle)
+        Cat.create!(name: 'Whiskers', breed: :persian)
+        Cat.create!(name: 'Shadow', breed: :siamese)
+      end
+
+      context 'default behavior (grouping by base_class)' do
+        it 'should dump all STI records using the base class' do
+          result = SeedDump.dump(Animal)
+          # Default behavior: all animals dumped under Animal.create!
+          expect(result).to include('Animal.create!')
+          expect(result).not_to include('Dog.create!')
+          expect(result).not_to include('Cat.create!')
+        end
+
+        it 'should include the type column for STI records' do
+          result = SeedDump.dump(Animal)
+          expect(result).to include('type: "Dog"')
+          expect(result).to include('type: "Cat"')
+        end
+
+        it 'should include enum symbolic values in the dump' do
+          result = SeedDump.dump(Animal)
+          # The enum values should be present (though they'll fail on load)
+          expect(result).to include('breed: "husky"')
+          expect(result).to include('breed: "poodle"')
+          expect(result).to include('breed: "persian"')
+          expect(result).to include('breed: "siamese"')
+        end
+      end
+
+      context 'with group_sti_by_class option enabled' do
+        it 'should dump STI records grouped by their actual class' do
+          result = SeedDump.dump(Animal, group_sti_by_class: true)
+          # Records should be grouped by their actual class
+          expect(result).to include('Dog.create!')
+          expect(result).to include('Cat.create!')
+          expect(result).not_to include('Animal.create!')
+        end
+
+        it 'should include the type column for STI records' do
+          result = SeedDump.dump(Animal, group_sti_by_class: true)
+          expect(result).to include('type: "Dog"')
+          expect(result).to include('type: "Cat"')
+        end
+
+        it 'should preserve enum values for each class' do
+          result = SeedDump.dump(Animal, group_sti_by_class: true)
+          expect(result).to include('breed: "husky"')
+          expect(result).to include('breed: "poodle"')
+          expect(result).to include('breed: "persian"')
+          expect(result).to include('breed: "siamese"')
+        end
+
+        it 'should group all dogs together and all cats together' do
+          result = SeedDump.dump(Animal, group_sti_by_class: true)
+          # Split by class to verify grouping
+          dog_section = result[/Dog\.create!\(\[(.*?)\]\)/m, 1]
+          cat_section = result[/Cat\.create!\(\[(.*?)\]\)/m, 1]
+
+          expect(dog_section).to include('Buddy')
+          expect(dog_section).to include('Max')
+          expect(dog_section).not_to include('Whiskers')
+          expect(dog_section).not_to include('Shadow')
+
+          expect(cat_section).to include('Whiskers')
+          expect(cat_section).to include('Shadow')
+          expect(cat_section).not_to include('Buddy')
+          expect(cat_section).not_to include('Max')
+        end
+
+        context 'with upsert_all' do
+          it 'should use the actual class for upsert_all calls' do
+            result = SeedDump.dump(Animal, group_sti_by_class: true, upsert_all: true)
+            expect(result).to include('Dog.upsert_all([')
+            expect(result).to include('Cat.upsert_all([')
+            expect(result).not_to include('Animal.upsert_all([')
+          end
+        end
+
+        context 'with insert_all' do
+          it 'should use the actual class for insert_all calls' do
+            result = SeedDump.dump(Animal, group_sti_by_class: true, insert_all: true)
+            expect(result).to include('Dog.insert_all([')
+            expect(result).to include('Cat.insert_all([')
+            expect(result).not_to include('Animal.insert_all([')
+          end
+        end
+
+        context 'round-trip idempotency test' do
+          let(:tempfile) { Tempfile.new(['seed_dump_test', '.rb']) }
+          let(:filename) { tempfile.path }
+
+          after do
+            tempfile.close
+            tempfile.unlink
+          end
+
+          it 'should produce seed data that can be loaded back with correct enum values' do
+            # Dump the data
+            SeedDump.dump(Animal, file: filename, group_sti_by_class: true, exclude: [])
+
+            # Clear the database
+            Animal.delete_all
+
+            # Load the seed data
+            eval(File.read(filename))
+
+            # Verify the data was restored correctly
+            expect(Animal.count).to eq(4)
+            expect(Dog.count).to eq(2)
+            expect(Cat.count).to eq(2)
+
+            buddy = Dog.find_by(name: 'Buddy')
+            expect(buddy.breed).to eq('husky')
+
+            max = Dog.find_by(name: 'Max')
+            expect(max.breed).to eq('poodle')
+
+            whiskers = Cat.find_by(name: 'Whiskers')
+            expect(whiskers.breed).to eq('persian')
+
+            shadow = Cat.find_by(name: 'Shadow')
+            expect(shadow.breed).to eq('siamese')
+          end
+        end
+      end
+
+      context 'when dumping a specific STI subclass' do
+        it 'should use the subclass name even without group_sti_by_class option' do
+          # When explicitly dumping Dog.all, it should always use Dog, not Animal
+          result = SeedDump.dump(Dog)
+          expect(result).to include('Dog.create!')
+          expect(result).not_to include('Animal.create!')
+          expect(result).not_to include('Cat')
+        end
+
+        it 'should only include records of that subclass' do
+          result = SeedDump.dump(Dog)
+          expect(result).to include('Buddy')
+          expect(result).to include('Max')
+          expect(result).not_to include('Whiskers')
+          expect(result).not_to include('Shadow')
+        end
+      end
+
+      context 'with mixed batch sizes' do
+        before(:each) do
+          # Clear existing and create more records to test batching
+          Animal.delete_all
+          3.times { |i| Dog.create!(name: "Dog#{i}", breed: :husky) }
+          2.times { |i| Cat.create!(name: "Cat#{i}", breed: :persian) }
+        end
+
+        it 'should handle batching correctly with group_sti_by_class' do
+          result = SeedDump.dump(Animal, group_sti_by_class: true, batch_size: 2)
+
+          # Should have multiple Dog.create! calls (3 dogs with batch_size 2 = 2 batches)
+          expect(result.scan(/Dog\.create!/).length).to eq(2)
+
+          # Should have one Cat.create! call (2 cats with batch_size 2 = 1 batch)
+          expect(result.scan(/Cat\.create!/).length).to eq(1)
+        end
+      end
+    end
   end
 end

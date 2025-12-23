@@ -8,6 +8,7 @@ appraise 'rails-6.1' do
   gem 'activerecord', '~> 6.1.0'
   gem 'activesupport', '~> 6.1.0'
   gem 'sqlite3', '>= 1.3', '< 2.0' # Broadly compatible range
+  gem 'bigdecimal' # Required for Ruby 3.4+ compatibility
 end
 
 # Appraisal for Rails 7.0.x
@@ -16,6 +17,7 @@ appraise 'rails-7.0' do
   gem 'activerecord', '~> 7.0.0'
   gem 'activesupport', '~> 7.0.0'
   gem 'sqlite3', '>= 1.3', '< 2.0' # Broadly compatible range
+  gem 'bigdecimal' # Required for Ruby 3.4+ compatibility
 end
 
 # Appraisal for Rails 7.1.x
@@ -24,6 +26,7 @@ appraise 'rails-7.1' do
   gem 'activerecord', '~> 7.1.0'
   gem 'activesupport', '~> 7.1.0'
   gem 'sqlite3', '>= 1.3', '< 2.0' # Broadly compatible range
+  gem 'bigdecimal' # Required for Ruby 3.4+ compatibility
 end
 
 # Appraisal for Rails 7.2.x
@@ -31,6 +34,7 @@ appraise 'rails-7.2' do
   gem 'activerecord', '~> 7.2.0'
   gem 'activesupport', '~> 7.2.0'
   gem 'sqlite3', '>= 1.3', '< 2.0'
+  gem 'bigdecimal' # Required for Ruby 3.4+ compatibility
 end
 
 # Appraisal for Rails 8.0.x (Edge/Main)
@@ -42,6 +46,7 @@ appraise 'rails-8.0' do
   # Override sqlite3 constraint for Rails 8 compatibility
   # Rails 8 requires sqlite3 >= 2.1
   gem 'sqlite3', '>= 2.1'
+  gem 'bigdecimal' # Required for Ruby 3.4+ compatibility
 end
 
 # Common test gems (rspec, factory_bot, etc.) are inherited from the main Gemfile's :test group.

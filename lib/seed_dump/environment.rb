@@ -27,6 +27,7 @@ class SeedDump
                       batch_size: retrieve_batch_size_value(env),
                       exclude: retrieve_exclude_value(env),
                       file: retrieve_file_value(env),
+                      group_sti_by_class: retrieve_group_sti_by_class_value(env),
                       header: retrieve_header_value(env),
                       import: retrieve_import_value(env),
                       insert_all: retrieve_insert_all_value(env),
@@ -287,6 +288,14 @@ class SeedDump
     # showing when and how it was generated for traceability (issue #126).
     def retrieve_header_value(env)
       parse_boolean_value(env['HEADER'])
+    end
+
+    # Internal: Returns a Boolean indicating whether the value for the "GROUP_STI_BY_CLASS"
+    # key in the given Hash is equal to the String "true" (ignoring case),
+    # false if no value exists. GROUP_STI_BY_CLASS groups STI records by their actual
+    # class instead of base_class to fix enum issues (issue #170).
+    def retrieve_group_sti_by_class_value(env)
+      parse_boolean_value(env['GROUP_STI_BY_CLASS'])
     end
 
     # Internal: Retrieves an Array of Class constants parsed from the value for
