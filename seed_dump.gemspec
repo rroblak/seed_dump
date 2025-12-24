@@ -1,8 +1,5 @@
 # frozen_string_literal: true
 
-lib = File.expand_path('../lib', __FILE__)
-$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-
 Gem::Specification.new do |s|
   s.name        = "seed_dump"
   s.version     = File.read(File.join(File.dirname(__FILE__), 'VERSION')).strip
@@ -12,9 +9,9 @@ Gem::Specification.new do |s|
   s.summary     = "Seed Dumper for Rails"
   s.description = "Dump (parts) of your database to db/seeds.rb to get a headstart creating a meaningful seeds.rb file"
   s.license     = "MIT"
-  s.date        = Time.now.utc.strftime('%Y-%m-%d')
 
-  # Only include essential files in the gem package
+  # List files to include in the gem package
+  # Note: Avoid $LOAD_PATH manipulation in gemspec as it causes LSP hangs (issue #171)
   s.files = Dir[
     "lib/**/*",
     "MIT-LICENSE",
