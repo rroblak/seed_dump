@@ -1,0 +1,72 @@
+# Git Mailmap
+# This file maps contributor identities for proper attribution in git history
+# Format: Proper Name <proper@email.xx> Commit Name <commit@email.xx>
+#
+# See: https://git-scm.com/docs/gitmailmap
+
+# ============================================================================
+# CORE MAINTAINERS
+# ============================================================================
+
+# Original author and core maintainer (2010-2013)
+Rob Halff <rob.halff@gmail.com>
+Rob Halff <rob.halff@gmail.com> <rhalff@tifserver2.tif.net>
+
+# Current core maintainer (2012-present)
+Ryan Oblak <rroblak@gmail.com>
+Ryan Oblak <rroblak@gmail.com> <ryan@saveup.com>
+Ryan Oblak <rroblak@gmail.com> <roblak@linkedin.com>
+Ryan Oblak <rroblak@gmail.com> <ryan@alchemy.com>
+
+# ============================================================================
+# CONTRIBUTORS (Code commits)
+# ============================================================================
+
+# Contributors with multiple commits
+Alexes <alexes.dev@gmail.com>
+Pierre-Alexandre Kofron <pierrealexandre.kofron@gmail.com>
+Pierre-Alexandre Kofron <pierrealexandre.kofron@gmail.com> <kofronpi@users.noreply.github.com>
+poctek <poctek5@gmail.com>
+William Limratana <limratana@gmail.com>
+Han-Shen Yuan <han.yuan@gmail.com>
+Guilherme Simoes <guilherme.rdems@gmail.com>
+Brandon McCulligh <ceo@quotr.ca>
+
+# Contributors with single commits
+Yan Lhert <yan@checkr.com>
+Benjamin Mathe-Sellin <benjamin@mathe-sellin.de>
+Oleg Pasko <olegpasko@gmail.com>
+Ming Qu <qucool@gmail.com>
+Michael <mibamur@gmail.com>
+Luka Novsak <lnovsak@gmail.com>
+Karthik T <karthikt.holmes+github@gmail.com>
+John Hirbour <john@hirbour.org>
+jan <hippopotame@gmail.com>
+Eric Bakan <eric@ebakan.com>
+Craig Jackson <tapocol@gmail.com>
+Christopher Schramm <github@shakaweb.org>
+Chris Brodt <chris@path.to>
+Andrey Ognevsky <a.ognevsky@gmail.com>
+André Aubin <andre.aubin@lambdaweb.fr>
+Abdelkader Boudih <terminale@gmail.com>
+
+# ============================================================================
+# PR CONTRIBUTORS (2025)
+# These contributors submitted pull requests that were closed in 2025
+# ============================================================================
+
+Gabriel <gabriel-curtino@users.noreply.github.com>
+Dierdre D Dixon <madcalf@users.noreply.github.com>
+Serge Hänni <phylor@users.noreply.github.com>
+Humberto <frenesim@users.noreply.github.com>
+Kohei SUGI <koheisg@users.noreply.github.com>
+Michal Kovac <mirelon@users.noreply.github.com>
+Tim Diggins <timdiggins@users.noreply.github.com>
+Washington Botelho <wbotelhos@users.noreply.github.com>
+Yaniv Ran <YanivRan@users.noreply.github.com>
+Garth Snyder <GarthSnyder@users.noreply.github.com>
+ysksn <ysksn@users.noreply.github.com>
+Walid Shouman <weshouman@users.noreply.github.com>
+Brendan Asselstine <asselstine@users.noreply.github.com>
+Raz Itz <razitz@users.noreply.github.com>
+Armen P. <edg3r@users.noreply.github.com>
