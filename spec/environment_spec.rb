@@ -41,6 +41,33 @@ describe SeedDump do
       end
     end
 
+    describe 'IMPORT' do
+      it "should specify import as true if the IMPORT env var is 'true'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(import: true))
+        SeedDump.dump_using_environment('IMPORT' => 'true')
+      end
+
+      it "should specify import as true if the IMPORT env var is 'TRUE'" do
+        expect(SeedDump).to receive(:dump).with(anything, include(import: true))
+        SeedDump.dump_using_environment('IMPORT' => 'TRUE')
+      end
+
+      it "should specify import as Hash if the IMPORT env var is a JSON hash" do
+        expect(SeedDump).to receive(:dump).with(anything, include(import: {'validate' => false}))
+        SeedDump.dump_using_environment('IMPORT' => '{ "validate": false }')
+      end
+
+      it "should specify import as false if the IMPORT env var is invalid JSON" do
+        expect(SeedDump).to receive(:dump).with(anything, include(import: false))
+        SeedDump.dump_using_environment('IMPORT' => '{ validate: false ')
+      end
+
+      it "should specify import as false if the IMPORT env var is not set" do
+        expect(SeedDump).to receive(:dump).with(anything, include(import: false))
+        SeedDump.dump_using_environment
+      end
+    end
+
     describe 'BATCH_SIZE' do
       it 'should pass along the specified batch size' do
         expect(SeedDump).to receive(:dump).with(anything, include(batch_size: 17))
