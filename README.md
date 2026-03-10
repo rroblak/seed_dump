@@ -1,33 +1,21 @@
 # Seed Dump
 
-Seed Dump is a Rails plugin (compatible with **Rails 4 through 8+**) that adds a rake task named `db:seed:dump`.
+[![Gem Version](https://badge.fury.io/rb/seed_dump.svg)](https://rubygems.org/gems/seed_dump)
+[![Build Status](https://github.com/rroblak/seed_dump/actions/workflows/release.yml/badge.svg)](https://github.com/rroblak/seed_dump/actions)
+[![Rails](https://img.shields.io/badge/Rails-6.1--8.x-red)](https://rubyonrails.org)
+[![Ruby](https://img.shields.io/badge/Ruby-2.7%2B-ruby)](https://www.ruby-lang.org)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](MIT-LICENSE)
 
-It allows you to create seed data files from the existing data in your database.
+**Turn your live database into a seed file with a single command.**
 
-You can also use Seed Dump from the Rails console. See below for usage examples.
+Seed Dump is a Rails plugin that adds a `db:seed:dump` Rake task. Point it at any database and it generates a ready-to-use `db/seeds.rb` — no hand-crafting required. It handles foreign-key ordering, STI deduplication, and HABTM join tables automatically.
 
-Note: if you want to use Seed Dump with Rails 3 or earlier, use [version 0.5.3](http://rubygems.org/gems/seed_dump/versions/0.5.3).
-
-## Installation
-
-Add it to your Gemfile with:
-```ruby
-gem 'seed_dump'
-```
-Or install it by hand:
 ```sh
-$ gem install seed_dump
+rake db:seed:dump
 ```
-## Examples
 
-### Rake task
-
-Dump all data directly to `db/seeds.rb`:
-```sh
-  $ rake db:seed:dump
-```
-Result:
 ```ruby
+# db/seeds.rb — generated output
 Product.create!([
   { category_id: 1, description: "Long Sleeve Shirt", name: "Long Sleeve Shirt" },
   { category_id: 3, description: "Plain White Tee Shirt", name: "Plain T-Shirt" }
@@ -38,118 +26,337 @@ User.create!([
 ])
 ```
 
-Dump only data from the users table and dump a maximum of 1 record:
-```sh
-$ rake db:seed:dump MODELS=User LIMIT=1
+---
+
+## Table of Contents
+
+1. [Compatibility](#compatibility)
+2. [Installation](#installation)
+3. [Quick Start](#quick-start)
+4. [Rake Task Usage](#rake-task-usage)
+5. [Console Usage](#console-usage)
+6. [All Options](#all-options)
+7. [Automatic Behaviors](#automatic-behaviors)
+8. [Common Recipes](#common-recipes)
+9. [Usage Outside of Rails](#usage-outside-of-rails)
+10. [Contributing](#contributing)
+11. [License](#license)
+
+---
+
+## Compatibility
+
+| seed_dump | Rails   | Ruby   |
+|-----------|---------|--------|
+| 3.x       | 6.1–8.x | 2.7+  |
+| 0.5.3     | 3.x     | —      |
+
+> **Rails 3 or earlier?** Use [version 0.5.3](https://rubygems.org/gems/seed_dump/versions/0.5.3).
+
+---
+
+## Installation
+
+Add to your `Gemfile`:
+
+```ruby
+gem 'seed_dump'
 ```
 
-Result:
+Then run:
+
+```sh
+bundle install
+```
+
+Or install directly:
+
+```sh
+gem install seed_dump
+```
+
+No additional configuration is required — Seed Dump hooks into Rails automatically via a Railtie and Rake task.
+
+---
+
+## Quick Start
+
+From your Rails root, run:
+
+```sh
+rake db:seed:dump
+```
+
+This writes all non-empty models to `db/seeds.rb`. Models are automatically sorted by foreign-key dependencies so the file is immediately `rake db:seed`-safe.
+
+---
+
+## Rake Task Usage
+
+Pass options as environment variables on the command line.
+
+### Reference Table
+
+| Goal | Command |
+|---|---|
+| Dump everything | `rake db:seed:dump` |
+| Specific models | `rake db:seed:dump MODELS=User,Post` |
+| Exclude models | `rake db:seed:dump MODELS_EXCLUDE=AuditLog,EventLog` |
+| Limit records per model | `rake db:seed:dump LIMIT=100` |
+| Per-model limits | `rake db:seed:dump LIMIT=50 MODEL_LIMITS="AuditLog:0,User:200"` |
+| Append to existing file | `rake db:seed:dump APPEND=true` |
+| Custom output file | `rake db:seed:dump FILE=db/seeds/users.rb` |
+| Exclude columns | `rake db:seed:dump EXCLUDE=name,age` |
+| Include all columns (id, timestamps) | `rake db:seed:dump INCLUDE_ALL=true` |
+| STI grouped by subclass | `rake db:seed:dump GROUP_STI_BY_CLASS=true` |
+| Add a header comment | `rake db:seed:dump HEADER=true` |
+| Use `insert_all` (fast, no callbacks) | `rake db:seed:dump INSERT_ALL=true` |
+| Use `upsert_all` (idempotent, preserves IDs) | `rake db:seed:dump UPSERT_ALL=true` |
+| Use activerecord-import format | `rake db:seed:dump IMPORT=true` |
+| Set batch size | `rake db:seed:dump BATCH_SIZE=500` |
+
+### Output format examples
+
+**Default (`create!`)**
+
 ```ruby
 User.create!([
-  { password: "123456", username: "test_1" }
+  { username: "alice", role: "admin" },
+  { username: "bob",   role: "member" }
 ])
 ```
 
-Append to `db/seeds.rb` instead of overwriting it:
-```sh
-rake db:seed:dump APPEND=true
-```
+**`IMPORT=true`** — compatible with the [activerecord-import](https://github.com/zdennis/activerecord-import) gem:
 
-Use another output file instead of `db/seeds.rb`:
-```sh
-rake db:seed:dump FILE=db/seeds/users.rb
-```
-
-Exclude `name` and `age` from the dump:
-```sh
-rake db:seed:dump EXCLUDE=name,age
-```
-
-There are more options that can be set— see below for all of them.
-
-### Console
-
-Output a dump of all User records:
 ```ruby
-irb(main):001:0> puts SeedDump.dump(User)
-User.create!([
-  { password: "123456", username: "test_1" },
-  { password: "234567", username: "test_2" }
+User.import([:username, :role], [
+  ["alice", "admin"],
+  ["bob", "member"]
 ])
 ```
 
-Write the dump to a file:
-```ruby
-irb(main):002:0> SeedDump.dump(User, file: 'db/seeds.rb')
-```
+**`INSERT_ALL=true`** — uses Rails 6+ `insert_all` (bulk insert, skips callbacks and validations):
 
-Append the dump to a file:
 ```ruby
-irb(main):003:0> SeedDump.dump(User, file: 'db/seeds.rb', append: true)
-```
-
-Exclude `name` and `age` from the dump:
-```ruby
-irb(main):004:0> SeedDump.dump(User, exclude: [:name, :age])
-```
-
-Options are specified as a Hash for the second argument.
-
-In the console, any relation of ActiveRecord rows can be dumped (not individual objects though):
-```ruby
-irb(main):005:0> puts SeedDump.dump(User.where(is_admin: false))
-User.create!([
-  { password: "123456", username: "test_1", is_admin: false },
-  { password: "234567", username: "test_2", is_admin: false }
+User.insert_all([
+  { username: "alice", role: "admin" },
+  { username: "bob",   role: "member" }
 ])
 ```
 
-## Options
+**`UPSERT_ALL=true`** — uses Rails 6+ `upsert_all` (idempotent; preserves IDs; resolves conflicts by updating):
 
-Options are common to both the Rake task and the console, except where noted.
+```ruby
+User.upsert_all([
+  { id: 1, username: "alice", role: "admin" },
+  { id: 2, username: "bob",   role: "member" }
+])
+```
 
-`append`: If set to `true`, append the data to the file instead of overwriting it. Default: `false`.
+> **Note:** `upsert_all` includes `:id` by default (unlike other modes) so that foreign-key references stay intact when re-seeding.
 
-`batch_size`: Controls the number of records that are processed and written at a given time. Default: 1000. If you're running out of memory when dumping, try decreasing this. If things are dumping too slow, trying increasing this.
+**`HEADER=true`** — prepends a traceability comment:
 
-`exclude`: Attributes to be excluded from the dump. Pass a comma-separated list to the Rake task (e.g., `EXCLUDE=name,age`) and an array of symbols on the console (e.g., `exclude: [:name, :age]`). Default: `[:id, :created_at, :updated_at, :created_on, :updated_on]`.
+```ruby
+# Generated by seed_dump on 2024-05-01 12:00:00
+#
+# Rake command:
+#   rake db:seed:dump HEADER=true
+#
+# Programmatic equivalent:
+#   SeedDump.dump(ModelName, header: true)
 
-`file`: Write to the specified output file. The Rake task default is `db/seeds.rb`. The console returns the dump as a string by default if this option is omitted.
+User.create!([...])
+```
 
-`group_sti_by_class`: If `true`, Single Table Inheritance (STI) records are grouped by their actual class (e.g., `Dog`, `Cat`) instead of the base class (e.g., `Animal`). This is necessary when STI subclasses have different enum definitions or other class-specific attributes that would be lost if dumped via the base class. Default: `false`. Example: `rake db:seed:dump GROUP_STI_BY_CLASS=true` or `SeedDump.dump(Animal, group_sti_by_class: true)`. See the STI Handling section below for more details.
+---
 
-`header`: If `true`, adds a comment header to the output file showing the seed_dump command and options used. If a string, uses that string as the header comment. Default: `false`. **Rake task only.** Example: `rake db:seed:dump HEADER=true` or `HEADER="Generated by seed_dump"`.
+## Console Usage
 
-`import`: If `true`, output will be in the format needed by the [activerecord-import](https://github.com/zdennis/activerecord-import) gem, rather than the default format. You can also pass a Hash of options which will be passed through to the `import` call (e.g., `IMPORT='{ "validate": false }'` for Rake, or `import: { validate: false }` for console). Default: `false`.
+`SeedDump.dump` works from `rails console` too — useful for scripting, one-off exports, or embedding in other tasks.
 
-`include_all`: If set to `true`, include all columns in the dump (including `id`, `created_at`, and `updated_at`). Equivalent to `EXCLUDE=""`. Default: `false`. **Rake task only.** Example: `rake db:seed:dump INCLUDE_ALL=true`
+```ruby
+# Dump all Users to a string (printed to stdout here)
+puts SeedDump.dump(User)
 
-`insert_all`: If `true`, output will use Rails 6+ [`insert_all`](https://api.rubyonrails.org/classes/ActiveRecord/Persistence/ClassMethods.html#method-i-insert_all) for faster bulk inserts that bypass validations and callbacks. Default: `false`. Example: `rake db:seed:dump INSERT_ALL=true` or `SeedDump.dump(User, insert_all: true)`.
+# Write directly to a file
+SeedDump.dump(User, file: 'db/seeds.rb')
 
-`limit`: Dump no more than this amount of data *per model*. Default: no limit. **Rake task only.** In the console, just pass in an ActiveRecord::Relation with the appropriate limit (e.g., `SeedDump.dump(User.limit(5))`).
+# Append to an existing file
+SeedDump.dump(User, file: 'db/seeds.rb', append: true)
 
-`model_limits`: Set different limits for specific models. Format: `Model1:limit1,Model2:limit2`. Use `0` to mean "no limit" for a specific model. This is useful when `LIMIT` would break foreign key relationships. **Rake task only.** Example: `rake db:seed:dump LIMIT=10 MODEL_LIMITS="Teacher:0,Student:50"` dumps all Teachers, 50 Students, and 10 of everything else.
+# Dump a filtered ActiveRecord relation
+puts SeedDump.dump(User.where(is_admin: false))
 
-`model[s]`: Restrict the dump to the specified comma-separated list of models. Default: all models that have data. If you are using a Rails engine you can dump a specific model by passing "EngineName::ModelName". **Rake task only.** Example: `rake db:seed:dump MODELS="User, Position, Function"`
+# Exclude specific columns
+puts SeedDump.dump(User, exclude: [:password, :remember_token])
 
-`models_exclude`: Exclude the specified comma-separated list of models from the dump. Default: no models excluded. **Rake task only.** Example: `rake db:seed:dump MODELS_EXCLUDE="User"`
+# Override the default excluded columns to dump everything (including id and timestamps)
+puts SeedDump.dump(User, exclude: [])
 
-`upsert_all`: If `true`, output will use Rails 6+ [`upsert_all`](https://api.rubyonrails.org/classes/ActiveRecord/Persistence/ClassMethods.html#method-i-upsert_all) which preserves record IDs and handles conflicts by updating existing records. This is useful when you need to maintain foreign key relationships or want idempotent seed files. Automatically includes `id` in the dump. Default: `false`. Example: `rake db:seed:dump UPSERT_ALL=true` or `SeedDump.dump(User, upsert_all: true)`.
+# Use insert_all for bulk performance (skips callbacks and validations)
+SeedDump.dump(User, insert_all: true, file: 'db/seeds.rb')
+
+# Use upsert_all for idempotent seeds (preserves original IDs)
+SeedDump.dump(User, upsert_all: true, file: 'db/seeds.rb')
+
+# Use activerecord-import format, passing through import options
+SeedDump.dump(User, import: { validate: false }, file: 'db/seeds.rb')
+
+# Control batch size (default: 1000)
+SeedDump.dump(User, batch_size: 500, file: 'db/seeds.rb')
+
+# Group STI records by their actual subclass
+SeedDump.dump(Animal, group_sti_by_class: true, file: 'db/seeds.rb')
+```
+
+**Any `ActiveRecord::Relation` works** — not just bare model classes:
+
+```ruby
+SeedDump.dump(Post.published.order(:created_at).limit(50))
+```
+
+When `:file` is omitted, `dump` returns a String; otherwise it writes to the file and returns `nil`.
+
+---
+
+## All Options
+
+These options work for both the Rake task and the console API, except where noted.
+
+| Option | Rake env var | Type | Default | Description |
+|---|---|---|---|---|
+| `append` | `APPEND` | bool | `false` | Append to the output file instead of overwriting it |
+| `batch_size` | `BATCH_SIZE` | int | `1000` | Records processed per batch. Lower to reduce memory use; raise for speed |
+| `exclude` | `EXCLUDE` | array / string | `[:id, :created_at, :updated_at, :created_on, :updated_on]` | Columns to omit. Comma-separated string for Rake; array of symbols for console |
+| `file` | `FILE` | string | `db/seeds.rb` | Output file path. Console returns a String when omitted |
+| `group_sti_by_class` | `GROUP_STI_BY_CLASS` | bool | `false` | Group STI records by their actual subclass instead of the base class (see [STI Handling](#-sti-handling)) |
+| `header` | `HEADER` | bool | `false` | Prepend a comment showing when and how the seed file was generated (**Rake only**) |
+| `import` | `IMPORT` | bool / hash | `false` | Output in [activerecord-import](https://github.com/zdennis/activerecord-import) format. Pass a Hash to forward options (e.g. `IMPORT='{"validate":false}'`) |
+| `include_all` | `INCLUDE_ALL` | bool | `false` | Include all columns, overriding the default exclusion of `id` and timestamps. Equivalent to `EXCLUDE=""` (**Rake only**) |
+| `insert_all` | `INSERT_ALL` | bool | `false` | Use Rails 6+ `insert_all` — fast bulk insert that skips validations and callbacks |
+| `limit` | `LIMIT` | int | none | Max records per model (**Rake only** — use `.limit()` on the relation in console) |
+| `model_limits` | `MODEL_LIMITS` | string | none | Per-model limit overrides, e.g. `"Teacher:0,Student:50"`. `0` means no limit (**Rake only**) |
+| `models` / `model` | `MODELS` / `MODEL` | string | all | Comma-separated model names to dump. Supports engine namespacing: `EngineName::Model` (**Rake only**) |
+| `models_exclude` | `MODELS_EXCLUDE` | string | none | Comma-separated models to skip entirely (**Rake only**) |
+| `upsert_all` | `UPSERT_ALL` | bool | `false` | Use Rails 6+ `upsert_all` — idempotent; preserves IDs; resolves conflicts by updating |
+
+---
 
 ## Automatic Behaviors
 
-**Foreign Key Ordering**: Models are automatically dumped in dependency order based on foreign key relationships. This ensures that parent records are created before child records that reference them.
+Seed Dump handles several tricky scenarios automatically.
 
-**STI Handling**: Single Table Inheritance (STI) models are automatically deduplicated. By default, only the base class is dumped to avoid duplicate records (e.g., `Animal.create!` for both `Dog` and `Cat` records). However, if your STI subclasses have different enum definitions or other class-specific attributes, use the `group_sti_by_class: true` option to dump each subclass separately (e.g., `Dog.create!` and `Cat.create!`). This ensures that subclass-specific type casting and validations are properly applied when the seed data is loaded.
+### 🔑 Foreign Key Ordering
 
-**HABTM Handling**: Has-and-belongs-to-many join tables are automatically detected and dumped without duplication.
+Models are dumped in dependency order based on `belongs_to` associations. Parents are always emitted before children, so the generated file can be loaded with `rake db:seed` without triggering foreign-key constraint violations.
+
+For example, if `Book belongs_to :author`, the output will be:
+
+```ruby
+Author.create!([...])
+Book.create!([...])   # ← always after Author
+```
+
+Circular dependencies (if any) are handled gracefully — the remaining models are appended in their original order.
+
+### 🐾 STI Handling
+
+By default, Single Table Inheritance records are deduplicated by base class. `Dog` and `Cat` records are both dumped as `Animal.create!` to avoid double-loading.
+
+If your STI subclasses have **different enum definitions or subclass-specific attributes**, use `GROUP_STI_BY_CLASS=true` to dump each subclass separately:
+
+```sh
+rake db:seed:dump GROUP_STI_BY_CLASS=true
+```
+
+```ruby
+# Output with GROUP_STI_BY_CLASS=true
+Cat.create!([{ name: "Whiskers", indoor: true }])
+Dog.create!([{ name: "Rex",      breed: "Lab"  }])
+```
+
+### 🔗 HABTM Join Tables
+
+Has-and-belongs-to-many join tables are automatically detected and included exactly once, without duplication.
+
+### 📦 CarrierWave Support
+
+CarrierWave uploader columns are serialized as their stored filename identifier rather than the uploader object itself.
+
+### 🕒 Timestamps as ISO 8601
+
+`Date`, `Time`, and `DateTime` values are serialized in ISO 8601 format to preserve timezone information. This prevents timestamp shifts when seeds are loaded on machines in different timezones.
+
+### 🗃️ Nested Type Handling
+
+Serialized `Hash` and `Array` columns containing `Time`, `BigDecimal`, or other non-inspectable types are recursively normalized, producing valid Ruby in the output.
+
+---
+
+## Common Recipes
+
+**Bootstrap a new dev environment from staging data:**
+
+```sh
+# On staging — exclude sensitive fields
+rake db:seed:dump FILE=db/seeds/staging_snapshot.rb EXCLUDE=password,api_token,remember_token
+
+# Commit and use in dev
+rake db:seed
+```
+
+**Fast load for large datasets (skips callbacks and validations):**
+
+```sh
+rake db:seed:dump INSERT_ALL=true
+```
+
+**Idempotent seeds you can run repeatedly without duplicating data:**
+
+```sh
+rake db:seed:dump UPSERT_ALL=true INCLUDE_ALL=true
+```
+
+**Dump reference / lookup tables only, skipping large transactional tables:**
+
+```sh
+rake db:seed:dump MODELS=Country,Category,Tag,Permission
+```
+
+**Dump everything but cap high-volume tables at 50 rows while exempting audit logs:**
+
+```sh
+rake db:seed:dump LIMIT=50 MODEL_LIMITS="EventLog:0,AuditEntry:0"
+```
+
+> `MODEL_LIMITS="EventLog:0"` means *no limit* for `EventLog`, overriding the global `LIMIT=50`.
+
+**Append a new model's seed data without overwriting the existing seeds file:**
+
+```sh
+rake db:seed:dump MODELS=NewFeatureConfig APPEND=true
+```
+
+**Export a subset using the console API with a custom relation:**
+
+```ruby
+# Only confirmed users created in the last 30 days
+SeedDump.dump(
+  User.where(confirmed: true).where('created_at > ?', 30.days.ago),
+  file: 'db/seeds/recent_users.rb',
+  exclude: [:password_digest, :remember_token]
+)
+```
+
+---
 
 ## Usage Outside of Rails
 
-If you're using ActiveRecord outside of Rails (e.g., with [standalone-migrations](https://github.com/thuss/standalone-migrations)), you can set up a custom Rake task:
+If you're using ActiveRecord without the full Rails stack (e.g. with [standalone-migrations](https://github.com/thuss/standalone-migrations)), define your own Rake task:
 
 ```ruby
-# In your Rakefile
+# Rakefile
 $LOAD_PATH.unshift(File.expand_path('app/models', __dir__))
 Dir.glob(File.expand_path('app/models/*.rb', __dir__)).sort.each(&method(:require))
 require 'seed_dump'
@@ -157,11 +364,44 @@ require 'seed_dump'
 namespace :db do
   namespace :seed do
     desc "Dump records from the database into db/seeds.rb"
-    task :dump => :environment do
+    task dump: :environment do
       SeedDump.dump_using_environment(ENV)
     end
   end
 end
 ```
 
-This loads your models and creates a `db:seed:dump` task that works like the Rails version.
+All of the same environment variables (`MODELS`, `LIMIT`, `EXCLUDE`, etc.) work exactly as in a full Rails setup.
+
+---
+
+## Contributing
+
+Bug reports and pull requests are welcome on [GitHub](https://github.com/rroblak/seed_dump).
+
+### Running the test suite
+
+The test suite uses [Appraisal](https://github.com/thoughtbot/appraisal) to run against multiple Rails versions.
+
+```sh
+# Install dependencies
+bundle install
+bundle exec appraisal install
+
+# Run tests against all supported Rails versions
+bundle exec appraisal rspec
+
+# Run tests against a specific Rails version
+bundle exec appraisal rails-7.2 rspec
+
+# Run a single spec file
+bundle exec appraisal rails-7.2 rspec spec/dump_methods_spec.rb
+```
+
+Supported Rails versions: **6.1, 7.0, 7.1, 7.2, 8.0**.
+
+---
+
+## License
+
+MIT. See [MIT-LICENSE](MIT-LICENSE).
