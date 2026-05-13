@@ -258,11 +258,26 @@ class SeedDump
       parse_boolean_value(env['APPEND'])
     end
 
-    # Internal: Returns a Boolean indicating whether the value for the "IMPORT"
-    # key in the given Hash is equal to the String "true" (ignoring case),
-    # false if  no value exists.
+    # Internal: Returns true if the IMPORT env var enables bulk import.
+    #
+    # IMPORT may be:
+    # - "true" (case-insensitive)
+    # - A JSON hash of activerecord-import options (e.g. '{ "validate": false }')
+    #
+    # Returns false if IMPORT is unset or invalid.
     def retrieve_import_value(env)
-      parse_boolean_value(env['IMPORT'])
+      value = env['IMPORT']
+      return false if value.nil?
+
+      # Backward compatibility: IMPORT=true
+      return true if parse_boolean_value(value)
+
+      # New behavior: IMPORT is a JSON hash of options
+      begin
+        JSON.parse(value)
+      rescue JSON::ParserError
+        false
+      end
     end
 
     # Internal: Returns a Boolean indicating whether the value for the "INSERT_ALL"
